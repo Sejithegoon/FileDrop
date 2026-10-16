@@ -376,3 +376,12 @@ def test_admin_pin_survives_restart(ctx, admin):
     restarted.load_flags()
     fresh = TestClient(create_console_app(restarted), base_url="http://127.0.0.1:8442", headers=H)
     assert fresh.get("/api/users").status_code == 401
+
+
+def test_https_switch(ctx, admin):
+    assert admin.post("/api/https", json={"enabled": False}).status_code == 200
+    assert ctx.lan.tls_dir is None and ctx.https_enabled() is False
+    assert admin.post("/api/https", json={"enabled": True}).status_code == 200
+    assert ctx.lan.tls_dir == ctx.settings.tls_dir and ctx.https_enabled() is True
+    ctx.settings.https = False  # forced by FILEDROP_HTTPS
+    assert admin.post("/api/https", json={"enabled": True}).status_code == 409

@@ -8,7 +8,7 @@ FileDrop is a LAN file server for Windows. The PC running it gets a desktop **ad
 2. The **FileDrop Admin** window opens. The first time, it asks where to save uploaded files (type a path or click **Browse…**). You can change it later with **Dashboard → Storage → Change folder**; FileDrop moves the existing files for you.
 3. Go to **Users → Add user** and create an account.
 4. Optional: **Shared folders → New shared folder**, then give users View, Upload or Manage access.
-5. On a phone on the same Wi-Fi, scan the QR code on the Dashboard (or type the link), then sign in. The link is **https://**. The first time, the phone warns that the connection isn't private, because FileDrop made its own certificate. On iPhone tap **Show Details → visit this website**; on Android **Advanced → Proceed**. The Dashboard shows the certificate fingerprint so you can compare.
+5. On a phone on the same Wi-Fi, scan the QR code on the Dashboard (or type the link), then sign in. The link is **https://**. The first time, the phone warns that the connection isn't private, because FileDrop made its own certificate. On iPhone tap **Show Details → visit this website**; on Android **Advanced → Proceed**. The Dashboard shows the certificate fingerprint so you can compare. Anyone who types just `http://<PC address>` gets a help page with a button to the secure link. On a trusted home network you can turn HTTPS off in the Dashboard.
 
 Closing the admin window keeps FileDrop running in the tray. Click the tray icon to reopen it. **Quit FileDrop** (tray menu or the window's sidebar) stops everything.
 
@@ -102,7 +102,8 @@ Before a release, go through `tests/manual/CHECKLIST.md`.
 | `app/db/` | SQLite connection, backups, migrations, IDs |
 | `web/` | User page plus the shared styles and helpers |
 | `console/` | Admin window page |
-| `tests/` | pytest suites |
+| `tests/` | pytest suites, plus `tests/manual/CHECKLIST.md` |
+| `site/` | The product website (static, for Cloudflare Pages). See `site/README.md` |
 | `build/` | PyInstaller spec, installer script, build script, icon |
 
 ## Not built yet

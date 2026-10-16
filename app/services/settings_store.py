@@ -11,6 +11,7 @@ DEFAULTS = {
     "uploads_paused": False,
     "downloads_paused": False,
     "max_upload_bytes": None,  # None = no limit
+    "https_enabled": True,
 }
 
 

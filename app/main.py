@@ -17,6 +17,7 @@ from pathlib import Path
 
 from app import __version__
 from app.api.console import create_console_app
+from app.api.helper import create_helper_app
 from app.api.lan import create_lan_app
 from app.core.context import AppContext
 from app.core.listeners import LanServer, Listener
@@ -174,8 +175,9 @@ def main(argv: list[str] | None = None) -> int:
     winacl.ensure_private(settings.data_dir)
     ctx = AppContext(settings=settings)
     ctx.lan = LanServer(lambda: create_lan_app(ctx), settings.lan_host, settings.lan_port,
-                        settings.tls_dir if settings.https else None)
+                        helper_factory=create_helper_app)
     prepare_database(ctx)
+    ctx.lan.tls_dir = settings.tls_dir if ctx.https_enabled() else None
     if args.reset_admin_pin and ctx.admin_lock.enabled:
         conn = ctx.connect()
         try:

@@ -69,8 +69,14 @@ class Listener:
 class LanServer:
     """Start/Stop state for the LAN listener, over HTTPS when tls_dir is set."""
 
-    def __init__(self, app_factory: Callable[[], object], host: str, port: int, tls_dir: Path | None = None):
+    HELPER_PORTS = (80, 8080)  # plain-HTTP help page; first free one wins
+
+    def __init__(self, app_factory: Callable[[], object], host: str, port: int, tls_dir: Path | None = None,
+                 helper_factory: Callable[[str], object] | None = None):
         self._app_factory = app_factory
+        self._helper_factory = helper_factory
+        self._helper: Listener | None = None
+        self.helper_url: str | None = None
         self._configured_host = host
         self.port = port
         self.tls_dir = tls_dir  # HTTPS when set
@@ -105,6 +111,7 @@ class LanServer:
             "state": self.state,
             "url": f"{self.scheme}://{self.address}:{self.port}/" if self.state == "running" else None,
             "https": self.tls_dir is not None, "fingerprint": self.fingerprint,
+            "helper_url": self.helper_url if self.state == "running" else None,
             "error": self.last_error,
         }
 
@@ -123,13 +130,32 @@ class LanServer:
                 self._listener = Listener(self._app_factory(), self.address, self.port, "lan", cert)
                 self._listener.start()
                 self.state = "running"
+                if cert and self._helper_factory:
+                    self._start_helper()
             except Exception as exc:
                 log.error("LAN server failed to start: %s", exc)
                 self.state, self.last_error, self._listener = "stopped", str(exc), None
             return self.status()
 
+    def _start_helper(self) -> None:
+        """Best effort: if ports 80 and 8080 are both taken, HTTPS still works without the help page."""
+        secure_url = f"https://{self.address}:{self.port}/"
+        for port in self.HELPER_PORTS:
+            helper = Listener(self._helper_factory(secure_url), self.address, port, "http-help")
+            try:
+                helper.start(timeout=3.0)
+            except RuntimeError:
+                continue
+            self._helper = helper
+            self.helper_url = f"http://{self.address}/" if port == 80 else f"http://{self.address}:{port}/"
+            return
+        log.info("No free port for the plain-HTTP help page; skipping it")
+
     def stop(self) -> dict:
         with self._lock:
+            if self._helper:
+                self._helper.stop()
+                self._helper, self.helper_url = None, None
             if self._listener:
                 self.state = "stopping"
                 self._listener.stop()

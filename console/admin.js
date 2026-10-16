@@ -18,20 +18,37 @@ const quotaText = (used, quota) => quota == null ? `${FD.fmtSize(used)} · no li
 
 // ---------- navigation
 
+const PAGES = ['dashboard', 'users', 'shared', 'files', 'activity'];
+
 function go(p) {
+    if (!PAGES.includes(p)) p = 'dashboard';
     page = p;
+    history.replaceState(null, '', '#' + p);
     document.querySelectorAll('#nav button').forEach(b => b.toggleAttribute('aria-current', b.dataset.page === p));
     document.querySelectorAll('[data-view]').forEach(v => { v.hidden = v.dataset.view !== p; });
     ({ dashboard: loadDashboard, users: loadUsers, shared: loadSpaces, files: loadBrowser, activity: loadActivity })[p]();
+    if (p !== 'dashboard') refreshSide();
+}
+
+function renderSide(o) {
+    const running = o.server.state === 'running';
+    $('#version').textContent = `v${o.version}`;
+    $('#sidePill').className = `pill ${running ? '' : 'bad'}`;
+    $('#sideState').textContent = running ? 'Server running' : 'Server stopped';
+}
+
+async function refreshSide() {
+    try { renderSide(await api('/overview')); } catch { markOffline(); }
 }
 document.querySelectorAll('#nav button').forEach(b => b.onclick = () => go(b.dataset.page));
+window.addEventListener('hashchange', () => { const p = location.hash.slice(1); if (p !== page && $('#lockScreen').hidden) go(p); });
 
 // ---------- dashboard
 
 async function loadDashboard() {
     try { overview = await api('/overview'); } catch (e) { return markOffline(); }
     const o = overview, running = o.server.state === 'running';
-    $('#version').textContent = `v${o.version}`;
+    renderSide(o);
     $('#serverState').classList.toggle('running', running);
     $('#serverText').textContent = running ? 'Web server is running' : o.server.state === 'starting' ? 'Starting…' : 'Web server is stopped';
     $('#serverHint').textContent = running
@@ -43,8 +60,12 @@ async function loadDashboard() {
         const fp = o.server.fingerprint || '';
         $('#tlsNote').innerHTML = `${FD.icon('lock')} <b>Secure connection (HTTPS).</b> The first time, phones warn the connection isn't private because FileDrop made its own certificate. ` +
             `iPhone: tap <b>Show Details → visit this website</b>. Android: <b>Advanced → Proceed</b>.` +
-            (fp ? `<br><span class="muted">Certificate fingerprint: <code title="${fp}">${fp.slice(0, 23)}…</code></span>` : '');
+            (fp ? `<br><span class="muted">Certificate fingerprint: <code title="${fp}">${fp.slice(0, 23)}…</code></span>` : '') +
+            (o.server.helper_url ? `<br><span class="muted">Typing just <code>${FD.esc(o.server.helper_url)}</code> opens a help page with a button to the secure link.</span>` : '');
     }
+    $('#plainNote').hidden = o.server.https;
+    $('#httpsToggle').checked = o.server.https;
+    $('#httpsToggle').disabled = o.https_forced;
     $('#qr').innerHTML = o.qr;
     $('#qr').classList.toggle('off', !running);
     $('#serverBtnText').textContent = running ? 'Stop web server' : 'Start web server';
@@ -67,8 +88,6 @@ async function loadDashboard() {
     $('#setupBrowse').hidden = $('#moveBrowse').hidden = !o.can_browse;
     renderMove(o.move);
     if (!o.storage && !o.storage_override && $('#setup').hidden) openSetup(o);
-    $('#sidePill').className = `pill ${running ? '' : 'bad'}`;
-    $('#sideState').textContent = running ? 'Server running' : 'Server stopped';
     loadSessions();
 }
 
@@ -87,6 +106,20 @@ $('#serverBtn').onclick = async () => {
         if (s.error) FD.toast(s.error, 'err'); else FD.toast(running ? 'Web server stopped' : 'Web server started');
     } catch (e) { fail(e); }
     $('#serverBtn').disabled = false;
+    loadDashboard();
+};
+
+$('#httpsToggle').onchange = async e => {
+    const on = e.target.checked;
+    if (!on && !await FD.confirmBox('Turn off HTTPS?',
+        'Without HTTPS, anyone on the same network could see passwords and files as they travel. Only do this on your own Wi-Fi or hotspot. Signed-in phones need to open the new http:// link.', 'Turn off HTTPS')) {
+        e.target.checked = true;
+        return;
+    }
+    try {
+        await api('/https', { json: { enabled: on } });
+        FD.toast(on ? 'HTTPS is on. Phones will see a one-time warning.' : 'HTTPS is off');
+    } catch (err) { fail(err); e.target.checked = !on; }
     loadDashboard();
 };
 
@@ -507,7 +540,7 @@ const ACTIONS = {
     'user.create': 'Created user', 'user.edit': 'Edited user', 'user.password_reset': 'Reset password for', 'user.delete': 'Deleted user',
     'session.revoke': 'Signed out a device', 'upload.cancel': 'Cancelled upload', 'space.create': 'Created shared folder',
     'space.edit': 'Edited shared folder', 'space.delete': 'Deleted shared folder', 'space.access': 'Changed shared folder access for',
-    'item.rename': 'Renamed', 'item.delete': 'Deleted', 'storage.setup': 'Chose storage folder', 'storage.move': 'Moved storage to', 'admin.unlock': 'Wrong admin PIN', 'admin.pin_set': 'Set the admin PIN', 'admin.pin_removed': 'Removed the admin PIN',
+    'item.rename': 'Renamed', 'item.delete': 'Deleted', 'storage.setup': 'Chose storage folder', 'storage.move': 'Moved storage to', 'admin.unlock': 'Wrong admin PIN', 'admin.pin_set': 'Set the admin PIN', 'admin.pin_removed': 'Removed the admin PIN', 'server.https_on': 'Turned on HTTPS', 'server.https_off': 'Turned off HTTPS',
 };
 
 async function loadActivity() {
@@ -586,4 +619,5 @@ $('#lockNowBtn').onclick = async () => {
 };
 
 FD.hydrate();
-refreshPin().then(s => { if (s.pin_set && !s.unlocked) showLock(); else go('dashboard'); }).catch(() => go('dashboard'));
+const startPage = location.hash.slice(1) || 'dashboard';
+refreshPin().then(s => { if (s.pin_set && !s.unlocked) { page = startPage; showLock(); } else go(startPage); }).catch(() => go(startPage));

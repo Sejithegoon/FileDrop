@@ -32,6 +32,10 @@ ACTOR = "admin (this PC)"
 api = APIRouter(prefix="/api", dependencies=[Depends(csrf)])
 
 
+class HttpsBody(BaseModel):
+    enabled: bool
+
+
 class ControlsBody(BaseModel):
     uploads_paused: bool | None = None
     downloads_paused: bool | None = None
@@ -113,7 +117,7 @@ def overview(request: Request, conn=Depends(db)):
         "server": status, "url": url, "qr": _qr_svg(url),
         "uploads_paused": ctx.uploads_paused, "downloads_paused": ctx.downloads_paused,
         "storage": storage, "storage_override": bool(ctx.settings.storage_dir), "move": ctx.mover.status(),
-        "update": ctx.update_available,
+        "update": ctx.update_available, "https_forced": ctx.settings.https is not None,
         "can_browse": ctx.choose_folder is not None, "suggested_root": str(storage_config.suggested_root()),
         "files_bytes": conn.execute("SELECT COALESCE(SUM(size_bytes), 0) FROM items").fetchone()[0],
         "counts": {
@@ -200,6 +204,21 @@ def move_storage(body: PathBody, request: Request, conn=Depends(db)):
 @api.get("/storage/move")
 def move_status(request: Request):
     return ctx_of(request).mover.status()
+
+
+@api.post("/https")
+def set_https(body: HttpsBody, request: Request, conn=Depends(db)):
+    """Turn the self-signed HTTPS on or off. Restarts the web server if it's running."""
+    ctx = ctx_of(request)
+    if ctx.settings.https is not None:
+        raise ApiError(409, "HTTPS_FORCED", "HTTPS is fixed by FILEDROP_HTTPS for this run.")
+    settings_store.set_value(conn, "https_enabled", body.enabled)
+    ctx.lan.tls_dir = ctx.settings.tls_dir if body.enabled else None
+    audit.record(conn, "server.https_on" if body.enabled else "server.https_off", actor=ACTOR)
+    if ctx.lan.state == "running":
+        ctx.lan.stop()
+        ctx.lan.start()
+    return ctx.lan.status()
 
 
 @api.post("/open-update")

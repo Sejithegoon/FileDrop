@@ -87,3 +87,33 @@ def test_lan_server_serves_https(tmp_path):
             assert r.read() == b'{"ok":true}'
     finally:
         lan.stop()
+
+
+def test_https_server_also_serves_a_plain_http_help_page(tmp_path, monkeypatch):
+    import urllib.request
+
+    from fastapi import FastAPI
+
+    from app.api.helper import create_helper_app
+    help_port = _free_port()
+    monkeypatch.setattr(LanServer, "HELPER_PORTS", (help_port,))
+    lan = LanServer(lambda: FastAPI(), "127.0.0.1", _free_port(), tls_dir=tmp_path, helper_factory=create_helper_app)
+    status = lan.start()
+    try:
+        assert status["helper_url"] == f"http://127.0.0.1:{help_port}/"
+        page = urllib.request.urlopen(status["helper_url"] + "anything", timeout=5).read().decode()
+        assert status["url"] in page and "Show Details" in page
+    finally:
+        lan.stop()
+    assert lan.status()["helper_url"] is None
+
+
+def test_no_help_page_without_https(monkeypatch):
+    from fastapi import FastAPI
+
+    from app.api.helper import create_helper_app
+    lan = LanServer(lambda: FastAPI(), "127.0.0.1", _free_port(), helper_factory=create_helper_app)
+    try:
+        assert lan.start()["helper_url"] is None
+    finally:
+        lan.stop()

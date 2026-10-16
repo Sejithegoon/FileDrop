@@ -38,6 +38,17 @@ class AppContext:
             raise ApiError(409, "STORAGE_NOT_SET", "Choose where FileDrop saves files first.")
         return self.storage
 
+    def https_enabled(self) -> bool:
+        if self.settings.https is not None:
+            return self.settings.https
+        conn = self.connect()
+        try:
+            return bool(settings_store.get(conn, "https_enabled"))
+        except sqlite3.Error:
+            return True
+        finally:
+            conn.close()
+
     @property
     def uploads_blocked(self) -> bool:
         return self.uploads_paused or self.storage_moving

@@ -435,3 +435,5 @@ dialog.sheet::backdrop { background: rgb(0 0 0 / .6); }
 .notice.update-note { background: color-mix(in srgb, var(--accent) 14%, transparent); color: var(--text); }
 .notice.update-note .ic { color: var(--accent-2); }
 .notice.update-note .btn { margin-left: auto; }
+
+.switch-row.compact-row { padding: 6px 0 0; border-top: 0; font-size: 14px; }

@@ -30,7 +30,7 @@ class Settings:
     lan_host: str = "auto"  # "auto" = primary private IPv4 address
     lan_port: int = 8443
     start_server_on_launch: bool = True
-    https: bool = True  # self-signed certificate; phones warn once
+    https: bool | None = None  # None: use the admin's choice (default on); True/False: forced by FILEDROP_HTTPS
     update_feed_url: str = ""  # JSON {version, url, notes}; set once the website hosts it
     data_dir: Path = field(default_factory=_default_data_dir)
     storage_dir: Path | None = None  # fixed storage folder; normally chosen in the admin window

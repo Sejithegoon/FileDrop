@@ -40,6 +40,9 @@
                     <div class="server-state" id="serverState"><span class="dot"></span><span id="serverText">…</span></div>
                     <p class="muted small" id="serverHint"></p>
                     <p class="small tls-note" id="tlsNote" hidden></p>
+                    <p class="notice" id="plainNote" hidden><span data-icon="alert"></span> <span>Not encrypted: passwords and files can be seen by others on this network. Only use this on your own Wi-Fi or hotspot.</span></p>
+                    <label class="switch-row compact-row" id="httpsRow"><span>Secure connection (HTTPS)<small>Recommended. Phones show a one-time warning.</small></span>
+                        <span class="switch"><input type="checkbox" id="httpsToggle"><i></i></span></label>
                     <div class="url-box"><code id="serverUrl"></code>
                         <button class="btn ghost small icon-only" id="copyUrl" type="button" aria-label="Copy link" title="Copy link"><span data-icon="copy"></span></button></div>
                     <div><button class="btn primary" id="serverBtn" type="button"><span data-icon="power"></span> <span id="serverBtnText">Start web server</span></button></div>
