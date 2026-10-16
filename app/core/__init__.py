@@ -1,1 +1,1 @@
-"""Core services: settings, networking, listeners. Permissions, storage, transfers and audit go here."""
+"""Core building blocks: settings, app context, storage layout, names, errors, networking, listener threads."""

@@ -1,1 +1,1 @@
-"""SQLite schema, migrations and queries. Not implemented yet."""
+"""SQLite connection, migrations, backups and ID helpers."""

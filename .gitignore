@@ -5,6 +5,5 @@ __pycache__/
 dist/
 build/out/
 build/work/
-*.spec.bak
 *.log
 .devdata*/

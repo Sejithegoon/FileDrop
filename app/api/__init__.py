@@ -1,1 +1,1 @@
-"""FastAPI apps: the LAN app (users) and the console app (localhost only)."""
+"""FastAPI apps: lan.py (user web API, LAN) and console.py (admin window API, localhost only)."""

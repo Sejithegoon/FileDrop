@@ -229,7 +229,8 @@ def test_pauses(ctx, admin):
 # --- shared folders ----------------------------------------------------------------------
 
 def test_shared_folder_levels(ctx, admin):
-    sam_id, alex_id, kim_id = make_user(admin, "sam"), make_user(admin, "alex"), make_user(admin, "kim")
+    sam_id, alex_id = make_user(admin, "sam"), make_user(admin, "alex")
+    make_user(admin, "kim")
     sid = admin.post("/api/spaces", json={"name": "Family"}).json()["id"]
     admin.put(f"/api/spaces/{sid}/members/{sam_id}", json={"level": "upload"})
     admin.put(f"/api/spaces/{sid}/members/{alex_id}", json={"level": "view"})
