@@ -1,0 +1,6 @@
+# Feedback server dependencies (deploy with: pip install -r feedback_server/requirements.txt)
+fastapi==0.143.2
+pydantic==2.14.1
+python-multipart==0.0.32
+starlette==1.8.0
+uvicorn==0.54.0
