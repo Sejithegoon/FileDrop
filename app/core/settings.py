@@ -32,6 +32,7 @@ class Settings:
     start_server_on_launch: bool = True
     https: bool | None = None  # None: use the admin's choice (default on); True/False: forced by FILEDROP_HTTPS
     update_feed_url: str = ""  # JSON {version, url, notes}; set once the website hosts it
+    website_url: str = ""  # e.g. https://example.ca; enables "Send feedback" in the admin window
     data_dir: Path = field(default_factory=_default_data_dir)
     storage_dir: Path | None = None  # fixed storage folder; normally chosen in the admin window
 
@@ -69,6 +70,8 @@ def load_settings() -> Settings:
         s.data_dir = Path(env["FILEDROP_DATA_DIR"])
     if "FILEDROP_STORAGE_DIR" in env:
         s.storage_dir = Path(env["FILEDROP_STORAGE_DIR"])
+    if "FILEDROP_WEBSITE" in env:
+        s.website_url = env["FILEDROP_WEBSITE"].rstrip("/")
     if "FILEDROP_UPDATE_FEED" in env:
         s.update_feed_url = env["FILEDROP_UPDATE_FEED"]
     if "FILEDROP_HTTPS" in env:

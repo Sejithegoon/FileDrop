@@ -385,3 +385,11 @@ def test_https_switch(ctx, admin):
     assert ctx.lan.tls_dir == ctx.settings.tls_dir and ctx.https_enabled() is True
     ctx.settings.https = False  # forced by FILEDROP_HTTPS
     assert admin.post("/api/https", json={"enabled": True}).status_code == 409
+
+
+def test_feedback_link_only_when_website_is_set(ctx, admin):
+    assert admin.get("/api/overview").json()["feedback_url"] is None
+    assert admin.post("/api/open-feedback").status_code == 404
+    ctx.settings.website_url = "https://example.ca"
+    url = admin.get("/api/overview").json()["feedback_url"]
+    assert url.startswith("https://example.ca/feedback.html?version=") and "windows=" in url

@@ -68,7 +68,7 @@ Run the tests:
 .venv/Scripts/python -m pytest
 ```
 
-Other flags: `--background` (start hidden in the tray), `--no-server`, `--reset-admin-pin`. Environment overrides: `FILEDROP_CONSOLE_PORT`, `FILEDROP_LAN_HOST`, `FILEDROP_LAN_PORT`, `FILEDROP_DATA_DIR`, `FILEDROP_STORAGE_DIR`, `FILEDROP_START_SERVER=0|1`, `FILEDROP_HTTPS=0|1`, `FILEDROP_UPDATE_FEED=<url>` (JSON `{"version", "url", "notes"}`; the admin window shows an "update available" banner).
+Other flags: `--background` (start hidden in the tray), `--no-server`, `--reset-admin-pin`. Environment overrides: `FILEDROP_WEBSITE=<https://your-site>` (shows **Send feedback** in the admin window), `FILEDROP_CONSOLE_PORT`, `FILEDROP_LAN_HOST`, `FILEDROP_LAN_PORT`, `FILEDROP_DATA_DIR`, `FILEDROP_STORAGE_DIR`, `FILEDROP_START_SERVER=0|1`, `FILEDROP_HTTPS=0|1`, `FILEDROP_UPDATE_FEED=<url>` (JSON `{"version", "url", "notes"}`; the admin window shows an "update available" banner).
 
 Dependencies are pinned in `requirements.txt`. Upgrade one on purpose, run the tests, rebuild.
 
@@ -103,7 +103,8 @@ Before a release, go through `tests/manual/CHECKLIST.md`.
 | `web/` | User page plus the shared styles and helpers |
 | `console/` | Admin window page |
 | `tests/` | pytest suites, plus `tests/manual/CHECKLIST.md` |
-| `site/` | The product website (static, for Cloudflare Pages). See `site/README.md` |
+| `site/` | The product website (static). See `site/README.md` |
+| `feedback_server/` | Self-hosted forms (feedback, contact, beta, waitlist) and admin inbox. See `feedback_server/README.md` |
 | `build/` | PyInstaller spec, installer script, build script, icon |
 
 ## Not built yet

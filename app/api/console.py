@@ -9,9 +9,11 @@ from __future__ import annotations
 
 import io
 import os
+import platform
 import subprocess
 import sys
 import threading
+import urllib.parse
 import webbrowser
 
 from fastapi import APIRouter, Depends, FastAPI, Request, Response
@@ -118,6 +120,7 @@ def overview(request: Request, conn=Depends(db)):
         "uploads_paused": ctx.uploads_paused, "downloads_paused": ctx.downloads_paused,
         "storage": storage, "storage_override": bool(ctx.settings.storage_dir), "move": ctx.mover.status(),
         "update": ctx.update_available, "https_forced": ctx.settings.https is not None,
+        "feedback_url": feedback_url(ctx.settings),
         "can_browse": ctx.choose_folder is not None, "suggested_root": str(storage_config.suggested_root()),
         "files_bytes": conn.execute("SELECT COALESCE(SUM(size_bytes), 0) FROM items").fetchone()[0],
         "counts": {
@@ -219,6 +222,30 @@ def set_https(body: HttpsBody, request: Request, conn=Depends(db)):
         ctx.lan.stop()
         ctx.lan.start()
     return ctx.lan.status()
+
+
+def _windows_name() -> str:
+    if sys.platform != "win32":
+        return platform.system()
+    build = sys.getwindowsversion().build
+    return f"Windows {'11' if build >= 22000 else '10'} (build {build})"
+
+
+def feedback_url(settings) -> str | None:
+    if not settings.website_url:
+        return None
+    query = urllib.parse.urlencode({"version": __version__, "windows": _windows_name()})
+    return f"{settings.website_url}/feedback.html?{query}"
+
+
+@api.post("/open-feedback")
+def open_feedback(request: Request):
+    """Open the website's feedback form, with versions filled in. Nothing is sent automatically."""
+    url = feedback_url(ctx_of(request).settings)
+    if not url:
+        raise ApiError(404, "NO_WEBSITE", "The feedback page isn't set up yet.")
+    webbrowser.open(url)
+    return {"ok": True}
 
 
 @api.post("/open-update")

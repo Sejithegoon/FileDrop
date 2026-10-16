@@ -32,6 +32,7 @@ function go(p) {
 
 function renderSide(o) {
     const running = o.server.state === 'running';
+    $('#feedbackBtn').hidden = !o.feedback_url;
     $('#version').textContent = `v${o.version}`;
     $('#sidePill').className = `pill ${running ? '' : 'bad'}`;
     $('#sideState').textContent = running ? 'Server running' : 'Server stopped';
@@ -281,6 +282,8 @@ function device(ua) {
 }
 
 setInterval(() => { if (page === 'dashboard' && !document.hidden) loadDashboard(); }, 3000);
+
+$('#feedbackBtn').onclick = () => api('/open-feedback', { json: {} }).catch(fail);
 
 $('#quitBtn').onclick = async () => {
     if (!await FD.confirmBox('Quit FileDrop?', 'The web server stops for everyone until you open FileDrop again.', 'Quit')) return;
