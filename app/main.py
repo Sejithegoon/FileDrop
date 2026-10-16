@@ -103,10 +103,19 @@ def run_window(ctx: AppContext, start_hidden: bool) -> None:
     window = webview.create_window("FileDrop Admin", ctx.settings.console_url, width=1280, height=860,
                                    min_size=(900, 600), hidden=start_hidden, background_color="#000000")
 
+    told_about_tray = threading.Event()
+
     def on_closing():
         if quitting.is_set():
             return True
         window.hide()  # keep running in the tray
+        if not told_about_tray.is_set():
+            told_about_tray.set()
+            try:
+                icon.notify("FileDrop is still running. Right-click the tray icon and choose Quit FileDrop to stop it.",
+                            "FileDrop")
+            except Exception:  # notifications can be turned off in Windows
+                pass
         return False
 
     def show():
@@ -114,11 +123,15 @@ def run_window(ctx: AppContext, start_hidden: bool) -> None:
         window.restore()
 
     def request_quit():
+        # Runs on the tray thread or an API thread: never block it.
         if quitting.is_set():
             return
         quitting.set()
-        icon.stop()
-        window.destroy()
+
+        def shut_down():
+            icon.stop()
+            window.destroy()
+        threading.Thread(target=shut_down, name="quit", daemon=True).start()
 
     def choose_folder():
         dialog = getattr(getattr(webview, "FileDialog", None), "FOLDER", None) or webview.FOLDER_DIALOG
@@ -129,7 +142,7 @@ def run_window(ctx: AppContext, start_hidden: bool) -> None:
     ctx.choose_folder = choose_folder
     ctx.show_window = show
     ctx.request_quit = request_quit
-    icon = build_tray(ctx.lan, show, lambda: request_quit())
+    icon = build_tray(ctx.lan, show, request_quit)
     threading.Thread(target=icon.run, name="tray", daemon=True).start()
     webview.start()
 

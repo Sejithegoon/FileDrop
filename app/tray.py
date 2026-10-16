@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import ctypes
-import sys
 import threading
 from typing import Callable
 
@@ -23,13 +21,6 @@ def icon_image(size: int = 64) -> Image.Image:
     return img
 
 
-def confirm(text: str) -> bool:
-    if sys.platform != "win32":
-        return True
-    MB_YESNO, MB_ICONQUESTION, MB_TOPMOST, IDYES = 0x4, 0x20, 0x40000, 6
-    return ctypes.windll.user32.MessageBoxW(0, text, "FileDrop", MB_YESNO | MB_ICONQUESTION | MB_TOPMOST) == IDYES
-
-
 def build_tray(lan: LanServer, show: Callable[[], None], request_quit: Callable[[], None]) -> pystray.Icon:
     def toggle_server(icon, item):
         def work():
@@ -38,8 +29,9 @@ def build_tray(lan: LanServer, show: Callable[[], None], request_quit: Callable[
         threading.Thread(target=work, daemon=True).start()
 
     def quit_app(icon, item):
-        if confirm("Quit FileDrop? The web server will stop for everyone."):
-            request_quit()
+        # No Yes/No box here: a dialog opened from the tray can end up hidden behind
+        # other windows, which made Quit look like it did nothing.
+        request_quit()
 
     menu = pystray.Menu(
         pystray.MenuItem("Open FileDrop", lambda icon, item: show(), default=True),
