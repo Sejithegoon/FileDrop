@@ -13,6 +13,6 @@ window.SITE = {
     // Where people can write to you.
     supportEmail: "",
 
-    // Form endpoint for "Tell me when Pro launches" (Phase 3 adds a protected form).
-    waitlistFormAction: "",
+    // Where the feedback server answers (see feedback_server/README.md). "/api" means the same site.
+    apiBase: "/api",
 };

@@ -9,10 +9,12 @@ A static site: plain HTML, one stylesheet and three small scripts. There is no b
 | `index.html` | Home: hero, three steps, clickable admin and phone tours, features, privacy promise |
 | `features.html` | What works today, with zoomable screenshots; planned Pro features marked |
 | `pricing.html` | "How many people?" picker, Free vs Pro, CASL-compliant waitlist form |
+| `feedback.html`, `beta.html` | Bug reports, ideas and questions (optional screenshot); beta sign-up |
 | `download.html` | Version, requirements, install steps, SmartScreen note, checksum with copy button |
 | `guide.html` | Setup guide: storage folder, users, phones, the HTTPS warning, troubleshooting |
 | `faq.html` | Searchable FAQ |
-| `changelog.html`, `contact.html`, `404.html` | Help and error pages |
+| `contact.html` | Contact form (general, partnership, press, privacy requests) |
+| `changelog.html`, `404.html` | Changelog and error page |
 | `privacy.html`, `terms.html`, `refunds.html` | **Drafts for legal review** (see below) |
 | `update.json` | Version feed the app checks for "update available" |
 | `_headers` | Security headers for Cloudflare Pages or Netlify |
@@ -21,7 +23,7 @@ Features: light and dark mode (follows the device, with a toggle that remembers 
 
 ## Before you publish
 
-1. **`assets/js/config.js`**: set `downloadUrl`, `sha256`, `downloadSize`, `supportEmail` and `waitlistFormAction`. Empty values show "coming soon" text, so nothing looks broken.
+1. **`assets/js/config.js`**: set `downloadUrl`, `sha256`, `downloadSize` and `supportEmail`. Empty values show "coming soon" text, so nothing looks broken. Forms post to `apiBase` (default `/api`, served by `feedback_server/`).
 2. **`update.json`**: replace `REPLACE-WITH-YOUR-DOMAIN`, then point the app at `https://<your-domain>/update.json` (`update_feed_url` in `app/core/settings.py`, or `FILEDROP_UPDATE_FEED`) and rebuild.
 3. **Legal pages**: fill in every `[square bracket]`: legal name, city, province, privacy officer and email, hosting provider, payment provider, and retention periods. Have a Canadian lawyer review them (PIPEDA, Quebec Law 25, CASL, consumer protection), then remove the draft banners. Add a French version before selling in Quebec.
 4. **Name check**: search trademarks and domains for "FileDrop" before buying a domain.
@@ -30,7 +32,7 @@ Features: light and dark mode (follows the device, with a toggle that remembers 
 
 ### Any web server (for example a Canadian VPS with nginx)
 
-Upload the contents of `site/` to the web root. Add these headers (the same as `_headers`):
+Upload the contents of `site/` to the web root, and run the form server from `feedback_server/` (its README has the systemd and nginx setup). Add these headers (the same as `_headers`):
 
 ```nginx
 server {

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en-CA">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Send feedback | FileDrop</title>
+<meta name="description" content="Report a bug, suggest a feature or ask a question about FileDrop.">
+<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f7f9fd" media="(prefers-color-scheme: light)">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Send feedback | FileDrop">
+<meta property="og:description" content="Report a bug, suggest a feature or ask a question about FileDrop.">
+<meta property="og:image" content="assets/img/admin-dashboard.webp">
+<link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/css/site.css">
+<script src="assets/js/theme.js"></script>
+<script src="assets/js/config.js" defer></script>
+<script src="assets/js/site.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="index.html"><img src="assets/img/favicon.svg" alt="" width="30" height="30">FILEDROP <span class="beta">BETA</span></a>
+    <nav class="nav" id="nav" aria-label="Main">
+      <a href="features.html">Features</a>
+      <a href="pricing.html">Pricing</a>
+      <a href="guide.html">Setup guide</a>
+      <a href="faq.html">FAQ</a>
+      <a class="btn primary small" href="download.html">Download free</a>
+    </nav>
+    <button class="icon-btn theme-toggle" type="button" aria-label="Switch theme"><svg class="moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg><svg class="sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg></button>
+    <button class="icon-btn menu-btn" type="button" aria-expanded="false" aria-controls="nav" aria-label="Menu"><svg class="open" viewBox="0 0 24 24" aria-hidden="true"><line x1="3" y1="7" x2="21" y2="7"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="17" x2="21" y2="17"/></svg><svg class="close" viewBox="0 0 24 24" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+  </div>
+</header>
+<main id="main">
+<div class="wrap page-hero"><h1>Send feedback</h1><p>Every bug report and idea is read, especially during the beta. Thank you for helping make FileDrop better.</p></div>
+<section><div class="wrap form-layout">
+  <form class="form-card reveal" data-api="feedback" method="post" enctype="multipart/form-data">
+    <fieldset class="seg"><legend>What would you like to send?</legend>
+      <label><input type="radio" name="category" value="bug" checked><span>Bug report</span></label>
+      <label><input type="radio" name="category" value="idea"><span>Feature idea</span></label>
+      <label><input type="radio" name="category" value="question"><span>Question</span></label>
+    </fieldset>
+    <div class="field"><label for="fb-message" id="fb-message-label">What went wrong?</label>
+      <textarea id="fb-message" name="message" required maxlength="5000" placeholder="Describe what happened, or what you'd like"></textarea></div>
+    <div class="field" data-for="bug"><label for="fb-steps">Steps to reproduce <small>(optional)</small></label>
+      <textarea id="fb-steps" name="steps" maxlength="5000" placeholder="For example: 1. Open the link on my iPhone. 2. Pick 50 photos. 3. ..."></textarea></div>
+    <div class="row" data-for="bug question">
+      <div class="field"><label for="fb-version">FileDrop version</label><input id="fb-version" name="app_version" placeholder="e.g. 0.1.0" maxlength="40">
+        <small>Bottom of the admin window's sidebar.</small></div>
+      <div class="field"><label for="fb-windows">Windows version</label><input id="fb-windows" name="windows" placeholder="e.g. Windows 11" maxlength="60"></div>
+      <div class="field"><label for="fb-device">Phone or browser</label><input id="fb-device" name="device" placeholder="e.g. iPhone 15, Safari" maxlength="100"></div>
+    </div>
+    <div class="field" data-for="bug"><label for="fb-file">Screenshot or log <small>(optional, up to 5 MB)</small></label>
+      <input id="fb-file" name="attachment" type="file" accept=".png,.jpg,.jpeg,.webp,.gif,.txt,.log">
+      <small>Check screenshots and logs before attaching. Logs list usernames, device addresses and times, but never file contents or passwords.</small></div>
+    <div class="field"><label for="fb-email">Email <small>(optional, if you'd like a reply)</small></label>
+      <input id="fb-email" name="email" type="email" autocomplete="email" maxlength="254"></div>
+    <div class="hp" aria-hidden="true"><label>Leave this empty<input name="website" tabindex="-1" autocomplete="off"></label></div><input type="hidden" name="started" value="">
+    <p class="form-note">We use what you send only to improve FileDrop and reply to you. See the <a href="privacy.html">privacy policy</a>.</p>
+    <button class="btn primary" type="submit">Send feedback</button>
+    <p class="form-status" data-form-status role="status" aria-live="polite" hidden></p>
+  </form>
+  <div class="side-cards">
+    <div class="card reveal d1"><h3>Good bug reports</h3><p>Say what you expected and what happened instead. The version, Windows version and phone help us reproduce it fast.</p></div>
+    <div class="card reveal d2"><h3>What happens next</h3><p>We review every report within two business days. If you leave an email, we'll tell you when it's fixed or answered.</p></div>
+    <div class="card reveal d3"><h3>Want early builds?</h3><p>Beta testers get new versions first and help decide what comes next.</p><p><a href="beta.html">Join the beta &rarr;</a></p></div>
+  </div>
+</div></section>
+</main>
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="cols">
+      <div>
+        <a class="brand" href="index.html"><img src="assets/img/favicon.svg" alt="" width="30" height="30">FILEDROP</a>
+        <p>Your own private file-sharing space, hosted on your Windows PC.</p>
+      </div>
+      <div><h4>Product</h4><ul>
+        <li><a href="features.html">Features</a></li><li><a href="pricing.html">Pricing</a></li>
+        <li><a href="download.html">Download</a></li><li><a href="changelog.html">Changelog</a></li></ul></div>
+      <div><h4>Help</h4><ul>
+        <li><a href="guide.html">Setup guide</a></li><li><a href="faq.html">FAQ</a></li>
+        <li><a href="feedback.html">Send feedback</a></li><li><a href="beta.html">Join the beta</a></li>
+        <li><a href="contact.html">Contact</a></li></ul></div>
+      <div><h4>Legal</h4><ul>
+        <li><a href="privacy.html">Privacy policy</a></li><li><a href="terms.html">Terms of use</a></li>
+        <li><a href="refunds.html">Refund policy</a></li></ul></div>
+    </div>
+    <div class="legal">
+      <span>&copy; <span data-year>2026</span> FileDrop. Made in Canada. Beta software.</span>
+      <span>Windows is a trademark of Microsoft Corporation.</span>
+    </div>
+  </div>
+</footer>
+</body>
+</html>

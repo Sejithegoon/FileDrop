@@ -58,14 +58,16 @@
         <div class="price">TBA <small>one-time</small></div>
         <p class="muted">For bigger families, classrooms, clubs and small offices.</p>
         <ul class="checks"><li><b>Everything in Free</b></li><li><b>Unlimited user accounts</b></li><li>Scheduled backups with one-click restore</li><li>Guest upload links (no account needed)</li><li>Transfer history and CSV export</li><li>Server hours and admin from another PC</li><li>Your name, logo and colour</li><li>Feature updates for 1 year</li></ul>
-        <form class="form" data-waitlist method="post">
+        <form class="form" data-api="waitlist" method="post">
           <label for="wl-email">Tell me when Pro launches</label>
           <input id="wl-email" name="email" type="email" placeholder="you@example.com" autocomplete="email" required>
           <label class="consent"><input type="checkbox" name="consent" value="yes" required>
             <span>Yes, email me about the FileDrop Pro launch. I can unsubscribe at any time. See the <a href="privacy.html">privacy policy</a>.</span></label>
+          <div class="hp" aria-hidden="true"><label>Leave this empty<input name="website" tabindex="-1" autocomplete="off"></label></div><input type="hidden" name="started" value="">
           <button class="btn primary" type="submit">Notify me</button>
+          <p class="form-status" data-form-status role="status" aria-live="polite" hidden></p>
         </form>
-        <p class="form-note" data-waitlist-note>One email when Pro launches. No spam, ever.</p>
+        <p class="form-note">One email when Pro launches. No spam, ever.</p>
       </div>
     </div>
   </div>
@@ -109,7 +111,8 @@
         <li><a href="download.html">Download</a></li><li><a href="changelog.html">Changelog</a></li></ul></div>
       <div><h4>Help</h4><ul>
         <li><a href="guide.html">Setup guide</a></li><li><a href="faq.html">FAQ</a></li>
-        <li><a href="contact.html">Contact and feedback</a></li></ul></div>
+        <li><a href="feedback.html">Send feedback</a></li><li><a href="beta.html">Join the beta</a></li>
+        <li><a href="contact.html">Contact</a></li></ul></div>
       <div><h4>Legal</h4><ul>
         <li><a href="privacy.html">Privacy policy</a></li><li><a href="terms.html">Terms of use</a></li>
         <li><a href="refunds.html">Refund policy</a></li></ul></div>

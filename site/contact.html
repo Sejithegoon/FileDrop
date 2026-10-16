@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Contact and feedback | FileDrop</title>
-<meta name="description" content="Report a bug, suggest a feature or ask a question about FileDrop.">
+<title>Contact | FileDrop</title>
+<meta name="description" content="Questions, partnerships, press and privacy requests for FileDrop.">
 <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
 <meta name="theme-color" content="#f7f9fd" media="(prefers-color-scheme: light)">
 <meta property="og:type" content="website">
-<meta property="og:title" content="Contact and feedback | FileDrop">
-<meta property="og:description" content="Report a bug, suggest a feature or ask a question about FileDrop.">
+<meta property="og:title" content="Contact | FileDrop">
+<meta property="og:description" content="Questions, partnerships, press and privacy requests for FileDrop.">
 <meta property="og:image" content="assets/img/admin-dashboard.webp">
 <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="assets/css/site.css">
@@ -34,27 +34,31 @@
   </div>
 </header>
 <main id="main">
-<div class="wrap page-hero"><h1>Contact and feedback</h1><p>Bug reports, feature ideas and questions all help shape FileDrop.</p></div>
-<section><div class="wrap doc">
-  <div class="card reveal">
-    <h3>Email</h3>
-    <p class="muted">Write to <a data-email href="contact.html">our support address (coming soon)</a>. We usually reply within two business days, in English or French.</p>
+<div class="wrap page-hero"><h1>Contact us</h1><p>Questions, partnerships, press or privacy requests. For bugs and ideas, the <a href="feedback.html">feedback page</a> is faster.</p></div>
+<section><div class="wrap form-layout">
+  <form class="form-card reveal" data-api="contact" method="post">
+    <fieldset class="seg"><legend>What's it about?</legend>
+      <label><input type="radio" name="topic" value="general" checked><span>General question</span></label>
+      <label><input type="radio" name="topic" value="partnership"><span>Partnership</span></label>
+      <label><input type="radio" name="topic" value="press"><span>Press</span></label>
+      <label><input type="radio" name="topic" value="privacy"><span>Privacy request</span></label>
+    </fieldset>
+    <div class="row">
+      <div class="field"><label for="c-name">Your name</label><input id="c-name" name="name" autocomplete="name" required maxlength="100"></div>
+      <div class="field"><label for="c-email">Email</label><input id="c-email" name="email" type="email" autocomplete="email" required maxlength="254"></div>
+    </div>
+    <div class="field"><label for="c-subject">Subject <small>(optional)</small></label><input id="c-subject" name="subject" maxlength="200"></div>
+    <div class="field"><label for="c-message">Message</label><textarea id="c-message" name="message" required maxlength="5000"></textarea></div>
+    <div class="hp" aria-hidden="true"><label>Leave this empty<input name="website" tabindex="-1" autocomplete="off"></label></div><input type="hidden" name="started" value="">
+    <p class="form-note">We use your details only to reply. See the <a href="privacy.html">privacy policy</a>.</p>
+    <button class="btn primary" type="submit">Send message</button>
+    <p class="form-status" data-form-status role="status" aria-live="polite" hidden></p>
+  </form>
+  <div class="side-cards">
+    <div class="card reveal d1"><h3>Found a bug?</h3><p>The feedback form asks for the details we need and lets you attach a screenshot.</p><p><a href="feedback.html">Send feedback &rarr;</a></p></div>
+    <div class="card reveal d2"><h3>Prefer email?</h3><p>Write to <a data-email href="contact.html">our support address (coming soon)</a>. We usually reply within two business days, in English or French.</p></div>
+    <div class="card reveal d3"><h3>Privacy requests</h3><p>Choose "Privacy request" to access, correct or delete information you've sent us. We answer within 30 days.</p></div>
   </div>
-
-  <h2 id="bugs">Reporting a bug</h2>
-  <p>Please include:</p>
-  <ul>
-    <li>Your FileDrop version (bottom of the admin window's sidebar).</li>
-    <li>Your Windows version, and the phone or browser that had the problem.</li>
-    <li>What you did, what you expected and what happened instead.</li>
-    <li>A screenshot, if it helps. If you attach the log file from <code>%ProgramData%\FileDrop\logs\filedrop.log</code>, check it first: it contains usernames, device addresses and times, but never file contents or passwords.</li>
-  </ul>
-
-  <h2 id="ideas">Feature ideas</h2>
-  <p>Tell us what you'd use FileDrop for and what's missing. We read everything, especially during the beta.</p>
-
-  <h2 id="privacy">Privacy requests</h2>
-  <p>To access, correct or delete information you've sent us, email us with the subject "Privacy request". See the <a href="privacy.html">privacy policy</a> for your rights.</p>
 </div></section>
 </main>
 <footer class="site-footer">
@@ -69,7 +73,8 @@
         <li><a href="download.html">Download</a></li><li><a href="changelog.html">Changelog</a></li></ul></div>
       <div><h4>Help</h4><ul>
         <li><a href="guide.html">Setup guide</a></li><li><a href="faq.html">FAQ</a></li>
-        <li><a href="contact.html">Contact and feedback</a></li></ul></div>
+        <li><a href="feedback.html">Send feedback</a></li><li><a href="beta.html">Join the beta</a></li>
+        <li><a href="contact.html">Contact</a></li></ul></div>
       <div><h4>Legal</h4><ul>
         <li><a href="privacy.html">Privacy policy</a></li><li><a href="terms.html">Terms of use</a></li>
         <li><a href="refunds.html">Refund policy</a></li></ul></div>

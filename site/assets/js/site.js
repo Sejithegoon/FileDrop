@@ -68,15 +68,6 @@
             if (el.tagName === "A") el.href = "mailto:" + S.supportEmail;
         }
     });
-    $$("form[data-waitlist]").forEach(form => {
-        const note = $("[data-waitlist-note]", form.parentElement);
-        if (S.waitlistFormAction) {
-            form.action = S.waitlistFormAction;
-        } else {
-            $$("input, button", form).forEach(el => { el.disabled = true; });
-            if (note) note.textContent = "Sign-up opens soon. Check the changelog for news.";
-        }
-    });
     $$("[data-year]").forEach(el => { el.textContent = new Date().getFullYear(); });
 
     // ---------- reveal on scroll
@@ -180,6 +171,63 @@
             });
             if (none) none.hidden = shown > 0;
         });
+    }
+
+    // ---------- forms (feedback, contact, beta, waitlist) post to the feedback server
+    const api = (S.apiBase || "/api").replace(/\/$/, "");
+    const params = new URLSearchParams(location.search);
+    $$("form[data-api]").forEach(form => {
+        const status = $("[data-form-status]", form);
+        const button = $("button[type=submit]", form);
+        const started = $("input[name=started]", form);
+        if (started) started.value = String(Date.now());
+        // Prefill from links in the app, e.g. feedback.html?version=0.1.0&windows=Windows%2011
+        for (const [key, field] of [["version", "app_version"], ["windows", "windows"], ["type", "category"]]) {
+            const v = params.get(key);
+            const el = form.elements[field];
+            if (!v || !el) continue;
+            if (el instanceof RadioNodeList) { const r = [...el].find(x => x.value === v); if (r) r.checked = true; }
+            else el.value = v.slice(0, 100);
+        }
+        const show = (kind, text) => { if (status) { status.className = "form-status " + kind; status.textContent = text; status.hidden = false; } };
+        form.addEventListener("submit", async e => {
+            e.preventDefault();
+            if (!form.reportValidity()) return;
+            const label = button.textContent;
+            button.disabled = true;
+            button.textContent = "Sending…";
+            show("busy", "Sending…");
+            try {
+                const r = await fetch(`${api}/${form.dataset.api}`, { method: "POST", body: new FormData(form) });
+                const data = await r.json().catch(() => null);
+                if (!data) throw new Error("offline");
+                if (!r.ok || !data.ok) { show("err", data.message || "Something went wrong. Please try again."); return; }
+                form.reset();
+                if (started) started.value = String(Date.now());
+                form.dispatchEvent(new Event("change"));
+                show("ok", data.message || "Sent. Thank you!");
+            } catch (err) {
+                show("err", S.supportEmail
+                    ? `The form isn't available right now. Please email ${S.supportEmail} instead.`
+                    : "The form isn't available right now. Please try again later.");
+            } finally {
+                button.disabled = false;
+                button.textContent = label;
+            }
+        });
+    });
+
+    // Feedback type switches which fields are shown
+    const fb = $("form[data-api=feedback]");
+    if (fb) {
+        const sync = () => {
+            const type = (fb.elements.category && fb.elements.category.value) || "bug";
+            $$("[data-for]", fb).forEach(el => { el.hidden = !el.dataset.for.split(" ").includes(type); });
+            const msg = $("#fb-message-label", fb);
+            if (msg) msg.textContent = { bug: "What went wrong?", idea: "What would you like FileDrop to do?", question: "Your question" }[type];
+        };
+        fb.addEventListener("change", sync);
+        sync();
     }
 
     // ---------- pricing: how many people?
