@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FileDrop Console</title>
+  <link rel="stylesheet" href="console.css">
+</head>
+<body>
+  <main class="card">
+    <h1>FileDrop Console</h1>
+    <p class="muted">Only reachable from this PC. Closing this page does not stop FileDrop.</p>
+    <p>Web server: <strong id="state">...</strong></p>
+    <p id="url" class="muted"></p>
+    <p id="error" class="error"></p>
+    <div class="row">
+      <button id="toggle" disabled>Start web server</button>
+      <button id="quit" class="secondary">Quit FileDrop</button>
+    </div>
+  </main>
+  <script src="console.js"></script>
+</body>
+</html>
