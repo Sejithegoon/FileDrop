@@ -1,6 +1,6 @@
 """Runtime settings.
 
-Defaults only for now. Persisted settings move into SQLite once app/db exists.
+Startup settings (ports, folders). Runtime settings such as pauses live in SQLite.
 Environment variables override defaults, which is handy for development and tests.
 """
 
@@ -29,12 +29,17 @@ class Settings:
     console_port: int = 8442
     lan_host: str = "auto"  # "auto" = primary private IPv4 address
     lan_port: int = 8443
-    start_server_on_launch: bool = False
+    start_server_on_launch: bool = True
     data_dir: Path = field(default_factory=_default_data_dir)
+    storage_dir: Path | None = None  # default: <data_dir>/storage
 
     @property
     def log_dir(self) -> Path:
         return self.data_dir / "logs"
+
+    @property
+    def storage_root(self) -> Path:
+        return self.storage_dir or self.data_dir / "storage"
 
     @property
     def db_path(self) -> Path:
@@ -60,6 +65,8 @@ def load_settings() -> Settings:
         s.lan_port = int(env["FILEDROP_LAN_PORT"])
     if "FILEDROP_DATA_DIR" in env:
         s.data_dir = Path(env["FILEDROP_DATA_DIR"])
-    if env.get("FILEDROP_START_SERVER") == "1":
-        s.start_server_on_launch = True
+    if "FILEDROP_STORAGE_DIR" in env:
+        s.storage_dir = Path(env["FILEDROP_STORAGE_DIR"])
+    if "FILEDROP_START_SERVER" in env:
+        s.start_server_on_launch = env["FILEDROP_START_SERVER"] == "1"
     return s

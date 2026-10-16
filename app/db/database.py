@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import logging
 import sqlite3
+from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -72,13 +73,25 @@ class OpenReport:
 
 def connect(path: Path) -> sqlite3.Connection:
     """A connection with FileDrop's settings. Autocommit mode: use explicit BEGIN/COMMIT."""
-    conn = sqlite3.connect(path, isolation_level=None, timeout=5.0)
+    conn = sqlite3.connect(path, isolation_level=None, timeout=5.0, check_same_thread=False)
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA foreign_keys = ON")
     conn.execute("PRAGMA busy_timeout = 5000")
     conn.execute("PRAGMA journal_mode = WAL")
     conn.execute("PRAGMA synchronous = FULL")
     return conn
+
+
+@contextmanager
+def transaction(conn: sqlite3.Connection):
+    """BEGIN IMMEDIATE ... COMMIT, rolled back on any error."""
+    conn.execute("BEGIN IMMEDIATE")
+    try:
+        yield conn
+    except BaseException:
+        conn.execute("ROLLBACK")
+        raise
+    conn.execute("COMMIT")
 
 
 def split_sql(script: str) -> list[str]:

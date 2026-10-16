@@ -1,7 +1,7 @@
-"""Entry point: single-instance check, console listener, LAN listener, tray.
+"""Entry point: single-instance check, database, listeners, admin window and tray.
 
-Closing the console page never stops FileDrop. Only tray Quit, the console's
-Quit button, or Windows shutdown ends the process.
+Closing the admin window only hides it. FileDrop keeps running in the tray
+until Quit (tray menu or the window's Quit button) or Windows shutdown.
 """
 
 from __future__ import annotations
@@ -11,15 +11,19 @@ import ctypes
 import logging
 import sys
 import threading
-import webbrowser
+import urllib.request
 from logging.handlers import RotatingFileHandler
+from pathlib import Path
 
 from app import __version__
 from app.api.console import create_console_app
 from app.api.lan import create_lan_app
+from app.core.context import AppContext
 from app.core.listeners import LanServer, Listener
 from app.core.settings import Settings, load_settings
+from app.core.storage import Storage
 from app.db.database import DatabaseError, open_database
+from app.services import uploads
 
 log = logging.getLogger("filedrop")
 
@@ -37,71 +41,129 @@ def acquire_single_instance() -> bool:
     return ctypes.get_last_error() != ERROR_ALREADY_EXISTS
 
 
+def ask_running_copy_to_show(settings: Settings) -> None:
+    req = urllib.request.Request(settings.console_url + "api/show", method="POST", data=b"",
+                                 headers={"X-FileDrop": "1"})
+    try:
+        urllib.request.urlopen(req, timeout=3).close()
+    except OSError as exc:
+        log.warning("Could not reach the running copy: %s", exc)
+
+
 def setup_logging(settings: Settings) -> None:
     handlers: list[logging.Handler] = []
     try:
         settings.log_dir.mkdir(parents=True, exist_ok=True)
-        handlers.append(RotatingFileHandler(settings.log_dir / "filedrop.log", maxBytes=2_000_000, backupCount=3))
+        handlers.append(RotatingFileHandler(settings.log_dir / "filedrop.log", maxBytes=2_000_000, backupCount=3,
+                                            encoding="utf-8"))
     except OSError:
         pass
     if sys.stderr:  # None in a windowed PyInstaller build
         handlers.append(logging.StreamHandler())
-    logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s", handlers=handlers)
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s",
+                        handlers=handlers)
+
+
+def prepare_database(ctx: AppContext) -> None:
+    """Check and migrate before anyone connects. On failure the admin window still
+    opens (so the admin sees why) but the LAN server stays blocked."""
+    try:
+        conn, report = open_database(ctx.settings.db_path, __version__, ctx.settings.backup_dir)
+        try:
+            uploads.sweep(conn, ctx.storage)
+        finally:
+            conn.close()
+        ctx.load_flags()
+        log.info("Database at schema %s (was %s)", report.to_version, report.from_version)
+    except DatabaseError as exc:
+        log.error("%s", exc)
+        ctx.lan.block(str(exc))
+
+
+def run_window(ctx: AppContext, start_hidden: bool) -> None:
+    import webview
+
+    from app.tray import build_tray
+
+    webview.settings["ALLOW_DOWNLOADS"] = True
+    quitting = threading.Event()
+    window = webview.create_window("FileDrop Admin", ctx.settings.console_url, width=1280, height=860,
+                                   min_size=(900, 600), hidden=start_hidden, background_color="#0f1115")
+
+    def on_closing():
+        if quitting.is_set():
+            return True
+        window.hide()  # keep running in the tray
+        return False
+
+    def show():
+        window.show()
+        window.restore()
+
+    def request_quit():
+        if quitting.is_set():
+            return
+        quitting.set()
+        icon.stop()
+        window.destroy()
+
+    window.events.closing += on_closing
+    ctx.show_window = show
+    ctx.request_quit = request_quit
+    icon = build_tray(ctx.lan, show, lambda: request_quit())
+    threading.Thread(target=icon.run, name="tray", daemon=True).start()
+    webview.start()
 
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="FileDrop")
-    parser.add_argument("--headless", action="store_true", help="no tray icon; Ctrl+C quits (development)")
-    parser.add_argument("--start-server", action="store_true", help="start the LAN web server on launch")
+    parser.add_argument("--headless", action="store_true", help="no window or tray; Ctrl+C quits (development)")
+    parser.add_argument("--background", action="store_true", help="start hidden in the tray (Start with Windows)")
+    parser.add_argument("--no-server", action="store_true", help="don't start the LAN web server on launch")
+    parser.add_argument("--data-dir", help="use this folder for the database, files and logs (development)")
     args = parser.parse_args(argv)
 
     settings = load_settings()
+    if args.data_dir:
+        settings.data_dir = Path(args.data_dir).resolve()
     setup_logging(settings)
 
     if not acquire_single_instance():
-        log.info("FileDrop is already running; opening its console")
-        webbrowser.open(settings.console_url)
+        log.info("FileDrop is already running; showing its window")
+        ask_running_copy_to_show(settings)
         return 0
 
-    quit_event = threading.Event()
-    lan = LanServer(create_lan_app, settings.lan_host, settings.lan_port)
+    storage = Storage(settings.storage_root)
+    storage.ensure()
+    ctx = AppContext(settings=settings, storage=storage)
+    ctx.lan = LanServer(lambda: create_lan_app(ctx), settings.lan_host, settings.lan_port)
+    prepare_database(ctx)
 
-    # Check and migrate the database before anyone can connect. On failure the
-    # console still runs (so the admin sees why) but the LAN server stays blocked.
-    try:
-        conn, report = open_database(settings.db_path, __version__, settings.backup_dir)
-        conn.close()
-        log.info("Database at schema %s (was %s)", report.to_version, report.from_version)
-    except DatabaseError as exc:
-        log.error("%s", exc)
-        lan.block(str(exc))
-    console = Listener(create_console_app(lan, quit_event.set), settings.console_host, settings.console_port, "console")
+    quit_event = threading.Event()
+    ctx.request_quit = quit_event.set
+    console = Listener(create_console_app(ctx), settings.console_host, settings.console_port, "console")
     try:
         console.start()
     except RuntimeError as exc:
         log.error("%s", exc)
         return 1
 
-    if args.start_server or settings.start_server_on_launch:
-        lan.start()
+    if settings.start_server_on_launch and not args.no_server:
+        ctx.lan.start()
 
     # TODO: handle Windows sign-out/shutdown (WM_QUERYENDSESSION): stop new
     # transfers, mark uploads Interrupted, exit within 5 s.
     try:
         if args.headless:
-            log.info("Console at %s (Ctrl+C to quit)", settings.console_url)
+            log.info("Admin page at %s (Ctrl+C to quit)", settings.console_url)
             while not quit_event.wait(0.5):
                 pass
         else:
-            from app.tray import build_tray
-
-            icon = build_tray(lan, settings.console_url, quit_event.set)
-            threading.Thread(target=lambda: (quit_event.wait(), icon.stop()), daemon=True).start()
-            icon.run()
+            run_window(ctx, start_hidden=args.background)
     except KeyboardInterrupt:
         pass
     finally:
-        lan.stop()
+        ctx.lan.stop()
         console.stop()
         log.info("FileDrop exited")
     return 0

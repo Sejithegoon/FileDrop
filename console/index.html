@@ -1,23 +1,125 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>FileDrop Console</title>
-  <link rel="stylesheet" href="console.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FileDrop Admin</title>
+    <link rel="icon" href="/shared/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="/shared/style.css">
 </head>
 <body>
-  <main class="card">
-    <h1>FileDrop Console</h1>
-    <p class="muted">Only reachable from this PC. Closing this page does not stop FileDrop.</p>
-    <p>Web server: <strong id="state">...</strong></p>
-    <p id="url" class="muted"></p>
-    <p id="error" class="error"></p>
-    <div class="row">
-      <button id="toggle" disabled>Start web server</button>
-      <button id="quit" class="secondary">Quit FileDrop</button>
-    </div>
-  </main>
-  <script src="console.js"></script>
+<div class="app">
+    <aside class="side">
+        <span class="brand">FILEDROP <span class="tag">ADMIN</span></span>
+        <nav class="nav" id="nav">
+            <button data-page="dashboard" aria-current="page"><span data-icon="grid"></span> Dashboard</button>
+            <button data-page="users"><span data-icon="users"></span> Users</button>
+            <button data-page="shared"><span data-icon="share"></span> Shared folders</button>
+            <button data-page="files"><span data-icon="folder"></span> Browse files</button>
+            <button data-page="activity"><span data-icon="activity"></span> Activity</button>
+        </nav>
+        <div class="foot">
+            <span class="pill" id="sidePill"><span class="dot"></span><span id="sideState">…</span></span>
+            <button class="btn ghost small danger" id="quitBtn" type="button"><span data-icon="power"></span> Quit FileDrop</button>
+            <span class="muted small">Closing this window keeps FileDrop running in the tray. <span id="version"></span></span>
+        </div>
+    </aside>
+
+    <main class="main">
+        <!-- Dashboard -->
+        <section data-view="dashboard">
+            <div class="page-head"><h1>Dashboard</h1></div>
+            <p class="notice bad" id="blockedNote" hidden><span data-icon="alert"></span> <span id="blockedText"></span></p>
+
+            <div class="card server-card">
+                <div class="qr" id="qr"></div>
+                <div class="info">
+                    <div class="server-state" id="serverState"><span class="dot"></span><span id="serverText">…</span></div>
+                    <p class="muted small" id="serverHint"></p>
+                    <div class="url-box"><code id="serverUrl"></code>
+                        <button class="btn ghost small icon-only" id="copyUrl" type="button" aria-label="Copy link" title="Copy link"><span data-icon="copy"></span></button></div>
+                    <div><button class="btn primary" id="serverBtn" type="button"><span data-icon="power"></span> <span id="serverBtnText">Start web server</span></button></div>
+                </div>
+            </div>
+
+            <div class="stats">
+                <div class="card stat"><div class="k"><span data-icon="users"></span> Users</div><div class="v" id="statUsers">0</div><div class="s">accounts</div></div>
+                <div class="card stat"><div class="k"><span data-icon="activity"></span> Online</div><div class="v" id="statSessions">0</div><div class="s">signed-in devices</div></div>
+                <div class="card stat"><div class="k"><span data-icon="upload"></span> Uploading</div><div class="v" id="statUploads">0</div><div class="s">files right now</div></div>
+                <div class="card stat"><div class="k"><span data-icon="hdd"></span> Stored</div><div class="v" id="statStored">0</div><div class="s" id="statFree"></div></div>
+            </div>
+
+            <div class="grid">
+                <div class="card">
+                    <div class="card-head"><h2>Transfers</h2></div>
+                    <label class="switch-row"><span>Allow uploads<small>When off, nobody can start new uploads</small></span>
+                        <span class="switch"><input type="checkbox" id="allowUploads"><i></i></span></label>
+                    <label class="switch-row"><span>Allow downloads<small>When off, nobody can download files</small></span>
+                        <span class="switch"><input type="checkbox" id="allowDownloads"><i></i></span></label>
+                </div>
+                <div class="card">
+                    <div class="card-head"><h2>Storage</h2></div>
+                    <p class="muted small">Files are saved here (under internal ID names):</p>
+                    <div class="url-box" style="margin:8px 0 12px"><code id="storagePath"></code></div>
+                    <button class="btn ghost small" id="openStorage" type="button"><span data-icon="folder"></span> Open in Explorer</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-head"><h2>Signed-in devices</h2></div>
+                <div class="tbl-wrap"><table class="tbl" id="sessionsTbl"></table></div>
+                <p class="empty muted" id="sessionsEmpty">Nobody is signed in.</p>
+            </div>
+            <div class="card" id="uploadsCard" hidden>
+                <div class="card-head"><h2>Uploads in progress</h2></div>
+                <div class="tbl-wrap"><table class="tbl" id="uploadsTbl"></table></div>
+            </div>
+        </section>
+
+        <!-- Users -->
+        <section data-view="users" hidden>
+            <div class="page-head"><h1>Users</h1>
+                <button class="btn primary" id="addUserBtn" type="button"><span data-icon="plus"></span> Add user</button></div>
+            <div class="card"><div class="tbl-wrap"><table class="tbl" id="usersTbl"></table></div>
+                <p class="empty muted" id="usersEmpty" hidden>No users yet. Add the first one so people can sign in.</p></div>
+        </section>
+
+        <!-- Shared folders -->
+        <section data-view="shared" hidden>
+            <div class="page-head"><h1>Shared folders</h1>
+                <button class="btn primary" id="addSpaceBtn" type="button"><span data-icon="plus"></span> New shared folder</button></div>
+            <p class="muted small">Every user has their own private folder. Shared folders are visible only to the people you add. Admin accounts can manage every shared folder.</p>
+            <div class="grid" id="spacesGrid"></div>
+            <p class="empty muted" id="spacesEmpty" hidden>No shared folders yet.</p>
+        </section>
+
+        <!-- Browse -->
+        <section data-view="files" hidden>
+            <div class="page-head"><h1>Browse files</h1>
+                <select class="input" id="spacePick" style="max-width:320px"></select></div>
+            <div class="card">
+                <div class="card-head">
+                    <nav class="crumbs" id="crumbs"></nav>
+                    <div class="row-actions">
+                        <button class="btn ghost small" id="adminNewFolder" type="button"><span data-icon="folderPlus"></span> New folder</button>
+                        <button class="btn ghost icon-only" id="adminRefresh" type="button" aria-label="Refresh"><span data-icon="refresh"></span></button>
+                    </div>
+                </div>
+                <ul class="list" id="fileList"></ul>
+                <p class="empty muted" id="fileEmpty" hidden>This folder is empty.</p>
+            </div>
+        </section>
+
+        <!-- Activity -->
+        <section data-view="activity" hidden>
+            <div class="page-head"><h1>Activity</h1>
+                <button class="btn ghost small" id="activityRefresh" type="button"><span data-icon="refresh"></span> Refresh</button></div>
+            <div class="card"><ul class="log" id="log"></ul><p class="empty muted" id="logEmpty" hidden>Nothing yet.</p></div>
+        </section>
+    </main>
+</div>
+<div class="toasts" id="toasts"></div>
+<script src="/shared/common.js"></script>
+<script src="admin.js"></script>
 </body>
 </html>

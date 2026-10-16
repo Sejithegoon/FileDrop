@@ -1,17 +1,123 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>FileDrop</title>
-  <link rel="stylesheet" href="styles.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#0f1115">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>FileDrop</title>
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <main class="card">
-    <h1>FileDrop</h1>
-    <p>Sign-in and file browsing are not built yet.</p>
-    <p class="muted" id="health">Checking server...</p>
-  </main>
-  <script src="app.js"></script>
+    <!-- Sign in -->
+    <section id="loginView" class="centered-view" hidden>
+        <div class="auth">
+            <div class="brand big">FILEDROP</div>
+            <div class="card">
+                <h1>Sign in</h1>
+                <p class="muted small">Use the account your administrator gave you.</p>
+                <form id="loginForm">
+                    <label class="label" for="loginUser">Username</label>
+                    <input class="input" id="loginUser" autocomplete="username" autocapitalize="none" spellcheck="false" required>
+                    <label class="label" for="loginPass">Password</label>
+                    <input class="input" id="loginPass" type="password" autocomplete="current-password" required>
+                    <p class="error" id="loginError" hidden></p>
+                    <button class="btn primary" type="submit">Sign in</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Forced password change -->
+    <section id="pwView" class="centered-view" hidden>
+        <div class="auth">
+            <div class="brand big">FILEDROP</div>
+            <div class="card">
+                <h1>Choose a new password</h1>
+                <p class="muted small">Your administrator set a temporary password. Pick your own to continue.</p>
+                <form id="pwForm">
+                    <label class="label" for="pwCurrent">Temporary password</label>
+                    <input class="input" id="pwCurrent" type="password" autocomplete="current-password" required>
+                    <label class="label" for="pwNew">New password (8+ characters)</label>
+                    <input class="input" id="pwNew" type="password" autocomplete="new-password" minlength="8" required>
+                    <label class="label" for="pwNew2">New password again</label>
+                    <input class="input" id="pwNew2" type="password" autocomplete="new-password" minlength="8" required>
+                    <p class="error" id="pwError" hidden></p>
+                    <button class="btn primary" type="submit">Save password</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Files -->
+    <div id="appView" hidden>
+        <header class="topbar">
+            <span class="brand">FILEDROP</span>
+            <div class="menu-wrap">
+                <button class="btn ghost small" id="userBtn" type="button"><span data-icon="user"></span> <span id="userName"></span></button>
+                <div class="menu" id="userMenu" hidden>
+                    <div class="who"><b id="menuName"></b><div class="muted small" id="menuUser"></div></div>
+                    <button type="button" id="changePwBtn"><span data-icon="key"></span> Change password</button>
+                    <button type="button" id="logoutBtn"><span data-icon="logout"></span> Sign out</button>
+                </div>
+            </div>
+        </header>
+
+        <main class="wrap">
+            <nav class="tabs" id="tabs" role="tablist" aria-label="Spaces"></nav>
+            <p class="notice" id="pauseNote" hidden><span data-icon="pause"></span> <span id="pauseText"></span></p>
+
+            <section class="card drop" id="drop">
+                <input type="file" id="picker" multiple hidden>
+                <button class="btn primary big" id="pickBtn" type="button"><span data-icon="upload"></span> Choose files to upload</button>
+                <p class="muted small" id="dropHint">Uploading to <b id="destName">My files</b></p>
+                <p class="muted small" id="iosHint" hidden>Picked a lot of photos? Your iPhone may need a moment to prepare them before uploading starts.</p>
+                <div class="quota" id="quota" hidden><div class="muted small" id="quotaText"></div><div class="bar"><span id="quotaBar"></span></div></div>
+                <p class="notice" id="viewOnlyNote" hidden><span data-icon="lock"></span> You can view and download here, but not upload.</p>
+            </section>
+
+            <section class="card" id="queueCard" hidden>
+                <div class="card-head">
+                    <div><h2>Uploads</h2><p class="muted small" id="queueSummary"></p></div>
+                    <button class="btn ghost small" id="clearDone" type="button">Clear finished</button>
+                </div>
+                <div class="overall"><div class="bar"><span id="overallBar"></span></div></div>
+                <ul class="queue" id="queue"></ul>
+                <p class="muted small tip">Keep this page open and your screen on until uploads finish.</p>
+            </section>
+
+            <section class="card">
+                <div class="card-head">
+                    <nav class="crumbs" id="crumbs" aria-label="Folder"></nav>
+                    <div class="row-actions">
+                        <button class="btn ghost small" id="newFolderBtn" type="button"><span data-icon="folderPlus"></span> New folder</button>
+                        <button class="btn ghost small" id="trashBtn" type="button"><span data-icon="trash"></span> Trash</button>
+                        <button class="btn ghost icon-only" id="refreshBtn" type="button" aria-label="Refresh"><span data-icon="refresh"></span></button>
+                    </div>
+                </div>
+                <ul class="list" id="list"></ul>
+                <p class="empty muted" id="empty" hidden>Nothing here yet.</p>
+            </section>
+
+            <section class="card" id="trashCard" hidden>
+                <div class="card-head">
+                    <div><h2>Trash</h2><p class="muted small">Deleted items stay here until removed for good.</p></div>
+                    <div class="row-actions">
+                        <button class="btn ghost small danger" id="emptyTrashBtn" type="button" hidden>Empty trash</button>
+                        <button class="btn ghost small" id="closeTrashBtn" type="button">Close</button>
+                    </div>
+                </div>
+                <ul class="list" id="trashList"></ul>
+                <p class="empty muted" id="trashEmpty" hidden>Trash is empty.</p>
+            </section>
+        </main>
+    </div>
+
+    <div class="drag-overlay" id="dragOverlay"><div><span data-icon="upload"></span><p>Drop to upload</p></div></div>
+    <div class="toasts" id="toasts"></div>
+
+    <script src="common.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>
