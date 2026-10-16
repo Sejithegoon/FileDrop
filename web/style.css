@@ -1,50 +1,26 @@
-/* FileDrop: dark by default, light when the device asks for it. No external fonts or CDNs. */
+/* FileDrop theme: black and blue. */
 :root {
-    --bg: #0f1115;
-    --surface: #171a21;
-    --surface-2: #1f232c;
-    --border: #2a2f3a;
-    --text: #e9ebf1;
-    --muted: #98a1b3;
-    --accent: #7c6cff;
-    --accent-2: #9d90ff;
+    --bg: #000000;
+    --surface: #0a0d14;
+    --surface-2: #121826;
+    --border: #1c2438;
+    --text: #e8eefc;
+    --muted: #8a96b0;
+    --accent: #2f7bff;
+    --accent-2: #5c9bff;
     --accent-ink: #ffffff;
     --ok: #34d399;
     --danger: #f87171;
     --warn: #fbbf24;
-    --folder: #fbbf24;
-    --image: #60a5fa;
-    --video: #f472b6;
+    --folder: #5c9bff;
+    --image: #38bdf8;
+    --video: #a78bfa;
     --audio: #34d399;
-    --doc: #a5b4fc;
+    --doc: #93c5fd;
     --archive: #fb923c;
     --radius: 14px;
-    --shadow: 0 1px 2px rgb(0 0 0 / .3), 0 8px 24px rgb(0 0 0 / .25);
+    --shadow: 0 1px 2px rgb(0 0 0 / .6), 0 8px 28px rgb(0 0 0 / .5);
     color-scheme: dark;
-}
-
-@media (prefers-color-scheme: light) {
-    :root {
-        --bg: #f4f5f8;
-        --surface: #ffffff;
-        --surface-2: #eef0f4;
-        --border: #dfe2e9;
-        --text: #161922;
-        --muted: #5f6878;
-        --accent: #5b4ae8;
-        --accent-2: #4a3ad6;
-        --ok: #059669;
-        --danger: #dc2626;
-        --warn: #b45309;
-        --folder: #d99a06;
-        --image: #2563eb;
-        --video: #db2777;
-        --audio: #059669;
-        --doc: #4f46e5;
-        --archive: #ea580c;
-        --shadow: 0 1px 2px rgb(0 0 0 / .05), 0 6px 20px rgb(0 0 0 / .06);
-        color-scheme: light;
-    }
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -426,3 +402,12 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 14px; }
 
 .centered-view { width: 100%; display: grid; place-items: center; }
 [data-view] { display: grid; gap: 16px; align-content: start; min-width: 0; }
+
+/* ---------- first-run setup */
+
+.setup { position: fixed; inset: 0; z-index: 40; display: grid; place-items: center; padding: 24px;
+    background: radial-gradient(1200px 600px at 50% -10%, color-mix(in srgb, var(--accent) 22%, transparent), transparent), var(--bg); }
+.setup-card { width: min(620px, 100%); padding: 28px; display: grid; gap: 14px; }
+.setup-card h1 { font-size: 24px; }
+.folder-pick { display: flex; gap: 8px; }
+.folder-pick .input { flex: 1; font-family: ui-monospace, "Cascadia Code", Consolas, monospace; font-size: 14px; }

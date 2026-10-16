@@ -155,7 +155,7 @@ def revoke_sessions(conn: sqlite3.Connection, user_id: str, reason: str, except_
     )
 
 
-def delete(conn: sqlite3.Connection, storage: Storage, user_id: str) -> None:
+def delete(conn: sqlite3.Connection, storage: Storage | None, user_id: str) -> None:
     """Delete now: the account, its private files and sessions. Shared uploads stay."""
     user = get_required(conn, user_id)
     with transaction(conn):
@@ -172,6 +172,7 @@ def delete(conn: sqlite3.Connection, storage: Storage, user_id: str) -> None:
             " ON CONFLICT(username_key) DO UPDATE SET reserved_until = excluded.reserved_until",
             (user["username_key"], now_ms() + RESERVE_MS),
         )
-    storage.delete_blobs(blobs)
-    for upload_id in uploads:
-        storage.staging_path(upload_id).unlink(missing_ok=True)
+    if storage:
+        storage.delete_blobs(blobs)
+        for upload_id in uploads:
+            storage.staging_path(upload_id).unlink(missing_ok=True)

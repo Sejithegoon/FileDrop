@@ -7,4 +7,4 @@ build/out/
 build/work/
 *.spec.bak
 *.log
-.devdata/
+.devdata*/

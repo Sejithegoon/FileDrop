@@ -42,9 +42,15 @@ async function loadDashboard() {
     $('#statUsers').textContent = o.counts.users;
     $('#statSessions').textContent = o.counts.sessions;
     $('#statUploads').textContent = o.counts.uploads;
-    $('#statStored').textContent = FD.fmtSize(o.storage.files_bytes);
-    $('#statFree').textContent = `${FD.fmtSize(o.storage.disk_free)} free on disk`;
-    $('#storagePath').textContent = o.storage.root;
+    $('#statStored').textContent = FD.fmtSize(o.files_bytes);
+    $('#statFree').textContent = o.storage ? `${FD.fmtSize(o.storage.disk_free)} free on disk` : 'no folder chosen';
+    $('#storagePath').textContent = o.storage ? o.storage.root : 'Not chosen yet';
+    $('#storageFree').textContent = o.storage ? `${FD.fmtSize(o.storage.disk_free)} free on this drive.` : '';
+    $('#changeStorage').hidden = o.storage_override || !o.storage;
+    $('#openStorage').hidden = !o.storage;
+    $('#setupBrowse').hidden = $('#moveBrowse').hidden = !o.can_browse;
+    renderMove(o.move);
+    if (!o.storage && !o.storage_override && $('#setup').hidden) openSetup(o);
     $('#sidePill').className = `pill ${running ? '' : 'bad'}`;
     $('#sideState').textContent = running ? 'Server running' : 'Server stopped';
     loadSessions();
@@ -83,6 +89,116 @@ for (const [id, key] of [['#allowUploads', 'uploads_paused'], ['#allowDownloads'
 }
 
 $('#openStorage').onclick = () => api('/open-storage', { json: {} }).catch(fail);
+
+// ---------- storage folder: first-run setup and moving later
+
+// Wires a path box + Browse button to live checks. Returns () => last good check.
+function folderPicker(input, browse, info, error) {
+    let last = null, timer = null, seq = 0;
+    const run = async () => {
+        const mine = ++seq;
+        error.hidden = true;
+        if (!input.value.trim()) { info.textContent = ''; last = null; return; }
+        try {
+            const c = await api('/storage/check', { json: { path: input.value } });
+            if (mine !== seq) return;
+            last = c;
+            info.innerHTML = `Files will be saved in <b>${FD.esc(c.path)}</b> · ${FD.fmtSize(c.free_bytes)} free` +
+                (c.existing_store ? ' · existing FileDrop folder' : c.exists ? '' : ' · will be created');
+        } catch (e) {
+            if (mine !== seq) return;
+            last = null;
+            info.textContent = '';
+            error.textContent = e.message;
+            error.hidden = false;
+        }
+    };
+    input.addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(run, 300); });
+    browse.onclick = async () => {
+        try {
+            const r = await api('/storage/choose', { json: {} });
+            if (r.path) { input.value = r.path; run(); }
+        } catch (e) { fail(e); }
+    };
+    return { check: run, result: () => last };
+}
+
+const setupPicker = folderPicker($('#setupPath'), $('#setupBrowse'), $('#setupInfo'), $('#setupError'));
+const movePicker = folderPicker($('#movePath'), $('#moveBrowse'), $('#moveInfo'), $('#moveError'));
+
+function openSetup(o) {
+    $('#setup').hidden = false;
+    $('#setupPath').value = o.suggested_root;
+    setupPicker.check();
+}
+
+$('#setupSave').onclick = async () => {
+    await setupPicker.check();
+    if (!setupPicker.result()) return;
+    $('#setupSave').disabled = true;
+    try {
+        const r = await api('/storage/setup', { json: { path: $('#setupPath').value } });
+        $('#setup').hidden = true;
+        FD.toast(`Files will be saved in ${r.path}`);
+        loadDashboard();
+    } catch (e) {
+        $('#setupError').textContent = e.message;
+        $('#setupError').hidden = false;
+    }
+    $('#setupSave').disabled = false;
+};
+
+$('#changeStorage').onclick = () => {
+    $('#movePath').value = '';
+    $('#moveInfo').textContent = '';
+    $('#moveError').hidden = true;
+    $('#moveDlg').showModal();
+    $('#movePath').focus();
+};
+$('#moveCancel').onclick = () => $('#moveDlg').close();
+
+$('#moveGo').onclick = async () => {
+    await movePicker.check();
+    if (!movePicker.result()) return;
+    $('#moveGo').disabled = true;
+    try {
+        const m = await api('/storage/move', { json: { path: $('#movePath').value } });
+        $('#moveDlg').close();
+        renderMove(m);
+        pollMove();
+    } catch (e) {
+        $('#moveError').textContent = e.message;
+        $('#moveError').hidden = false;
+    }
+    $('#moveGo').disabled = false;
+};
+
+let lastMoveState = null;
+function renderMove(m) {
+    if (!m) return;
+    const moving = m.state === 'moving';
+    $('#moveProgress').hidden = !moving && m.state !== 'error';
+    $('#changeStorage').disabled = moving;
+    if (moving) {
+        const pct = m.total_bytes ? (m.copied_bytes / m.total_bytes) * 100 : 0;
+        $('#moveText').textContent = `Moving files to ${m.target}… ${FD.fmtSize(m.copied_bytes)} of ${FD.fmtSize(m.total_bytes)}. Uploads are paused until it finishes.`;
+        $('#moveBar').style.width = pct + '%';
+    } else if (m.state === 'error') {
+        $('#moveText').textContent = `Moving failed, nothing changed: ${m.error}`;
+        $('#moveBar').style.width = '0%';
+    }
+    if (lastMoveState === 'moving' && m.state === 'done') FD.toast(`Files moved to ${m.target}`);
+    if (lastMoveState === 'moving' && m.state === 'error') FD.toast('Moving files failed. Nothing changed.', 'err');
+    lastMoveState = m.state;
+}
+
+async function pollMove() {
+    let m;
+    try { m = await api('/storage/move'); } catch { return; }
+    renderMove(m);
+    if (m.state === 'moving') setTimeout(pollMove, 700);
+    else loadDashboard();
+}
 
 async function loadSessions() {
     let data;
@@ -373,7 +489,7 @@ const ACTIONS = {
     'user.create': 'Created user', 'user.edit': 'Edited user', 'user.password_reset': 'Reset password for', 'user.delete': 'Deleted user',
     'session.revoke': 'Signed out a device', 'upload.cancel': 'Cancelled upload', 'space.create': 'Created shared folder',
     'space.edit': 'Edited shared folder', 'space.delete': 'Deleted shared folder', 'space.access': 'Changed shared folder access for',
-    'item.rename': 'Renamed', 'item.delete': 'Deleted',
+    'item.rename': 'Renamed', 'item.delete': 'Deleted', 'storage.setup': 'Chose storage folder', 'storage.move': 'Moved storage to',
 };
 
 async function loadActivity() {

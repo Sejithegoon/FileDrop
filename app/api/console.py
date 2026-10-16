@@ -24,7 +24,7 @@ from app.api.lan import file_response
 from app.core.errors import ApiError, install_error_handlers
 from app.core.network import primary_ipv4
 from app.core.settings import resource_path
-from app.services import audit, auth, files, settings_store, spaces, uploads, users
+from app.services import audit, auth, files, settings_store, spaces, storage_config, uploads, users
 
 ACTOR = "admin (this PC)"
 api = APIRouter(prefix="/api", dependencies=[Depends(csrf)])
@@ -99,13 +99,20 @@ def overview(request: Request, conn=Depends(db)):
     ctx = ctx_of(request)
     status = ctx.lan.status()
     url = status["url"] or f"http://{primary_ipv4()}:{ctx.settings.lan_port}/"
-    disk = ctx.storage.disk()
+    storage = None
+    if ctx.storage:
+        try:
+            disk = ctx.storage.disk()
+        except OSError:
+            disk = {"total": 0, "free": 0}
+        storage = {"root": str(ctx.storage.root), "disk_total": disk["total"], "disk_free": disk["free"]}
     return {
         "version": __version__,
         "server": status, "url": url, "qr": _qr_svg(url),
         "uploads_paused": ctx.uploads_paused, "downloads_paused": ctx.downloads_paused,
-        "storage": {"root": str(ctx.storage.root), "disk_total": disk["total"], "disk_free": disk["free"],
-                    "files_bytes": conn.execute("SELECT COALESCE(SUM(size_bytes), 0) FROM items").fetchone()[0]},
+        "storage": storage, "storage_override": bool(ctx.settings.storage_dir), "move": ctx.mover.status(),
+        "can_browse": ctx.choose_folder is not None, "suggested_root": str(storage_config.suggested_root()),
+        "files_bytes": conn.execute("SELECT COALESCE(SUM(size_bytes), 0) FROM items").fetchone()[0],
         "counts": {
             "users": conn.execute("SELECT count(*) FROM users").fetchone()[0],
             "sessions": len(auth.active_sessions(conn)),
@@ -140,9 +147,61 @@ def controls(body: ControlsBody, request: Request, conn=Depends(db)):
     return {"uploads_paused": ctx.uploads_paused, "downloads_paused": ctx.downloads_paused}
 
 
+class PathBody(BaseModel):
+    path: str
+
+
+@api.post("/storage/choose")
+def choose_folder(request: Request):
+    """Open the native folder picker (desktop window only)."""
+    ctx = ctx_of(request)
+    if not ctx.choose_folder:
+        raise ApiError(501, "NO_PICKER", "Type the folder path instead.")
+    return {"path": ctx.choose_folder()}
+
+
+@api.post("/storage/check")
+def check_folder(body: PathBody, request: Request):
+    return storage_config.check(body.path, ctx_of(request).settings)
+
+
+@api.post("/storage/setup")
+def setup_storage(body: PathBody, request: Request, conn=Depends(db)):
+    """First run: pick the folder. Later changes go through /storage/move."""
+    ctx = ctx_of(request)
+    if ctx.storage is not None:
+        raise ApiError(409, "ALREADY_SET", "A storage folder is already set. Use Change folder instead.")
+    path = storage_config.resolve_choice(body.path, ctx.settings)
+    ctx.storage = storage_config.prepare(path, storage_config.install_id(conn))
+    settings_store.set_value(conn, storage_config.KEY, str(path))
+    audit.record(conn, "storage.setup", actor=ACTOR, target_name=str(path))
+    ctx.lan.unblock("storage")
+    if ctx.settings.start_server_on_launch:
+        ctx.lan.start()
+    return {"path": str(path)}
+
+
+@api.post("/storage/move")
+def move_storage(body: PathBody, request: Request, conn=Depends(db)):
+    ctx = ctx_of(request)
+    if ctx.settings.storage_dir:
+        raise ApiError(409, "STORAGE_OVERRIDDEN", "The storage folder is fixed by FILEDROP_STORAGE_DIR.")
+    if ctx.storage is None:
+        raise ApiError(409, "STORAGE_NOT_SET", "Choose a storage folder first.")
+    path = storage_config.resolve_choice(body.path, ctx.settings)
+    ctx.mover.start(ctx, path)
+    audit.record(conn, "storage.move", actor=ACTOR, target_name=str(path), details={"from": str(ctx.storage.root)})
+    return ctx.mover.status()
+
+
+@api.get("/storage/move")
+def move_status(request: Request):
+    return ctx_of(request).mover.status()
+
+
 @api.post("/open-storage")
 def open_storage(request: Request):
-    root = ctx_of(request).storage.root
+    root = ctx_of(request).require_storage().root
     if sys.platform == "win32":
         os.startfile(root)  # noqa: S606 - opens Explorer on the storage folder
     else:
@@ -335,7 +394,7 @@ def admin_rename(item_id: str, body: NameBody, conn=Depends(db)):
 @api.post("/items/{item_id}/delete")
 def admin_delete(item_id: str, request: Request, conn=Depends(db)):
     item = _admin_item(conn, item_id)
-    files.purge(conn, ctx_of(request).storage, item)
+    files.purge(conn, ctx_of(request).require_storage(), item)
     audit.record(conn, "item.delete", actor=ACTOR, target_type="item", target_id=item_id, target_name=item["name"])
     return {"ok": True}
 

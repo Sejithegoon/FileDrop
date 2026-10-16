@@ -17,7 +17,7 @@ def icon_image(size: int = 64) -> Image.Image:
     img = Image.new("RGBA", (size, size), (0, 0, 0, 0))
     d = ImageDraw.Draw(img)
     s = size / 64
-    d.rounded_rectangle((4 * s, 4 * s, 60 * s, 60 * s), radius=14 * s, fill=(124, 108, 255, 255))
+    d.rounded_rectangle((4 * s, 4 * s, 60 * s, 60 * s), radius=14 * s, fill=(47, 123, 255, 255))
     d.polygon([(32 * s, 14 * s), (48 * s, 32 * s), (38 * s, 32 * s), (38 * s, 48 * s), (26 * s, 48 * s),
                (26 * s, 32 * s), (16 * s, 32 * s)], fill="white")
     return img

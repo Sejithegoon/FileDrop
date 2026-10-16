@@ -144,13 +144,14 @@ def complete(conn: sqlite3.Connection, storage: Storage, upload, user) -> dict:
     return files.to_json(files.get(conn, iid), user, can_modify=True)
 
 
-def cancel(conn: sqlite3.Connection, storage: Storage, upload) -> None:
+def cancel(conn: sqlite3.Connection, storage: Storage | None, upload) -> None:
     if upload["status"] in ACTIVE:
         conn.execute("UPDATE uploads SET status = 'cancelled', updated_at = ? WHERE id = ?", (now_ms(), upload["id"]))
-    storage.staging_path(upload["id"]).unlink(missing_ok=True)
+    if storage:
+        storage.staging_path(upload["id"]).unlink(missing_ok=True)
 
 
-def cancel_for_user(conn: sqlite3.Connection, storage: Storage, user_id: str) -> None:
+def cancel_for_user(conn: sqlite3.Connection, storage: Storage | None, user_id: str) -> None:
     for row in conn.execute(f"SELECT * FROM uploads WHERE user_id = ? AND status IN {ACTIVE}", (user_id,)).fetchall():
         cancel(conn, storage, row)
 

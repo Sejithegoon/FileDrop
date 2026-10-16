@@ -3,27 +3,41 @@
 from __future__ import annotations
 
 import sqlite3
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Callable
 
+from app.core.errors import ApiError
 from app.core.settings import Settings
 from app.core.storage import Storage
 from app.db.database import connect
 from app.services import settings_store
+from app.services.storage_config import StorageMover
 
 
 @dataclass
 class AppContext:
     settings: Settings
-    storage: Storage
+    storage: Storage | None = None  # None until the admin picks a folder
     lan: object | None = None  # LanServer, set by main
     request_quit: Callable[[], None] = lambda: None
     show_window: Callable[[], None] | None = None
+    choose_folder: Callable[[], str | None] | None = None  # native folder picker, desktop window only
     uploads_paused: bool = False
     downloads_paused: bool = False
+    storage_moving: bool = False
+    mover: StorageMover = field(default_factory=StorageMover)
 
     def connect(self) -> sqlite3.Connection:
         return connect(self.settings.db_path)
+
+    def require_storage(self) -> Storage:
+        if self.storage is None:
+            raise ApiError(409, "STORAGE_NOT_SET", "Choose where FileDrop saves files first.")
+        return self.storage
+
+    @property
+    def uploads_blocked(self) -> bool:
+        return self.uploads_paused or self.storage_moving
 
     def load_flags(self) -> None:
         conn = self.connect()

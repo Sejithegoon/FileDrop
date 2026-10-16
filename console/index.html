@@ -59,9 +59,16 @@
                 </div>
                 <div class="card">
                     <div class="card-head"><h2>Storage</h2></div>
-                    <p class="muted small">Files are saved here (under internal ID names):</p>
+                    <p class="muted small">Uploaded files are saved here (under internal ID names). <span id="storageFree"></span></p>
                     <div class="url-box" style="margin:8px 0 12px"><code id="storagePath"></code></div>
-                    <button class="btn ghost small" id="openStorage" type="button"><span data-icon="folder"></span> Open in Explorer</button>
+                    <div id="moveProgress" hidden>
+                        <p class="small" id="moveText"></p>
+                        <div class="bar"><span id="moveBar"></span></div>
+                    </div>
+                    <div class="row-actions" style="margin-top:12px">
+                        <button class="btn ghost small" id="openStorage" type="button"><span data-icon="folder"></span> Open in Explorer</button>
+                        <button class="btn ghost small" id="changeStorage" type="button"><span data-icon="edit"></span> Change folder</button>
+                    </div>
                 </div>
             </div>
 
@@ -118,6 +125,40 @@
         </section>
     </main>
 </div>
+<!-- First run: choose where files are saved -->
+<section class="setup" id="setup" hidden>
+    <div class="card setup-card">
+        <span class="brand big">FILEDROP</span>
+        <h1>Where should FileDrop save files?</h1>
+        <p class="muted">Everything people upload is stored in this folder on this PC. Pick a drive with plenty of free space. You can change it later from the Dashboard.</p>
+        <div class="folder-pick">
+            <input class="input" id="setupPath" spellcheck="false" autocomplete="off">
+            <button class="btn" id="setupBrowse" type="button"><span data-icon="folder"></span> Browse…</button>
+        </div>
+        <p class="small muted" id="setupInfo"></p>
+        <p class="error" id="setupError" hidden></p>
+        <button class="btn primary big" id="setupSave" type="button">Save and start FileDrop</button>
+    </div>
+</section>
+
+<!-- Change the storage folder -->
+<dialog class="dlg" id="moveDlg">
+    <form method="dialog">
+        <h2>Change storage folder</h2>
+        <p class="muted small">FileDrop copies every file to the new folder, switches over, then removes the old copies. Uploads pause while it runs. If anything goes wrong, nothing changes.</p>
+        <div class="folder-pick" style="margin-top:12px">
+            <input class="input" id="movePath" spellcheck="false" autocomplete="off">
+            <button class="btn" id="moveBrowse" type="button"><span data-icon="folder"></span> Browse…</button>
+        </div>
+        <p class="small muted" id="moveInfo" style="margin-top:8px"></p>
+        <p class="error" id="moveError" hidden></p>
+        <div class="dlg-actions">
+            <button class="btn ghost" type="button" id="moveCancel">Cancel</button>
+            <button class="btn primary" type="button" id="moveGo">Move files</button>
+        </div>
+    </form>
+</dialog>
+
 <div class="toasts" id="toasts"></div>
 <script src="/shared/common.js"></script>
 <script src="admin.js"></script>

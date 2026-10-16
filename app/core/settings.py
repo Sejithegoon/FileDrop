@@ -31,15 +31,11 @@ class Settings:
     lan_port: int = 8443
     start_server_on_launch: bool = True
     data_dir: Path = field(default_factory=_default_data_dir)
-    storage_dir: Path | None = None  # default: <data_dir>/storage
+    storage_dir: Path | None = None  # fixed storage folder; normally chosen in the admin window
 
     @property
     def log_dir(self) -> Path:
         return self.data_dir / "logs"
-
-    @property
-    def storage_root(self) -> Path:
-        return self.storage_dir or self.data_dir / "storage"
 
     @property
     def db_path(self) -> Path:

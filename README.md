@@ -5,9 +5,10 @@ FileDrop is a LAN file server for Windows. The PC running it gets a desktop **ad
 ## Try it
 
 1. Run `build/out/FileDrop/FileDrop.exe` (or `.venv/Scripts/python -m app` from source).
-2. The **FileDrop Admin** window opens. Go to **Users → Add user** and create an account.
-3. Optional: **Shared folders → New shared folder**, then give users View, Upload or Manage access.
-4. On a phone on the same Wi-Fi, scan the QR code on the Dashboard (or type the link), then sign in.
+2. The **FileDrop Admin** window opens. The first time, it asks where to save uploaded files (type a path or click **Browse…**). You can change it later with **Dashboard → Storage → Change folder**; FileDrop moves the existing files for you.
+3. Go to **Users → Add user** and create an account.
+4. Optional: **Shared folders → New shared folder**, then give users View, Upload or Manage access.
+5. On a phone on the same Wi-Fi, scan the QR code on the Dashboard (or type the link), then sign in.
 
 Closing the admin window keeps FileDrop running in the tray. Click the tray icon to reopen it. **Quit FileDrop** (tray menu or the window's sidebar) stops everything.
 
@@ -35,7 +36,7 @@ One process, two listeners:
 
 - Only one copy runs at a time. Launching it again brings the window to the front.
 - The web server binds only to a private address (192.168.x, 10.x, 172.16-31.x), never a public one.
-- Data lives in `%ProgramData%\FileDrop\`: `filedrop.db` (accounts, folders), `storage\` (file contents under ID names), `backups\`, `logs\`.
+- App data lives in `%ProgramData%\FileDrop\`: `filedrop.db` (accounts, folders), `backups\`, `logs\`. Uploaded files go in the folder the admin chose, under ID names.
 
 ## Development
 
@@ -99,4 +100,4 @@ The output is `build/out/FileDrop/` (run `FileDrop.exe` inside it; keep the `_in
 
 ## Not built yet
 
-HTTPS, Windows shutdown handling, Start with Windows, choosing the storage folder in the window, moving files between folders, ZIP download of folders, thumbnails, an installer.
+HTTPS, Windows shutdown handling, Start with Windows, moving files between folders, ZIP download of folders, thumbnails, an installer.

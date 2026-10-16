@@ -132,7 +132,7 @@ def update_shared(conn: sqlite3.Connection, space_id: str, name: str | None, quo
         raise ApiError(409, "NAME_CONFLICT", "A shared folder with that name already exists.")
 
 
-def delete_shared(conn: sqlite3.Connection, storage: Storage, space_id: str) -> None:
+def delete_shared(conn: sqlite3.Connection, storage: Storage | None, space_id: str) -> None:
     space = get(conn, space_id)
     if not space or space["kind"] != "shared":
         raise ApiError(404, "NOT_FOUND", "Shared folder not found.")
@@ -141,9 +141,10 @@ def delete_shared(conn: sqlite3.Connection, storage: Storage, space_id: str) -> 
             "SELECT blob_id FROM items WHERE space_id = ? AND blob_id IS NOT NULL", (space_id,))]
         uploads = [r[0] for r in conn.execute("SELECT id FROM uploads WHERE space_id = ?", (space_id,))]
         conn.execute("DELETE FROM spaces WHERE id = ?", (space_id,))
-    storage.delete_blobs(blobs)
-    for upload_id in uploads:
-        storage.staging_path(upload_id).unlink(missing_ok=True)
+    if storage:
+        storage.delete_blobs(blobs)
+        for upload_id in uploads:
+            storage.staging_path(upload_id).unlink(missing_ok=True)
 
 
 def set_member(conn: sqlite3.Connection, space_id: str, user_id: str, level: str | None, actor_id=None) -> None:

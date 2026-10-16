@@ -46,7 +46,7 @@ def _me(user, ctx) -> dict:
     return {
         "user": {"id": user["id"], "username": user["username"], "display_name": user["display_name"],
                  "role": user["role"], "must_change_password": bool(user["must_change_password"])},
-        "status": {"uploads_paused": ctx.uploads_paused, "downloads_paused": ctx.downloads_paused},
+        "status": {"uploads_paused": ctx.uploads_blocked, "downloads_paused": ctx.downloads_paused},
         "version": __version__,
     }
 
@@ -178,7 +178,7 @@ def restore_item(item_id: str, user=Depends(current_user), conn=Depends(db)):
 def purge_item(item_id: str, request: Request, user=Depends(current_user), conn=Depends(db)):
     item, space, level = _item_access(conn, user, item_id, allow_trashed=True)
     _require_modify(level, item, user)
-    files.purge(conn, ctx_of(request).storage, item)
+    files.purge(conn, ctx_of(request).require_storage(), item)
     return {"ok": True}
 
 
@@ -187,7 +187,7 @@ def empty_trash(space_id: str, request: Request, user=Depends(current_user), con
     space, level = _space_access(conn, user, space_id)
     if spaces.rank(level) < spaces.rank("manage"):
         raise ApiError(403, "FORBIDDEN", "Only managers can empty this trash.")
-    return {"purged": files.empty_trash(conn, ctx_of(request).storage, space_id)}
+    return {"purged": files.empty_trash(conn, ctx_of(request).require_storage(), space_id)}
 
 
 # ---- transfers ----------------------------------------------------------------
@@ -199,7 +199,7 @@ def start_upload(body: UploadBody, request: Request, user=Depends(current_user),
         raise ApiError(403, "FORBIDDEN", "You can't upload to this folder.")
     parent = files.require_folder(conn, body.parent_id, body.space_id)
     ctx = ctx_of(request)
-    return uploads.create(conn, ctx.storage, paused=ctx.uploads_paused, user=user, space=space, parent=parent,
+    return uploads.create(conn, ctx.require_storage(), paused=ctx.uploads_blocked, user=user, space=space, parent=parent,
                           name=body.name, size=body.size)
 
 
@@ -217,22 +217,22 @@ def upload_status(upload_id: str, user=Depends(current_user), conn=Depends(db)):
 
 @api.put("/uploads/{upload_id}/chunks/{index}")
 async def upload_chunk(upload_id: str, index: int, request: Request, user=Depends(current_user), conn=Depends(db)):
-    return await uploads.write_chunk(conn, ctx_of(request).storage, _own_upload(conn, user, upload_id), index, request)
+    return await uploads.write_chunk(conn, ctx_of(request).require_storage(), _own_upload(conn, user, upload_id), index, request)
 
 
 @api.post("/uploads/{upload_id}/complete")
 def finish_upload(upload_id: str, request: Request, user=Depends(current_user), conn=Depends(db)):
-    return uploads.complete(conn, ctx_of(request).storage, _own_upload(conn, user, upload_id), user)
+    return uploads.complete(conn, ctx_of(request).require_storage(), _own_upload(conn, user, upload_id), user)
 
 
 @api.delete("/uploads/{upload_id}")
 def cancel_upload(upload_id: str, request: Request, user=Depends(current_user), conn=Depends(db)):
-    uploads.cancel(conn, ctx_of(request).storage, _own_upload(conn, user, upload_id))
+    uploads.cancel(conn, ctx_of(request).require_storage(), _own_upload(conn, user, upload_id))
     return {"ok": True}
 
 
 def file_response(ctx, item) -> FileResponse:
-    path = ctx.storage.blob_path(item["blob_id"])
+    path = ctx.require_storage().blob_path(item["blob_id"])
     if not path.exists():
         raise ApiError(404, "MISSING", "This file is missing on the server.")
     return FileResponse(path, filename=item["name"], media_type=item["content_type"] or "application/octet-stream",

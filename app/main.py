@@ -23,7 +23,7 @@ from app.core.listeners import LanServer, Listener
 from app.core.settings import Settings, load_settings
 from app.core.storage import Storage
 from app.db.database import DatabaseError, open_database
-from app.services import uploads
+from app.services import storage_config, uploads
 
 log = logging.getLogger("filedrop")
 
@@ -69,15 +69,28 @@ def prepare_database(ctx: AppContext) -> None:
     opens (so the admin sees why) but the LAN server stays blocked."""
     try:
         conn, report = open_database(ctx.settings.db_path, __version__, ctx.settings.backup_dir)
-        try:
-            uploads.sweep(conn, ctx.storage)
-        finally:
-            conn.close()
-        ctx.load_flags()
-        log.info("Database at schema %s (was %s)", report.to_version, report.from_version)
     except DatabaseError as exc:
         log.error("%s", exc)
         ctx.lan.block(str(exc))
+        return
+    try:
+        log.info("Database at schema %s (was %s)", report.to_version, report.from_version)
+        root = storage_config.configured_root(conn, ctx.settings)
+        if root is None:
+            ctx.lan.block("Choose where FileDrop saves files to finish setup.", key="storage")
+        else:
+            try:
+                storage = Storage(root)
+                storage.ensure()
+                ctx.storage = storage
+                uploads.sweep(conn, storage)
+            except OSError as exc:
+                log.error("Storage folder %s is not available: %s", root, exc)
+                ctx.lan.block(f"The storage folder {root} is not available. Connect the drive or change the "
+                              f"folder.", key="storage")
+    finally:
+        conn.close()
+    ctx.load_flags()
 
 
 def run_window(ctx: AppContext, start_hidden: bool) -> None:
@@ -88,7 +101,7 @@ def run_window(ctx: AppContext, start_hidden: bool) -> None:
     webview.settings["ALLOW_DOWNLOADS"] = True
     quitting = threading.Event()
     window = webview.create_window("FileDrop Admin", ctx.settings.console_url, width=1280, height=860,
-                                   min_size=(900, 600), hidden=start_hidden, background_color="#0f1115")
+                                   min_size=(900, 600), hidden=start_hidden, background_color="#000000")
 
     def on_closing():
         if quitting.is_set():
@@ -107,7 +120,13 @@ def run_window(ctx: AppContext, start_hidden: bool) -> None:
         icon.stop()
         window.destroy()
 
+    def choose_folder():
+        dialog = getattr(getattr(webview, "FileDialog", None), "FOLDER", None) or webview.FOLDER_DIALOG
+        picked = window.create_file_dialog(dialog)
+        return picked[0] if picked else None
+
     window.events.closing += on_closing
+    ctx.choose_folder = choose_folder
     ctx.show_window = show
     ctx.request_quit = request_quit
     icon = build_tray(ctx.lan, show, lambda: request_quit())
@@ -133,9 +152,7 @@ def main(argv: list[str] | None = None) -> int:
         ask_running_copy_to_show(settings)
         return 0
 
-    storage = Storage(settings.storage_root)
-    storage.ensure()
-    ctx = AppContext(settings=settings, storage=storage)
+    ctx = AppContext(settings=settings)
     ctx.lan = LanServer(lambda: create_lan_app(ctx), settings.lan_host, settings.lan_port)
     prepare_database(ctx)
 
