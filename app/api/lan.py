@@ -91,6 +91,7 @@ def login(body: LoginBody, request: Request, response: Response, conn=Depends(db
     token, user = auth.login(conn, body.username, body.password, client_ip(request),
                              request.headers.get("user-agent", ""))
     response.set_cookie(auth.COOKIE, token, max_age=auth.SESSION_MAX_MS // 1000, httponly=True, samesite="strict",
+                        secure=request.url.scheme == "https",
                         path="/")
     return _me(user, ctx_of(request))
 

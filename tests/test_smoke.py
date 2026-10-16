@@ -52,3 +52,38 @@ def test_refuses_public_and_wildcard():
     for host in ("8.8.8.8", "0.0.0.0"):
         with pytest.raises(PublicAddressError):
             resolve_lan_host(host)
+
+
+def test_certificate_is_reused_and_renewed_on_ip_change(tmp_path):
+    from cryptography import x509
+
+    from app.core.tls import ensure_certificate
+    first = ensure_certificate(tmp_path, "192.168.1.20")
+    key_before = first.key_path.read_bytes()
+    assert ensure_certificate(tmp_path, "192.168.1.20").fingerprint == first.fingerprint  # no new warning
+    moved = ensure_certificate(tmp_path, "10.0.0.7")
+    assert moved.fingerprint != first.fingerprint
+    assert moved.key_path.read_bytes() == key_before  # same key, new certificate
+    cert = x509.load_pem_x509_certificate(moved.cert_path.read_bytes())
+    ips = [str(i) for i in cert.extensions.get_extension_for_class(x509.SubjectAlternativeName).value
+           .get_values_for_type(x509.IPAddress)]
+    assert "10.0.0.7" in ips
+
+
+def test_lan_server_serves_https(tmp_path):
+    import ssl
+    import urllib.request
+
+    from fastapi import FastAPI
+    app = FastAPI()
+    app.get("/ping")(lambda: {"ok": True})
+    lan = LanServer(lambda: app, "127.0.0.1", _free_port(), tls_dir=tmp_path)
+    status = lan.start()
+    try:
+        assert status["state"] == "running" and status["url"].startswith("https://") and status["fingerprint"]
+        insecure = ssl.create_default_context()
+        insecure.check_hostname, insecure.verify_mode = False, ssl.CERT_NONE
+        with urllib.request.urlopen(status["url"] + "ping", context=insecure, timeout=5) as r:
+            assert r.read() == b'{"ok":true}'
+    finally:
+        lan.stop()

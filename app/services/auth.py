@@ -5,6 +5,8 @@ from __future__ import annotations
 import hashlib
 import secrets
 import sqlite3
+import threading
+from collections import deque
 
 from app.core.errors import ApiError
 from app.db.database import transaction
@@ -20,14 +22,47 @@ LOCK_MS = 15 * 60 * 1000
 _TOUCH_EVERY_MS = 60 * 1000
 
 
+IP_FAIL_LIMIT = 20
+IP_WINDOW_MS = 10 * 60 * 1000
+
+
+class _IpLimiter:
+    """Counts failed sign-ins per IP in memory. Stops one device guessing across many accounts."""
+
+    def __init__(self):
+        self._fails: dict[str, deque] = {}
+        self._lock = threading.Lock()
+
+    def blocked(self, ip: str, now: int) -> bool:
+        with self._lock:
+            q = self._fails.get(ip)
+            while q and q[0] < now - IP_WINDOW_MS:
+                q.popleft()
+            return bool(q) and len(q) >= IP_FAIL_LIMIT
+
+    def fail(self, ip: str, now: int) -> None:
+        with self._lock:
+            self._fails.setdefault(ip, deque()).append(now)
+
+    def clear(self) -> None:
+        with self._lock:
+            self._fails.clear()
+
+
+ip_limiter = _IpLimiter()
+
+
 def _hash(token: str) -> str:
     return hashlib.sha256(token.encode()).hexdigest()
 
 
 def login(conn: sqlite3.Connection, username: str, password: str, ip: str, user_agent: str):
     now = now_ms()
+    if ip_limiter.blocked(ip, now):
+        raise ApiError(429, "RATE_LIMITED", "Too many failed sign-ins from this device. Try again in a few minutes.")
     user = users.by_username(conn, username or "")
     if user is None:
+        ip_limiter.fail(ip, now)
         verify_password(None, password)  # same timing as a real check
         audit.record(conn, "login", actor=(username or "")[:40] or "unknown", ip=ip, result="denied")
         raise ApiError(401, "INVALID_LOGIN", "Wrong username or password.")
@@ -35,6 +70,7 @@ def login(conn: sqlite3.Connection, username: str, password: str, ip: str, user_
         minutes = max(1, (user["locked_until"] - now) // 60000)
         raise ApiError(429, "LOCKED_OUT", f"Too many wrong passwords. Try again in {minutes} min.")
     if not verify_password(user["password_hash"], password):
+        ip_limiter.fail(ip, now)
         failed = user["failed_logins"] + 1
         locked = now + LOCK_MS if failed >= LOCK_AFTER else None
         conn.execute("UPDATE users SET failed_logins = ?, locked_until = ? WHERE id = ?",

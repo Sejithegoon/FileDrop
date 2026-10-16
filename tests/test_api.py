@@ -330,3 +330,49 @@ def test_move_rules_in_shared_folder(ctx, admin):
     private = my_space(sam)
     r = sam.patch(f"/api/v1/items/{item['id']}", json={"parent_id": private["root_id"]})
     assert r.status_code == 404
+
+
+def test_ip_rate_limit_across_accounts(ctx, admin):
+    from app.services import auth
+    auth.ip_limiter.clear()
+    for n in range(4):
+        make_user(admin, f"user{n}")
+    try:
+        for i in range(auth.IP_FAIL_LIMIT):
+            web(ctx).post("/api/v1/auth/login", json={"username": f"user{i % 4}", "password": "wrong-pass"})
+        r = web(ctx).post("/api/v1/auth/login", json={"username": "user0", "password": "password123"})
+        assert r.status_code == 429 and r.json()["error"]["code"] == "RATE_LIMITED"
+    finally:
+        auth.ip_limiter.clear()
+
+
+def test_admin_pin_locks_the_admin_api(ctx, admin):
+    assert admin.get("/api/lock").json() == {"pin_set": False, "unlocked": True}
+    assert admin.post("/api/lock/set", json={"pin": "12"}).status_code == 400
+    assert admin.post("/api/lock/set", json={"pin": "4321"}).status_code == 200
+    assert admin.get("/api/users").status_code == 200  # the window that set it stays unlocked
+
+    other = TestClient(create_console_app(ctx), base_url="http://127.0.0.1:8442", headers=H)
+    r = other.get("/api/users")
+    assert r.status_code == 401 and r.json()["error"]["code"] == "LOCKED"
+    assert other.post("/api/show").status_code == 200  # second launch can still raise the window
+    assert other.post("/api/unlock", json={"pin": "0000"}).json()["error"]["code"] == "WRONG_PIN"
+    assert other.post("/api/unlock", json={"pin": "4321"}).status_code == 200
+    assert other.get("/api/users").status_code == 200
+
+    other.post("/api/lock/now")
+    assert other.get("/api/users").status_code == 401
+    assert admin.get("/api/users").status_code == 401  # locking ends every unlocked window
+
+    admin.post("/api/unlock", json={"pin": "4321"})
+    admin.post("/api/lock/remove")
+    assert other.get("/api/users").status_code == 200
+
+
+def test_admin_pin_survives_restart(ctx, admin):
+    admin.post("/api/lock/set", json={"pin": "4321"})
+    restarted = AppContext(settings=ctx.settings, storage=ctx.storage)
+    restarted.lan = ctx.lan
+    restarted.load_flags()
+    fresh = TestClient(create_console_app(restarted), base_url="http://127.0.0.1:8442", headers=H)
+    assert fresh.get("/api/users").status_code == 401

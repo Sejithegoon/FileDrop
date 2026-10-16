@@ -12,8 +12,9 @@ import os
 import subprocess
 import sys
 import threading
+import webbrowser
 
-from fastapi import APIRouter, Depends, FastAPI, Request
+from fastapi import APIRouter, Depends, FastAPI, Request, Response
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
@@ -21,6 +22,7 @@ from pydantic import BaseModel
 from app import __version__
 from app.api.deps import csrf, ctx_of, db
 from app.api.lan import file_response
+from app.core import adminlock
 from app.core.errors import ApiError, install_error_handlers
 from app.core.network import primary_ipv4
 from app.core.settings import resource_path
@@ -98,7 +100,7 @@ def _qr_svg(text: str) -> str:
 def overview(request: Request, conn=Depends(db)):
     ctx = ctx_of(request)
     status = ctx.lan.status()
-    url = status["url"] or f"http://{primary_ipv4()}:{ctx.settings.lan_port}/"
+    url = status["url"] or f"{ctx.lan.scheme}://{primary_ipv4()}:{ctx.settings.lan_port}/"
     storage = None
     if ctx.storage:
         try:
@@ -111,6 +113,7 @@ def overview(request: Request, conn=Depends(db)):
         "server": status, "url": url, "qr": _qr_svg(url),
         "uploads_paused": ctx.uploads_paused, "downloads_paused": ctx.downloads_paused,
         "storage": storage, "storage_override": bool(ctx.settings.storage_dir), "move": ctx.mover.status(),
+        "update": ctx.update_available,
         "can_browse": ctx.choose_folder is not None, "suggested_root": str(storage_config.suggested_root()),
         "files_bytes": conn.execute("SELECT COALESCE(SUM(size_bytes), 0) FROM items").fetchone()[0],
         "counts": {
@@ -197,6 +200,16 @@ def move_storage(body: PathBody, request: Request, conn=Depends(db)):
 @api.get("/storage/move")
 def move_status(request: Request):
     return ctx_of(request).mover.status()
+
+
+@api.post("/open-update")
+def open_update(request: Request):
+    """Open the download page from the update feed in the default browser."""
+    update = ctx_of(request).update_available
+    if not update:
+        raise ApiError(404, "NO_UPDATE", "No update is available.")
+    webbrowser.open(update["url"])
+    return {"ok": True}
 
 
 @api.post("/open-storage")
@@ -407,6 +420,60 @@ def admin_download(item_id: str, request: Request, conn=Depends(db)):
     return file_response(ctx_of(request), item)
 
 
+_OPEN_PATHS = {"/api/lock", "/api/unlock", "/api/show"}
+_POLL_PATHS = {"/api/overview", "/api/sessions", "/api/storage/move"}
+
+
+class PinBody(BaseModel):
+    pin: str
+
+
+def _set_unlock_cookie(response: Response, token: str) -> None:
+    response.set_cookie(adminlock.COOKIE, token, httponly=True, samesite="strict", path="/")
+
+
+@api.get("/lock")
+def lock_status(request: Request):
+    lock = ctx_of(request).admin_lock
+    return {"pin_set": lock.enabled,
+            "unlocked": lock.is_unlocked(request.cookies.get(adminlock.COOKIE), activity=False)}
+
+
+@api.post("/unlock")
+def unlock(body: PinBody, request: Request, response: Response, conn=Depends(db)):
+    lock = ctx_of(request).admin_lock
+    if not lock.enabled:
+        return {"ok": True}
+    try:
+        token = lock.unlock(body.pin)
+    except ApiError:
+        audit.record(conn, "admin.unlock", actor=ACTOR, result="denied")
+        raise
+    _set_unlock_cookie(response, token)
+    return {"ok": True}
+
+
+@api.post("/lock/set")
+def set_pin(body: PinBody, request: Request, response: Response, conn=Depends(db)):
+    token = ctx_of(request).admin_lock.set_pin(conn, body.pin)
+    _set_unlock_cookie(response, token)
+    audit.record(conn, "admin.pin_set", actor=ACTOR)
+    return {"ok": True}
+
+
+@api.post("/lock/remove")
+def remove_pin(request: Request, conn=Depends(db)):
+    ctx_of(request).admin_lock.remove(conn)
+    audit.record(conn, "admin.pin_removed", actor=ACTOR)
+    return {"ok": True}
+
+
+@api.post("/lock/now")
+def lock_now(request: Request):
+    ctx_of(request).admin_lock.lock_all()
+    return {"ok": True}
+
+
 def create_console_app(ctx) -> FastAPI:
     app = FastAPI(title="FileDrop admin", version=__version__, docs_url=None, redoc_url=None, openapi_url=None)
     app.state.ctx = ctx
@@ -417,6 +484,11 @@ def create_console_app(ctx) -> FastAPI:
     async def localhost_only(request: Request, call_next):
         if request.headers.get("host") not in allowed_hosts:
             return JSONResponse({"error": {"code": "FORBIDDEN", "message": "Wrong host."}}, status_code=403)
+        path = request.url.path
+        if path.startswith("/api/") and path not in _OPEN_PATHS:
+            activity = request.method != "GET" or path not in _POLL_PATHS
+            if not ctx.admin_lock.is_unlocked(request.cookies.get(adminlock.COOKIE), activity):
+                return JSONResponse({"error": {"code": "LOCKED", "message": "Enter the admin PIN."}}, status_code=401)
         response = await call_next(request)
         response.headers["Cache-Control"] = "no-cache"
         return response

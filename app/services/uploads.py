@@ -13,6 +13,7 @@ import os
 import sqlite3
 
 from fastapi import Request
+from starlette.concurrency import run_in_threadpool
 
 from app.core.errors import ApiError
 from app.core.names import InvalidName, clean_name, name_key
@@ -69,6 +70,19 @@ def create(conn: sqlite3.Connection, storage: Storage, *, paused: bool, user, sp
     return to_json(get(conn, uid))
 
 
+_WRITE_BATCH = 1024 * 1024
+
+
+def _seek_truncate(f, offset: int) -> None:
+    f.seek(offset)
+    f.truncate(offset)
+
+
+def _flush_sync(f) -> None:
+    f.flush()
+    os.fsync(f.fileno())
+
+
 def _require_open(upload) -> None:
     if upload["status"] == "cancelled":
         raise ApiError(410, "UPLOAD_CANCELLED", "This upload was cancelled.")
@@ -93,23 +107,31 @@ async def write_chunk(conn: sqlite3.Connection, storage: Storage, upload, index:
     path = storage.staging_path(upload["id"])
     if not path.exists():
         raise ApiError(410, "UPLOAD_EXPIRED", "This upload expired. Start it again.")
+    # Disk work runs in a worker thread so one slow disk write never stalls
+    # every other request on the server.
     written = 0
-    with open(path, "r+b") as f:
-        f.seek(offset)
-        f.truncate(offset)
-        try:
-            async for part in request.stream():
-                written += len(part)
-                if written > expected:
-                    raise ApiError(400, "BAD_CHUNK", "Chunk is larger than expected.")
-                f.write(part)
-            if written != expected:
-                raise ApiError(400, "INCOMPLETE_CHUNK", "Chunk arrived incomplete. It will be retried.")
-            f.flush()
-            os.fsync(f.fileno())
-        except BaseException:
-            f.truncate(offset)
-            raise
+    f = await run_in_threadpool(open, path, "r+b")
+    try:
+        await run_in_threadpool(_seek_truncate, f, offset)
+        buf = bytearray()
+        async for part in request.stream():
+            written += len(part)
+            if written > expected:
+                raise ApiError(400, "BAD_CHUNK", "Chunk is larger than expected.")
+            buf += part
+            if len(buf) >= _WRITE_BATCH:
+                await run_in_threadpool(f.write, bytes(buf))
+                buf.clear()
+        if written != expected:
+            raise ApiError(400, "INCOMPLETE_CHUNK", "Chunk arrived incomplete. It will be retried.")
+        if buf:
+            await run_in_threadpool(f.write, bytes(buf))
+        await run_in_threadpool(_flush_sync, f)
+    except BaseException:
+        await run_in_threadpool(_seek_truncate, f, offset)
+        raise
+    finally:
+        await run_in_threadpool(f.close)
     now = now_ms()
     conn.execute("UPDATE uploads SET received_bytes = ?, updated_at = ?, expires_at = ? WHERE id = ?",
                  (offset + written, now, now + TTL_MS, upload["id"]))

@@ -15,6 +15,7 @@ import sqlite3
 import threading
 from pathlib import Path
 
+from app.core import winacl
 from app.core.errors import ApiError
 from app.core.storage import Storage
 from app.db.ids import now_ms
@@ -104,6 +105,7 @@ def prepare(path: Path, install_id: str) -> Storage:
         probe.unlink()
         if not (path / MARKER).exists():
             (path / MARKER).write_text(json.dumps({"install_id": install_id, "created_at": now_ms()}))
+        winacl.ensure_private(path)
     except OSError as exc:
         raise ApiError(400, "STORAGE_UNUSABLE", f"FileDrop can't write to {path}: {exc.strerror or exc}")
     return storage

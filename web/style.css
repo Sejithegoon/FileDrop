@@ -428,3 +428,10 @@ dialog.sheet::backdrop { background: rgb(0 0 0 / .6); }
 .sheet button:hover { background: var(--surface-2); }
 .sheet button.danger { color: var(--danger); }
 .sheet button.cancel { justify-content: center; color: var(--muted); margin-top: 4px; border-top: 1px solid var(--border); border-radius: 0 0 10px 10px; }
+
+.tls-note { padding: 10px 12px; border-radius: 10px; background: color-mix(in srgb, var(--accent) 10%, transparent); line-height: 1.5; }
+.tls-note .ic { color: var(--accent-2); }
+
+.notice.update-note { background: color-mix(in srgb, var(--accent) 14%, transparent); color: var(--text); }
+.notice.update-note .ic { color: var(--accent-2); }
+.notice.update-note .btn { margin-left: auto; }

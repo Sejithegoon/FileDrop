@@ -6,6 +6,7 @@ import sqlite3
 from dataclasses import dataclass, field
 from typing import Callable
 
+from app.core.adminlock import AdminLock
 from app.core.errors import ApiError
 from app.core.settings import Settings
 from app.core.storage import Storage
@@ -25,7 +26,9 @@ class AppContext:
     uploads_paused: bool = False
     downloads_paused: bool = False
     storage_moving: bool = False
+    update_available: dict | None = None  # set by upkeep when the feed has a newer version
     mover: StorageMover = field(default_factory=StorageMover)
+    admin_lock: AdminLock = field(default_factory=AdminLock)
 
     def connect(self) -> sqlite3.Connection:
         return connect(self.settings.db_path)
@@ -44,5 +47,6 @@ class AppContext:
         try:
             self.uploads_paused = bool(settings_store.get(conn, "uploads_paused"))
             self.downloads_paused = bool(settings_store.get(conn, "downloads_paused"))
+            self.admin_lock.load(conn)
         finally:
             conn.close()

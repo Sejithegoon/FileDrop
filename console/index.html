@@ -20,6 +20,7 @@
         </nav>
         <div class="foot">
             <span class="pill" id="sidePill"><span class="dot"></span><span id="sideState">…</span></span>
+            <button class="btn ghost small" id="lockNowBtn" type="button" hidden><span data-icon="lock"></span> Lock window</button>
             <button class="btn ghost small danger" id="quitBtn" type="button"><span data-icon="power"></span> Quit FileDrop</button>
             <span class="muted small">Closing this window keeps FileDrop running in the tray. <span id="version"></span></span>
         </div>
@@ -29,6 +30,8 @@
         <!-- Dashboard -->
         <section data-view="dashboard">
             <div class="page-head"><h1>Dashboard</h1></div>
+            <p class="notice update-note" id="updateNote" hidden><span data-icon="download"></span>
+                <span id="updateText"></span> <button class="btn primary small" id="updateBtn" type="button">Get it</button></p>
             <p class="notice bad" id="blockedNote" hidden><span data-icon="alert"></span> <span id="blockedText"></span></p>
 
             <div class="card server-card">
@@ -36,6 +39,7 @@
                 <div class="info">
                     <div class="server-state" id="serverState"><span class="dot"></span><span id="serverText">…</span></div>
                     <p class="muted small" id="serverHint"></p>
+                    <p class="small tls-note" id="tlsNote" hidden></p>
                     <div class="url-box"><code id="serverUrl"></code>
                         <button class="btn ghost small icon-only" id="copyUrl" type="button" aria-label="Copy link" title="Copy link"><span data-icon="copy"></span></button></div>
                     <div><button class="btn primary" id="serverBtn" type="button"><span data-icon="power"></span> <span id="serverBtnText">Start web server</span></button></div>
@@ -68,6 +72,14 @@
                     <div class="row-actions" style="margin-top:12px">
                         <button class="btn ghost small" id="openStorage" type="button"><span data-icon="folder"></span> Open in Explorer</button>
                         <button class="btn ghost small" id="changeStorage" type="button"><span data-icon="edit"></span> Change folder</button>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-head"><h2>Admin window PIN</h2></div>
+                    <p class="muted small" id="pinText"></p>
+                    <div class="row-actions" style="margin-top:12px">
+                        <button class="btn ghost small" id="pinSet" type="button"><span data-icon="key"></span> <span id="pinSetText">Set a PIN</span></button>
+                        <button class="btn ghost small danger" id="pinRemove" type="button" hidden>Remove PIN</button>
                     </div>
                 </div>
             </div>
@@ -125,6 +137,19 @@
         </section>
     </main>
 </div>
+<!-- Admin PIN lock screen -->
+<section class="setup" id="lockScreen" style="z-index:45" hidden>
+    <form class="card setup-card" id="lockForm" style="max-width:420px">
+        <span class="brand big">FILEDROP</span>
+        <h1>Enter the admin PIN</h1>
+        <p class="muted small">FileDrop keeps running for everyone while this window is locked.</p>
+        <input class="input" id="lockPin" type="password" autocomplete="off" inputmode="text">
+        <p class="error" id="lockError" hidden></p>
+        <button class="btn primary big" type="submit">Unlock</button>
+        <p class="muted small">Forgot it? Quit FileDrop from the tray and start it with <code>--reset-admin-pin</code>.</p>
+    </form>
+</section>
+
 <!-- First run: choose where files are saved -->
 <section class="setup" id="setup" hidden>
     <div class="card setup-card">

@@ -4,7 +4,14 @@ const GB = 1024 ** 3;
 let page = 'dashboard';
 let overview = null;
 
-const api = (url, opts) => FD.api('/api' + url, opts);
+async function api(url, opts) {
+    try {
+        return await FD.api('/api' + url, opts);
+    } catch (e) {
+        if (e.code === 'LOCKED') showLock();
+        throw e;
+    }
+}
 const fail = e => FD.toast(e.message, 'err');
 const gbOrNull = v => (v === '' || v == null ? null : Math.round(parseFloat(v) * GB));
 const quotaText = (used, quota) => quota == null ? `${FD.fmtSize(used)} · no limit` : `${FD.fmtSize(used)} of ${FD.fmtSize(quota)}`;
@@ -31,10 +38,19 @@ async function loadDashboard() {
         ? 'People on the same Wi-Fi can open this link or scan the code, then sign in with their account.'
         : 'Nobody can connect while the web server is stopped. Your files are safe.';
     $('#serverUrl').textContent = o.url;
+    $('#tlsNote').hidden = !o.server.https;
+    if (o.server.https) {
+        const fp = o.server.fingerprint || '';
+        $('#tlsNote').innerHTML = `${FD.icon('lock')} <b>Secure connection (HTTPS).</b> The first time, phones warn the connection isn't private because FileDrop made its own certificate. ` +
+            `iPhone: tap <b>Show Details → visit this website</b>. Android: <b>Advanced → Proceed</b>.` +
+            (fp ? `<br><span class="muted">Certificate fingerprint: <code title="${fp}">${fp.slice(0, 23)}…</code></span>` : '');
+    }
     $('#qr').innerHTML = o.qr;
     $('#qr').classList.toggle('off', !running);
     $('#serverBtnText').textContent = running ? 'Stop web server' : 'Start web server';
     $('#serverBtn').className = running ? 'btn danger' : 'btn primary';
+    $('#updateNote').hidden = !o.update;
+    if (o.update) $('#updateText').textContent = `FileDrop ${o.update.version} is available (you have ${o.version}). ${o.update.notes || ''}`;
     $('#blockedNote').hidden = !o.server.error;
     $('#blockedText').textContent = o.server.error || '';
     $('#allowUploads').checked = !o.uploads_paused;
@@ -73,6 +89,8 @@ $('#serverBtn').onclick = async () => {
     $('#serverBtn').disabled = false;
     loadDashboard();
 };
+
+$('#updateBtn').onclick = () => api('/open-update', { json: {} }).catch(fail);
 
 $('#copyUrl').onclick = async () => {
     try { await navigator.clipboard.writeText($('#serverUrl').textContent); FD.toast('Link copied'); }
@@ -489,7 +507,7 @@ const ACTIONS = {
     'user.create': 'Created user', 'user.edit': 'Edited user', 'user.password_reset': 'Reset password for', 'user.delete': 'Deleted user',
     'session.revoke': 'Signed out a device', 'upload.cancel': 'Cancelled upload', 'space.create': 'Created shared folder',
     'space.edit': 'Edited shared folder', 'space.delete': 'Deleted shared folder', 'space.access': 'Changed shared folder access for',
-    'item.rename': 'Renamed', 'item.delete': 'Deleted', 'storage.setup': 'Chose storage folder', 'storage.move': 'Moved storage to',
+    'item.rename': 'Renamed', 'item.delete': 'Deleted', 'storage.setup': 'Chose storage folder', 'storage.move': 'Moved storage to', 'admin.unlock': 'Wrong admin PIN', 'admin.pin_set': 'Set the admin PIN', 'admin.pin_removed': 'Removed the admin PIN',
 };
 
 async function loadActivity() {
@@ -509,5 +527,63 @@ async function loadActivity() {
 }
 $('#activityRefresh').onclick = loadActivity;
 
+// ---------- admin PIN
+
+let pinSet = false;
+
+function showLock() {
+    if (!$('#lockScreen').hidden) return;
+    $('#lockScreen').hidden = false;
+    $('#lockError').hidden = true;
+    $('#lockPin').value = '';
+    $('#lockPin').focus();
+}
+
+$('#lockForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    try {
+        await FD.api('/api/unlock', { json: { pin: $('#lockPin').value } });
+        $('#lockScreen').hidden = true;
+        go(page);
+    } catch (ex) {
+        $('#lockError').textContent = ex.message;
+        $('#lockError').hidden = false;
+        $('#lockPin').select();
+    }
+});
+
+async function refreshPin() {
+    const s = await FD.api('/api/lock');
+    pinSet = s.pin_set;
+    $('#pinText').textContent = pinSet
+        ? 'A PIN is needed to open this window. It locks again when you close the window or after 30 idle minutes.'
+        : 'Anyone using this PC can open this window. Set a PIN to stop others managing users and files.';
+    $('#pinSetText').textContent = pinSet ? 'Change PIN' : 'Set a PIN';
+    $('#pinRemove').hidden = !pinSet;
+    $('#lockNowBtn').hidden = !pinSet;
+    return s;
+}
+
+$('#pinSet').onclick = async () => {
+    const v = await FD.dialog({
+        title: pinSet ? 'Change admin PIN' : 'Set an admin PIN', ok: 'Save PIN',
+        body: 'Use 4 or more characters. FileDrop keeps serving files while this window is locked.',
+        fields: [{ name: 'pin', label: 'New PIN', type: 'password' }, { name: 'pin2', label: 'New PIN again', type: 'password' }],
+    });
+    if (!v) return;
+    if (v.pin !== v.pin2) return FD.toast("The PINs don't match", 'err');
+    try { await api('/lock/set', { json: { pin: v.pin } }); FD.toast('Admin PIN saved'); refreshPin(); } catch (e) { fail(e); }
+};
+
+$('#pinRemove').onclick = async () => {
+    if (!await FD.confirmBox('Remove the admin PIN?', 'Anyone using this PC will be able to open this window.', 'Remove PIN')) return;
+    try { await api('/lock/remove', { json: {} }); FD.toast('Admin PIN removed'); refreshPin(); } catch (e) { fail(e); }
+};
+
+$('#lockNowBtn').onclick = async () => {
+    try { await api('/lock/now', { json: {} }); } catch { /* locked anyway */ }
+    showLock();
+};
+
 FD.hydrate();
-go('dashboard');
+refreshPin().then(s => { if (s.pin_set && !s.unlocked) showLock(); else go('dashboard'); }).catch(() => go('dashboard'));

@@ -30,12 +30,18 @@ class Settings:
     lan_host: str = "auto"  # "auto" = primary private IPv4 address
     lan_port: int = 8443
     start_server_on_launch: bool = True
+    https: bool = True  # self-signed certificate; phones warn once
+    update_feed_url: str = ""  # JSON {version, url, notes}; set once the website hosts it
     data_dir: Path = field(default_factory=_default_data_dir)
     storage_dir: Path | None = None  # fixed storage folder; normally chosen in the admin window
 
     @property
     def log_dir(self) -> Path:
         return self.data_dir / "logs"
+
+    @property
+    def tls_dir(self) -> Path:
+        return self.data_dir / "tls"
 
     @property
     def db_path(self) -> Path:
@@ -63,6 +69,10 @@ def load_settings() -> Settings:
         s.data_dir = Path(env["FILEDROP_DATA_DIR"])
     if "FILEDROP_STORAGE_DIR" in env:
         s.storage_dir = Path(env["FILEDROP_STORAGE_DIR"])
+    if "FILEDROP_UPDATE_FEED" in env:
+        s.update_feed_url = env["FILEDROP_UPDATE_FEED"]
+    if "FILEDROP_HTTPS" in env:
+        s.https = env["FILEDROP_HTTPS"] == "1"
     if "FILEDROP_START_SERVER" in env:
         s.start_server_on_launch = env["FILEDROP_START_SERVER"] == "1"
     return s

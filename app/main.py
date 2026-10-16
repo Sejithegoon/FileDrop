@@ -21,9 +21,11 @@ from app.api.lan import create_lan_app
 from app.core.context import AppContext
 from app.core.listeners import LanServer, Listener
 from app.core.settings import Settings, load_settings
+from app.core import winacl
 from app.core.storage import Storage
 from app.db.database import DatabaseError, open_database
-from app.services import storage_config, uploads
+from app.services import audit, storage_config, uploads
+from app.services.upkeep import Upkeep
 
 log = logging.getLogger("filedrop")
 
@@ -82,6 +84,7 @@ def prepare_database(ctx: AppContext) -> None:
             try:
                 storage = Storage(root)
                 storage.ensure()
+                winacl.ensure_private(storage.root)
                 ctx.storage = storage
                 uploads.sweep(conn, storage)
             except OSError as exc:
@@ -109,6 +112,7 @@ def run_window(ctx: AppContext, start_hidden: bool) -> None:
         if quitting.is_set():
             return True
         window.hide()  # keep running in the tray
+        ctx.admin_lock.lock_all()  # closing the window locks it when a PIN is set
         if not told_about_tray.is_set():
             told_about_tray.set()
             try:
@@ -153,6 +157,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--background", action="store_true", help="start hidden in the tray (Start with Windows)")
     parser.add_argument("--no-server", action="store_true", help="don't start the LAN web server on launch")
     parser.add_argument("--data-dir", help="use this folder for the database, files and logs (development)")
+    parser.add_argument("--reset-admin-pin", action="store_true", help="remove a forgotten admin window PIN")
     args = parser.parse_args(argv)
 
     settings = load_settings()
@@ -165,9 +170,20 @@ def main(argv: list[str] | None = None) -> int:
         ask_running_copy_to_show(settings)
         return 0
 
+    settings.data_dir.mkdir(parents=True, exist_ok=True)
+    winacl.ensure_private(settings.data_dir)
     ctx = AppContext(settings=settings)
-    ctx.lan = LanServer(lambda: create_lan_app(ctx), settings.lan_host, settings.lan_port)
+    ctx.lan = LanServer(lambda: create_lan_app(ctx), settings.lan_host, settings.lan_port,
+                        settings.tls_dir if settings.https else None)
     prepare_database(ctx)
+    if args.reset_admin_pin and ctx.admin_lock.enabled:
+        conn = ctx.connect()
+        try:
+            ctx.admin_lock.remove(conn)
+            audit.record(conn, "admin.pin_removed", actor="--reset-admin-pin")
+        finally:
+            conn.close()
+        log.info("Admin window PIN removed")
 
     quit_event = threading.Event()
     ctx.request_quit = quit_event.set
@@ -180,6 +196,8 @@ def main(argv: list[str] | None = None) -> int:
 
     if settings.start_server_on_launch and not args.no_server:
         ctx.lan.start()
+    upkeep = Upkeep(ctx)
+    upkeep.start()
 
     # TODO: handle Windows sign-out/shutdown (WM_QUERYENDSESSION): stop new
     # transfers, mark uploads Interrupted, exit within 5 s.
@@ -193,6 +211,7 @@ def main(argv: list[str] | None = None) -> int:
     except KeyboardInterrupt:
         pass
     finally:
+        upkeep.stop()
         ctx.lan.stop()
         console.stop()
         log.info("FileDrop exited")
