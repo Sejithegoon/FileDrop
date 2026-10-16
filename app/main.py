@@ -14,10 +14,12 @@ import threading
 import webbrowser
 from logging.handlers import RotatingFileHandler
 
+from app import __version__
 from app.api.console import create_console_app
 from app.api.lan import create_lan_app
 from app.core.listeners import LanServer, Listener
 from app.core.settings import Settings, load_settings
+from app.db.database import DatabaseError, open_database
 
 log = logging.getLogger("filedrop")
 
@@ -63,6 +65,16 @@ def main(argv: list[str] | None = None) -> int:
 
     quit_event = threading.Event()
     lan = LanServer(create_lan_app, settings.lan_host, settings.lan_port)
+
+    # Check and migrate the database before anyone can connect. On failure the
+    # console still runs (so the admin sees why) but the LAN server stays blocked.
+    try:
+        conn, report = open_database(settings.db_path, __version__, settings.backup_dir)
+        conn.close()
+        log.info("Database at schema %s (was %s)", report.to_version, report.from_version)
+    except DatabaseError as exc:
+        log.error("%s", exc)
+        lan.block(str(exc))
     console = Listener(create_console_app(lan, quit_event.set), settings.console_host, settings.console_port, "console")
     try:
         console.start()

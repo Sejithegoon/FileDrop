@@ -49,6 +49,16 @@ Environment overrides: `FILEDROP_CONSOLE_PORT`, `FILEDROP_LAN_HOST`, `FILEDROP_L
 
 Logs go to `%ProgramData%\FileDrop\logs\filedrop.log`.
 
+## Database and upgrades
+
+User data lives in SQLite at `%ProgramData%\FileDrop\filedrop.db`. Each new EXE upgrades it on startup:
+
+- Migrations are in `app/db/migrations.py`, numbered and forward-only. **Never edit a released migration.** Add a new one at the end. `tests/test_database.py` pins each released checksum.
+- A backup goes to `%ProgramData%\FileDrop\backups\` before any upgrade (the last 10 are kept).
+- A failed upgrade changes nothing and keeps the LAN server stopped. The console shows why.
+- A database from a newer FileDrop is refused, never modified.
+- Add first: add tables and columns now; drop old ones only in a later release.
+
 ## Build the EXE
 
 ```bash
@@ -65,7 +75,7 @@ The output is `build/out/FileDrop/FileDrop.exe` (a one-folder build). An Inno Se
 | `app/tray.py` | Tray icon and menu |
 | `app/api/` | FastAPI apps: `lan.py` (users), `console.py` (localhost only) |
 | `app/core/` | Settings, LAN address checks, listener threads. Later: permissions, storage, transfers, audit |
-| `app/db/` | SQLite schema and queries (not started) |
+| `app/db/` | SQLite connection, backups, migrations, IDs |
 | `web/` | User and admin pages (placeholder) |
 | `console/` | Host console page |
 | `tests/` | pytest suites |
@@ -73,4 +83,4 @@ The output is `build/out/FileDrop/FileDrop.exe` (a one-folder build). An Inno Se
 
 ## Not built yet
 
-HTTPS/TLS, accounts and sign-in, SQLite, file browsing, uploads and downloads, admin pages, upload/download pauses, drain-mode stop, Windows shutdown handling, Start with Windows, and the installer.
+HTTPS/TLS, accounts and sign-in, shared spaces UI, file browsing, uploads and downloads, admin pages, upload/download pauses, drain-mode stop, Windows shutdown handling, Start with Windows, and the installer.

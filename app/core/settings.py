@@ -37,6 +37,14 @@ class Settings:
         return self.data_dir / "logs"
 
     @property
+    def db_path(self) -> Path:
+        return self.data_dir / "filedrop.db"
+
+    @property
+    def backup_dir(self) -> Path:
+        return self.data_dir / "backups"
+
+    @property
     def console_url(self) -> str:
         return f"http://{self.console_host}:{self.console_port}/"
 

@@ -72,8 +72,13 @@ class LanServer:
         self.state = "stopped"
         self.address: str | None = None
         self.last_error: str | None = None
+        self.blocked_reason: str | None = None
         self._listener: Listener | None = None
         self._lock = threading.Lock()
+
+    def block(self, reason: str) -> None:
+        """Refuse to start, e.g. when the database can't be opened."""
+        self.blocked_reason = self.last_error = reason
 
     def status(self) -> dict:
         return {
@@ -85,6 +90,9 @@ class LanServer:
     def start(self) -> dict:
         with self._lock:
             if self.state == "running":
+                return self.status()
+            if self.blocked_reason:
+                self.last_error = self.blocked_reason
                 return self.status()
             self.state, self.last_error = "starting", None
             try:
