@@ -30,6 +30,22 @@ Features: light and dark mode (follows the device, with a toggle that remembers 
 
 ## Hosting
 
+### GitHub Pages (current setup)
+
+The app code lives in a **private** repo; the website is published to a separate **public** repo (`filedrop-website`) that contains nothing but `site/`.
+
+1. On GitHub, create a new **public, empty** repo named `filedrop-website` (no README, no licence, no .gitignore).
+2. Commit your site changes in this repo, then run:
+   ```bash
+   powershell -ExecutionPolicy Bypass -File build/publish-site.ps1 -RemoteUrl https://github.com/<you>/filedrop-website.git
+   ```
+   Next time, just `build/publish-site.ps1`. It refuses to publish if any app file would leak.
+3. In the website repo: **Settings → Pages → Build and deployment → Source: Deploy from a branch → `main` / `(root)`**.
+4. The site is live at `https://<you>.github.io/filedrop-website/` within a few minutes.
+
+GitHub Pages can't send custom headers, so each page carries its security policy in a `<meta>` tag. `_headers` is kept for hosts that support it. Forms stay in "opens soon" mode until `apiBase` in `assets/js/config.js` points at a form backend (Phase B: Supabase).
+
+
 ### Any web server (for example a Canadian VPS with nginx)
 
 Upload the contents of `site/` to the web root, and run the form server from `feedback_server/` (its README has the systemd and nginx setup). Add these headers (the same as `_headers`):

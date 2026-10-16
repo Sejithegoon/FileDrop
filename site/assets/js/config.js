@@ -13,6 +13,7 @@ window.SITE = {
     // Where people can write to you.
     supportEmail: "",
 
-    // Where the feedback server answers (see feedback_server/README.md). "/api" means the same site.
-    apiBase: "/api",
+    // Where the forms are sent. Empty = forms show "opens soon" (GitHub Pages before Phase B).
+    // "/api" when the site is served by feedback_server/; your Supabase functions URL after Phase B.
+    apiBase: "",
 };

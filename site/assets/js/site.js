@@ -174,9 +174,19 @@
     }
 
     // ---------- forms (feedback, contact, beta, waitlist) post to the feedback server
-    const api = (S.apiBase || "/api").replace(/\/$/, "");
+    const api = (S.apiBase || "").replace(/\/$/, "");
     const params = new URLSearchParams(location.search);
     $$("form[data-api]").forEach(form => {
+        if (!api) {  // forms not connected yet: say so instead of failing on submit
+            $$("input, textarea, select, button", form).forEach(el => { el.disabled = true; });
+            const note = $("[data-form-status]", form);
+            if (note) {
+                note.className = "form-status busy";
+                note.textContent = S.supportEmail ? `This form opens soon. Until then, email ${S.supportEmail}.` : "This form opens soon. Check back shortly.";
+                note.hidden = false;
+            }
+            return;
+        }
         const status = $("[data-form-status]", form);
         const button = $("button[type=submit]", form);
         const started = $("input[name=started]", form);
