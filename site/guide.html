@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en-CA">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Setup guide | FileDrop</title>
+<meta name="description" content="How to set up FileDrop: choose a storage folder, add users, connect phones over Wi-Fi or a hotspot, and get past the one-time HTTPS warning.">
+<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f7f9fd" media="(prefers-color-scheme: light)">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Setup guide | FileDrop">
+<meta property="og:description" content="How to set up FileDrop: choose a storage folder, add users, connect phones over Wi-Fi or a hotspot, and get past the one-time HTTPS warning.">
+<meta property="og:image" content="assets/img/admin-dashboard.webp">
+<link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/css/site.css">
+<script src="assets/js/theme.js"></script>
+<script src="assets/js/config.js" defer></script>
+<script src="assets/js/site.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="index.html"><img src="assets/img/favicon.svg" alt="" width="30" height="30">FILEDROP <span class="beta">BETA</span></a>
+    <nav class="nav" id="nav" aria-label="Main">
+      <a href="features.html">Features</a>
+      <a href="pricing.html">Pricing</a>
+      <a href="guide.html">Setup guide</a>
+      <a href="faq.html">FAQ</a>
+      <a class="btn primary small" href="download.html">Download free</a>
+    </nav>
+    <button class="icon-btn theme-toggle" type="button" aria-label="Switch theme"><svg class="moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg><svg class="sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg></button>
+    <button class="icon-btn menu-btn" type="button" aria-expanded="false" aria-controls="nav" aria-label="Menu"><svg class="open" viewBox="0 0 24 24" aria-hidden="true"><line x1="3" y1="7" x2="21" y2="7"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="17" x2="21" y2="17"/></svg><svg class="close" viewBox="0 0 24 24" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+  </div>
+</header>
+<main id="main">
+<div class="wrap page-hero"><h1>Setup guide</h1>
+  <p>From install to the first upload in about five minutes.</p>
+  <nav class="toc" aria-label="On this page">
+    <a href="#install">1. Install</a><a href="#storage">2. Storage folder</a><a href="#users">3. Add people</a>
+    <a href="#connect">4. Connect a phone</a><a href="#warning">5. The one-time warning</a><a href="#shared">6. Shared folders</a>
+    <a href="#trouble">Troubleshooting</a></nav></div>
+
+<section>
+  <div class="wrap doc">
+    <h2 id="install">1. Install FileDrop</h2>
+    <p>Download and run the installer from the <a href="download.html">download page</a>. FileDrop opens its admin window when it's done. Closing that window keeps FileDrop running in the system tray; right-click the tray icon and choose <b>Quit FileDrop</b> to stop it.</p>
+
+    <h2 id="storage">2. Choose where files are saved</h2>
+    <p>The first time, FileDrop asks where to store uploaded files. Click <b>Browse</b> and pick a drive with plenty of space. If the folder already has other things in it, FileDrop creates a <b>FileDrop Files</b> folder inside it so nothing gets mixed up.</p>
+    <p class="callout">Files are stored under internal ID names, not their real names, so they can't clash or break. To move everything to another drive later, use <b>Dashboard &rarr; Storage &rarr; Change folder</b>.</p>
+
+    <h2 id="users">3. Add people</h2>
+    <p>Go to <b>Users &rarr; Add user</b>. Choose a username and display name; FileDrop suggests a temporary password. Give those to the person. They choose their own password the first time they sign in.</p>
+    <figure><div class="browser-frame"><div class="chrome"><i></i><i></i><i></i><span>FileDrop Admin</span></div><div class="screen"><img class="zoomable" src="assets/img/admin-add-user.webp" alt="The Add user dialog in the FileDrop admin window" width="2880" height="1800" loading="lazy" decoding="async"></div></div><figcaption>Adding a user. Click to enlarge.</figcaption></figure>
+    <p>FileDrop Free includes up to 5 accounts. You can set a storage limit for each person, suspend an account at any time or reset a password.</p>
+
+    <h2 id="connect">4. Connect a phone</h2>
+    <ol>
+      <li>Make sure the phone and the PC are on the <b>same Wi-Fi</b>, or that the PC is connected to the <b>phone's hotspot</b>.</li>
+      <li>On the PC, open the Dashboard. Scan the QR code with the phone's camera, or type the link shown under it (it starts with <code>https://</code>).</li>
+      <li>Sign in with the username and temporary password, then choose a new password.</li>
+      <li>Tap <b>Upload files</b>.</li>
+    </ol>
+    <figure><div class="phone-frame"><div class="screen"><img class="zoomable" src="assets/img/phone-signin.webp" alt="The FileDrop sign-in page on a phone" width="1170" height="2532" loading="lazy" decoding="async"></div></div><figcaption>The sign-in page people see.</figcaption></figure>
+    <p class="callout"><b>Tip:</b> if someone types just the PC's address without <code>https://</code>, FileDrop shows a help page with a button to the secure link.</p>
+
+    <h2 id="warning">5. The one-time "not private" warning</h2>
+    <p>FileDrop encrypts connections with HTTPS, using a certificate it creates on your PC. Phones don't recognize who made that certificate, so the first time they show a warning. That's expected.</p>
+    <ul>
+      <li><b>iPhone (Safari):</b> tap <b>Show Details</b>, then <b>visit this website</b>, then <b>Visit Website</b>.</li>
+      <li><b>Android (Chrome):</b> tap <b>Advanced</b>, then <b>Proceed</b>.</li>
+      <li><b>Windows or Mac browsers:</b> choose <b>Advanced</b>, then <b>Continue</b>.</li>
+    </ul>
+    <p>The warning only comes back if the PC's network address changes (for example, switching from home Wi-Fi to a hotspot) or about once a year when the certificate renews. The Dashboard shows the certificate fingerprint if you want to compare it with what the phone shows.</p>
+    <p class="callout warn"><b>On your own trusted network only</b>, you can turn off HTTPS in the Dashboard to avoid the warning. Without HTTPS, others on the same network could see passwords and files as they travel, so leave it on for shared, school or public Wi-Fi.</p>
+
+    <h2 id="shared">6. Shared folders</h2>
+    <p>Go to <b>Shared folders &rarr; New shared folder</b>, then choose each person's access:</p>
+    <ul>
+      <li><b>View:</b> see and download.</li>
+      <li><b>Upload:</b> also add files and folders, and change or delete only what they added.</li>
+      <li><b>Manage:</b> change or delete anything in the folder.</li>
+    </ul>
+    <figure><div class="browser-frame"><div class="chrome"><i></i><i></i><i></i><span>FileDrop Admin</span></div><div class="screen"><img class="zoomable" src="assets/img/admin-shared.webp" alt="Shared folder access settings" width="2880" height="1800" loading="lazy" decoding="async"></div></div><figcaption>Access is set per person, per folder.</figcaption></figure>
+
+    <h2 id="trouble">Troubleshooting</h2>
+    <h3>The phone can't open the link</h3>
+    <ul>
+      <li>Check that both devices are on the same network. Guest Wi-Fi networks often block devices from seeing each other.</li>
+      <li>Check that the address on the Dashboard matches the one you typed. If the PC changed networks, click <b>Stop web server</b> and then <b>Start web server</b>.</li>
+      <li>If you didn't use the installer, Windows may have asked whether to allow FileDrop on the network. Allow it for Private and Public networks, or set your network to <b>Private</b> in Windows Settings.</li>
+    </ul>
+    <h3>Uploads from iPhone take a while to start</h3>
+    <p>When you pick many photos, iOS prepares each one first, downloading originals from iCloud or converting formats. FileDrop starts uploading as soon as iOS hands the files over. Smaller batches start sooner.</p>
+    <h3>I forgot the admin PIN</h3>
+    <p>Quit FileDrop from the tray, then start it once from a terminal with:</p>
+    <div class="copy-row"><code id="pin-cmd">FileDrop.exe --reset-admin-pin</code><button class="btn small copy-btn" type="button" data-copy="#pin-cmd">Copy</button></div>
+  </div>
+</section>
+</main>
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="cols">
+      <div>
+        <a class="brand" href="index.html"><img src="assets/img/favicon.svg" alt="" width="30" height="30">FILEDROP</a>
+        <p>Your own private file-sharing space, hosted on your Windows PC.</p>
+      </div>
+      <div><h4>Product</h4><ul>
+        <li><a href="features.html">Features</a></li><li><a href="pricing.html">Pricing</a></li>
+        <li><a href="download.html">Download</a></li><li><a href="changelog.html">Changelog</a></li></ul></div>
+      <div><h4>Help</h4><ul>
+        <li><a href="guide.html">Setup guide</a></li><li><a href="faq.html">FAQ</a></li>
+        <li><a href="contact.html">Contact and feedback</a></li></ul></div>
+      <div><h4>Legal</h4><ul>
+        <li><a href="privacy.html">Privacy policy</a></li><li><a href="terms.html">Terms of use</a></li>
+        <li><a href="refunds.html">Refund policy</a></li></ul></div>
+    </div>
+    <div class="legal">
+      <span>&copy; <span data-year>2026</span> FileDrop. Made in Canada. Beta software.</span>
+      <span>Windows is a trademark of Microsoft Corporation.</span>
+    </div>
+  </div>
+</footer>
+</body>
+</html>

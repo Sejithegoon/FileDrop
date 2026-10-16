@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en-CA">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>FAQ | FileDrop</title>
+<meta name="description" content="Answers to common questions about FileDrop: cloud, internet, phones, the HTTPS warning, file limits, Pro and privacy.">
+<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f7f9fd" media="(prefers-color-scheme: light)">
+<meta property="og:type" content="website">
+<meta property="og:title" content="FAQ | FileDrop">
+<meta property="og:description" content="Answers to common questions about FileDrop: cloud, internet, phones, the HTTPS warning, file limits, Pro and privacy.">
+<meta property="og:image" content="assets/img/admin-dashboard.webp">
+<link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/css/site.css">
+<script src="assets/js/theme.js"></script>
+<script src="assets/js/config.js" defer></script>
+<script src="assets/js/site.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="index.html"><img src="assets/img/favicon.svg" alt="" width="30" height="30">FILEDROP <span class="beta">BETA</span></a>
+    <nav class="nav" id="nav" aria-label="Main">
+      <a href="features.html">Features</a>
+      <a href="pricing.html">Pricing</a>
+      <a href="guide.html">Setup guide</a>
+      <a href="faq.html">FAQ</a>
+      <a class="btn primary small" href="download.html">Download free</a>
+    </nav>
+    <button class="icon-btn theme-toggle" type="button" aria-label="Switch theme"><svg class="moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg><svg class="sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg></button>
+    <button class="icon-btn menu-btn" type="button" aria-expanded="false" aria-controls="nav" aria-label="Menu"><svg class="open" viewBox="0 0 24 24" aria-hidden="true"><line x1="3" y1="7" x2="21" y2="7"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="17" x2="21" y2="17"/></svg><svg class="close" viewBox="0 0 24 24" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+  </div>
+</header>
+<main id="main">
+<div class="wrap page-hero"><h1>Frequently asked questions</h1><p>Can't find an answer? <a href="contact.html">Ask us</a>.</p></div>
+<section><div class="wrap doc faq">
+  <div class="search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><label class="sr" for="faq-search">Search questions</label><input id="faq-search" type="search" placeholder="Search questions, for example 'iPhone' or 'size'" autocomplete="off"></div>
+  <details class="reveal"><summary>Is FileDrop a cloud service?</summary><p class="answer">No. FileDrop runs on your own Windows PC and stores files in the folder you choose. Phones and computers on the same network connect to your PC directly. Nothing is uploaded to our servers.</p></details>
+<details class="reveal"><summary>Does it need the internet?</summary><p class="answer">No. FileDrop works on a local network with no internet connection, including a phone hotspot. If update checks are turned on, FileDrop looks for a newer version about once a day when it can.</p></details>
+<details class="reveal"><summary>Can people use it from outside my home?</summary><p class="answer">Not in this version. FileDrop only listens on your local network, which keeps it simple and private. Remote access may come later.</p></details>
+<details class="reveal"><summary>Why do iPhone uploads take a moment to start?</summary><p class="answer">When you pick many photos on an iPhone, iOS prepares each one first, downloading the original from iCloud or converting the format. FileDrop starts uploading as soon as iOS hands the files over. Smaller batches start sooner.</p></details>
+<details class="reveal"><summary>Do people need to install an app?</summary><p class="answer">No. They use the browser they already have on their phone or computer.</p></details>
+<details class="reveal"><summary>Why does my phone say the connection isn't private?</summary><p class="answer">FileDrop encrypts connections with a certificate it creates on your PC. Phones don't recognize who made it, so they warn once. The connection is still encrypted. The setup guide shows how to continue.</p></details>
+<details class="reveal"><summary>Is there a file size limit?</summary><p class="answer">There's no built-in limit. You can set storage limits for each person and each shared folder. Uploads are sent in pieces and resume if the connection drops, so large videos work.</p></details>
+<details class="reveal"><summary>What file types can people upload?</summary><p class="answer">Any type. Files are always downloaded as attachments, so nothing uploaded can run inside the page.</p></details>
+<details class="reveal"><summary>Does it work on Mac or Linux?</summary><p class="answer">The host app is Windows-only for now. People connecting can use any device with a modern browser.</p></details>
+<details class="reveal"><summary>What will Pro cost?</summary><p class="answer">Pro isn't available yet. It will be a one-time purchase with a year of feature updates, priced in Canadian dollars. The price will be set after the beta. Free will stay free.</p></details>
+<details class="reveal"><summary>What data do you collect?</summary><p class="answer">The app sends us nothing about your files or how you use it. Our website and any forms you fill in receive limited information. The privacy policy explains exactly what.</p></details>
+<details class="reveal"><summary>Is FileDrop available outside Canada?</summary><p class="answer">Yes. FileDrop is made in Canada and anyone can download it. Our privacy policy covers visitors from Canada, the EU, the UK, the US and elsewhere.</p></details>
+<details class="reveal"><summary>How do I report a bug or suggest a feature?</summary><p class="answer">Use the contact page. Tell us your FileDrop version, Windows version, the phone or browser, and the steps to reproduce the problem.</p></details>
+  <p class="no-results" hidden>No questions match. Try another word, or <a href="contact.html">ask us</a>.</p>
+</div></section>
+</main>
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="cols">
+      <div>
+        <a class="brand" href="index.html"><img src="assets/img/favicon.svg" alt="" width="30" height="30">FILEDROP</a>
+        <p>Your own private file-sharing space, hosted on your Windows PC.</p>
+      </div>
+      <div><h4>Product</h4><ul>
+        <li><a href="features.html">Features</a></li><li><a href="pricing.html">Pricing</a></li>
+        <li><a href="download.html">Download</a></li><li><a href="changelog.html">Changelog</a></li></ul></div>
+      <div><h4>Help</h4><ul>
+        <li><a href="guide.html">Setup guide</a></li><li><a href="faq.html">FAQ</a></li>
+        <li><a href="contact.html">Contact and feedback</a></li></ul></div>
+      <div><h4>Legal</h4><ul>
+        <li><a href="privacy.html">Privacy policy</a></li><li><a href="terms.html">Terms of use</a></li>
+        <li><a href="refunds.html">Refund policy</a></li></ul></div>
+    </div>
+    <div class="legal">
+      <span>&copy; <span data-year>2026</span> FileDrop. Made in Canada. Beta software.</span>
+      <span>Windows is a trademark of Microsoft Corporation.</span>
+    </div>
+  </div>
+</footer>
+</body>
+</html>

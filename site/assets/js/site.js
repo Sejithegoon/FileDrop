@@ -1,0 +1,209 @@
+// FileDrop website behaviour. Everything degrades gracefully without JavaScript.
+(function () {
+    "use strict";
+    const S = window.SITE || {};
+    const $ = (sel, root = document) => root.querySelector(sel);
+    const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const root = document.documentElement;
+
+    // ---------- theme
+    const themeBtn = $(".theme-toggle");
+    function currentTheme() {
+        const set = root.getAttribute("data-theme");
+        if (set) return set;
+        return window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+    }
+    function labelTheme() {
+        if (themeBtn) themeBtn.setAttribute("aria-label", currentTheme() === "dark" ? "Switch to light mode" : "Switch to dark mode");
+    }
+    if (themeBtn) {
+        labelTheme();
+        themeBtn.addEventListener("click", () => {
+            const next = currentTheme() === "dark" ? "light" : "dark";
+            root.setAttribute("data-theme", next);
+            try { localStorage.setItem("fd-theme", next); } catch (e) { /* storage blocked */ }
+            labelTheme();
+        });
+    }
+
+    // ---------- header: shadow once scrolled, mobile menu
+    const header = $(".site-header");
+    const onScroll = () => header && header.classList.toggle("scrolled", window.scrollY > 8);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+
+    const menuBtn = $(".menu-btn");
+    const nav = $(".nav");
+    function closeMenu() { nav.classList.remove("open"); menuBtn.setAttribute("aria-expanded", "false"); }
+    if (menuBtn && nav) {
+        menuBtn.addEventListener("click", () => {
+            const open = nav.classList.toggle("open");
+            menuBtn.setAttribute("aria-expanded", String(open));
+        });
+        document.addEventListener("keydown", e => { if (e.key === "Escape") closeMenu(); });
+        nav.addEventListener("click", e => { if (e.target.closest("a")) closeMenu(); });
+    }
+
+    const here = location.pathname.split("/").pop() || "index.html";
+    $$(".nav a[href]").forEach(a => { if (a.getAttribute("href") === here) a.setAttribute("aria-current", "page"); });
+
+    // ---------- values from config.js
+    $$("[data-site]").forEach(el => { const v = S[el.dataset.site]; if (v) el.textContent = v; });
+    $$("[data-download]").forEach(a => {
+        if (S.downloadUrl) {
+            a.href = S.downloadUrl;
+        } else {
+            a.setAttribute("aria-disabled", "true");
+            a.removeAttribute("href");
+            const label = $("[data-label]", a);
+            if (label) label.textContent = "Download coming soon";
+        }
+    });
+    $$("[data-if-download]").forEach(el => { el.hidden = !S.downloadUrl; });
+    $$("[data-if-no-download]").forEach(el => { el.hidden = !!S.downloadUrl; });
+    $$("[data-email]").forEach(el => {
+        if (S.supportEmail) {
+            el.textContent = S.supportEmail;
+            if (el.tagName === "A") el.href = "mailto:" + S.supportEmail;
+        }
+    });
+    $$("form[data-waitlist]").forEach(form => {
+        const note = $("[data-waitlist-note]", form.parentElement);
+        if (S.waitlistFormAction) {
+            form.action = S.waitlistFormAction;
+        } else {
+            $$("input, button", form).forEach(el => { el.disabled = true; });
+            if (note) note.textContent = "Sign-up opens soon. Check the changelog for news.";
+        }
+    });
+    $$("[data-year]").forEach(el => { el.textContent = new Date().getFullYear(); });
+
+    // ---------- reveal on scroll
+    const revealEls = $$(".reveal");
+    if (!reduceMotion && "IntersectionObserver" in window) {
+        const io = new IntersectionObserver(entries => {
+            entries.forEach(en => { if (en.isIntersecting) { en.target.classList.add("in"); io.unobserve(en.target); } });
+        }, { rootMargin: "0px 0px -8% 0px", threshold: 0.08 });
+        revealEls.forEach(el => io.observe(el));
+    } else {
+        revealEls.forEach(el => el.classList.add("in"));
+    }
+
+    // ---------- screenshot tours: tabs switch images, auto-advance until the visitor interacts
+    $$(".tour").forEach(tour => {
+        const tabs = $$(".tour-tab", tour);
+        const imgs = $$(".screen img.swap", tour);
+        const ms = Number(tour.dataset.interval || 6000);
+        tour.style.setProperty("--tour-ms", ms + "ms");
+        let i = 0, timer = null, stopped = reduceMotion;
+        function show(n, focus) {
+            i = (n + tabs.length) % tabs.length;
+            tabs.forEach((t, k) => {
+                t.setAttribute("aria-selected", String(k === i));
+                t.tabIndex = k === i ? 0 : -1;
+                const bar = $(".bar i", t);
+                if (bar) { bar.style.animation = "none"; void bar.offsetWidth; bar.style.animation = ""; }
+            });
+            imgs.forEach((im, k) => im.classList.toggle("active", k === i));
+            if (focus) tabs[i].focus();
+        }
+        function schedule() {
+            clearInterval(timer);
+            if (!stopped) timer = setInterval(() => show(i + 1), ms);
+        }
+        tabs.forEach((t, k) => {
+            t.addEventListener("click", () => { stopped = true; tour.classList.add("paused"); clearInterval(timer); show(k); });
+            t.addEventListener("keydown", e => {
+                if (["ArrowDown", "ArrowRight"].includes(e.key)) { e.preventDefault(); stopped = true; show(i + 1, true); }
+                if (["ArrowUp", "ArrowLeft"].includes(e.key)) { e.preventDefault(); stopped = true; show(i - 1, true); }
+            });
+        });
+        tour.addEventListener("mouseenter", () => { tour.classList.add("paused"); clearInterval(timer); });
+        tour.addEventListener("mouseleave", () => { if (!stopped) { tour.classList.remove("paused"); schedule(); } });
+        // only rotate while visible
+        if ("IntersectionObserver" in window) {
+            new IntersectionObserver(([en]) => { if (en.isIntersecting) schedule(); else clearInterval(timer); }, { threshold: 0.3 }).observe(tour);
+        }
+        if (stopped) tour.classList.add("paused");
+        show(0);
+    });
+
+    // ---------- tap a screenshot to see it full size
+    const zoomables = $$("img.zoomable");
+    if (zoomables.length && "HTMLDialogElement" in window) {
+        const box = document.createElement("dialog");
+        box.className = "lightbox";
+        box.innerHTML = '<button class="icon-btn" type="button" aria-label="Close"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button><img alt="">';
+        document.body.appendChild(box);
+        const big = $("img", box);
+        zoomables.forEach(img => {
+            img.tabIndex = 0;
+            img.setAttribute("role", "button");
+            img.setAttribute("aria-label", (img.alt || "Screenshot") + ". Open full size.");
+            const open = () => { big.src = img.currentSrc || img.src; big.alt = img.alt; box.showModal(); };
+            img.addEventListener("click", open);
+            img.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); open(); } });
+        });
+        box.addEventListener("click", e => { if (e.target !== big) box.close(); });
+    }
+
+    // ---------- copy buttons
+    $$("[data-copy]").forEach(btn => {
+        btn.addEventListener("click", async () => {
+            const target = $(btn.dataset.copy);
+            const text = target ? target.textContent.trim() : "";
+            try {
+                await navigator.clipboard.writeText(text);
+                btn.textContent = "Copied";
+                btn.classList.add("done");
+            } catch (e) {
+                btn.textContent = "Select and copy";
+            }
+            setTimeout(() => { btn.textContent = "Copy"; btn.classList.remove("done"); }, 1800);
+        });
+    });
+
+    // ---------- FAQ search
+    const faqSearch = $("#faq-search");
+    if (faqSearch) {
+        const items = $$(".faq details");
+        const none = $(".no-results");
+        faqSearch.addEventListener("input", () => {
+            const q = faqSearch.value.trim().toLowerCase();
+            let shown = 0;
+            items.forEach(d => {
+                const hit = !q || d.textContent.toLowerCase().includes(q);
+                d.hidden = !hit;
+                if (hit) shown++;
+                if (q && hit) d.open = true;
+            });
+            if (none) none.hidden = shown > 0;
+        });
+    }
+
+    // ---------- pricing: how many people?
+    const people = $("#people");
+    if (people) {
+        const out = $("#people-out");
+        const verdict = $("#people-verdict");
+        const plans = { free: $(".plan.free"), pro: $(".plan.pro") };
+        let last = null;
+        const update = () => {
+            const n = Number(people.value);
+            out.textContent = n >= 20 ? "20+" : String(n);
+            const pick = n <= 5 ? "free" : "pro";
+            verdict.textContent = pick === "free"
+                ? "FileDrop Free covers you, with room to spare."
+                : "You'll want FileDrop Pro for more than 5 accounts. Free still works for up to 5.";
+            if (pick !== last && plans[pick] && !reduceMotion) {
+                plans[pick].classList.remove("highlight");
+                void plans[pick].offsetWidth;
+                plans[pick].classList.add("highlight");
+            }
+            last = pick;
+        };
+        people.addEventListener("input", update);
+        update();
+    }
+})();

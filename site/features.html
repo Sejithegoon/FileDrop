@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en-CA">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Features | FileDrop</title>
+<meta name="description" content="What FileDrop does today: a desktop admin window, phone-friendly uploads, private and shared folders, HTTPS and admin controls.">
+<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f7f9fd" media="(prefers-color-scheme: light)">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Features | FileDrop">
+<meta property="og:description" content="What FileDrop does today: a desktop admin window, phone-friendly uploads, private and shared folders, HTTPS and admin controls.">
+<meta property="og:image" content="assets/img/admin-dashboard.webp">
+<link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/css/site.css">
+<script src="assets/js/theme.js"></script>
+<script src="assets/js/config.js" defer></script>
+<script src="assets/js/site.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="index.html"><img src="assets/img/favicon.svg" alt="" width="30" height="30">FILEDROP <span class="beta">BETA</span></a>
+    <nav class="nav" id="nav" aria-label="Main">
+      <a href="features.html">Features</a>
+      <a href="pricing.html">Pricing</a>
+      <a href="guide.html">Setup guide</a>
+      <a href="faq.html">FAQ</a>
+      <a class="btn primary small" href="download.html">Download free</a>
+    </nav>
+    <button class="icon-btn theme-toggle" type="button" aria-label="Switch theme"><svg class="moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg><svg class="sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg></button>
+    <button class="icon-btn menu-btn" type="button" aria-expanded="false" aria-controls="nav" aria-label="Menu"><svg class="open" viewBox="0 0 24 24" aria-hidden="true"><line x1="3" y1="7" x2="21" y2="7"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="17" x2="21" y2="17"/></svg><svg class="close" viewBox="0 0 24 24" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+  </div>
+</header>
+<main id="main">
+<div class="wrap page-hero"><h1>Features</h1>
+  <p>Everything on this page works in the current beta. Features still in development are marked <span class="soon">Planned</span>. Click any screenshot to see it full size.</p></div>
+
+<section>
+  <div class="wrap">
+    <div class="split reveal">
+      <div><span class="kicker">Admin window</span><h2>Everything in one place on your PC</h2>
+        <ul class="checks">
+          <li>Start and stop the web server, with a QR code and link to share</li>
+          <li>See who's signed in and what's uploading, then sign out a device or cancel an upload</li>
+          <li>Pause all uploads or downloads with one switch</li>
+          <li>Close the window and FileDrop keeps running in the tray</li>
+          <li>Optional PIN so nobody else on the PC can manage users or files</li>
+        </ul></div>
+      <div class="browser-frame"><div class="chrome"><i></i><i></i><i></i><span>FileDrop Admin</span></div><div class="screen"><img class="zoomable" src="assets/img/admin-dashboard.webp" alt="FileDrop admin dashboard" width="2880" height="1800" loading="lazy" decoding="async"></div></div>
+    </div>
+
+    <div class="split phone-row flip reveal">
+      <div><span class="kicker">For everyone else</span><h2>Upload from any phone, no app needed</h2>
+        <ul class="checks">
+          <li>Open the link or scan the QR code, then sign in</li>
+          <li>Upload many files at once, of any type, with progress and time left</li>
+          <li>Uploads are sent in pieces and resume by themselves after a dropped connection</li>
+          <li>Make folders like "Pics" and "School", then move, rename and delete files</li>
+          <li>Deleted items go to the Trash first and can be restored</li>
+        </ul></div>
+      <div class="phone-frame"><div class="screen"><img class="zoomable" src="assets/img/phone-uploading.webp" alt="Uploading several files from a phone" width="1170" height="2532" loading="lazy" decoding="async"></div></div>
+    </div>
+
+    <div class="split reveal">
+      <div><span class="kicker">Accounts and sharing</span><h2>Private by default, shared on purpose</h2>
+        <ul class="checks">
+          <li>Each person has a private folder only they can see</li>
+          <li>Shared folders with View, Upload or Manage access for each person</li>
+          <li>People with Upload access can only change files they added</li>
+          <li>Storage limits per person and per shared folder</li>
+          <li>Suspend or delete accounts; files someone added to shared folders stay</li>
+        </ul></div>
+      <div class="browser-frame"><div class="chrome"><i></i><i></i><i></i><span>FileDrop Admin</span></div><div class="screen"><img class="zoomable" src="assets/img/admin-shared.webp" alt="Shared folder permissions in the admin window" width="2880" height="1800" loading="lazy" decoding="async"></div></div>
+    </div>
+
+    <div class="split flip reveal">
+      <div><span class="kicker">Simple setup</span><h2>Adding people takes seconds</h2>
+        <ul class="checks">
+          <li>FileDrop suggests an easy temporary password</li>
+          <li>People choose their own password the first time they sign in</li>
+          <li>Give admins the power to manage every shared folder</li>
+          <li>Reset a forgotten password from the admin window</li>
+        </ul></div>
+      <div class="browser-frame"><div class="chrome"><i></i><i></i><i></i><span>FileDrop Admin</span></div><div class="screen"><img class="zoomable" src="assets/img/admin-add-user.webp" alt="The Add user dialog in the admin window" width="2880" height="1800" loading="lazy" decoding="async"></div></div>
+    </div>
+  </div>
+</section>
+
+<section class="alt">
+  <div class="wrap">
+    <div class="section-head reveal"><span class="kicker">Under the hood</span><h2>Security and reliability</h2></div>
+    <div class="grid">
+      <div class="card reveal"><span class="icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span><h3>HTTPS on your network</h3><p>FileDrop makes its own certificate. Phones show a one-time warning, then the connection is encrypted.</p></div>
+      <div class="card reveal d1"><span class="icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span><h3>Careful with passwords</h3><p>Passwords are stored with Argon2id. Repeated wrong passwords lock the account and slow down guessing.</p></div>
+      <div class="card reveal d2"><span class="icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></span><h3>Files never half-written</h3><p>Uploads are finished and checked before they appear. Rename and move are instant and can't half-fail.</p></div>
+      <div class="card reveal"><span class="icon"><svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg></span><h3>Safe upgrades</h3><p>Each new version backs up its database first and refuses to damage data from a newer version.</p></div>
+      <div class="card reveal d1"><span class="icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg></span><h3>Local network only</h3><p>FileDrop only listens on private network addresses. It isn't reachable from the internet.</p></div>
+      <div class="card reveal d2"><span class="icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></span><h3>Your choice of drive</h3><p>Pick where files go during setup, and move everything to a new drive later from the admin window.</p></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="section-head reveal"><span class="kicker">Coming in Pro</span><h2>What's next</h2><p>Planned for FileDrop Pro. None of these are available yet. <a href="pricing.html">See plans</a>.</p></div>
+    <div class="grid four">
+      <div class="card reveal"><h3>Scheduled backups <span class="soon">Planned</span></h3><p>Automatic copies of every file and account to another drive, with one-click restore.</p></div>
+      <div class="card reveal d1"><h3>Guest upload links <span class="soon">Planned</span></h3><p>A link or QR code that lets guests drop files into one folder without an account.</p></div>
+      <div class="card reveal d2"><h3>Transfer history <span class="soon">Planned</span></h3><p>Who uploaded and downloaded what, with CSV export.</p></div>
+      <div class="card reveal d3"><h3>Your name and logo <span class="soon">Planned</span></h3><p>Custom name, logo and colour on the page people see.</p></div>
+    </div>
+  </div>
+</section>
+</main>
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="cols">
+      <div>
+        <a class="brand" href="index.html"><img src="assets/img/favicon.svg" alt="" width="30" height="30">FILEDROP</a>
+        <p>Your own private file-sharing space, hosted on your Windows PC.</p>
+      </div>
+      <div><h4>Product</h4><ul>
+        <li><a href="features.html">Features</a></li><li><a href="pricing.html">Pricing</a></li>
+        <li><a href="download.html">Download</a></li><li><a href="changelog.html">Changelog</a></li></ul></div>
+      <div><h4>Help</h4><ul>
+        <li><a href="guide.html">Setup guide</a></li><li><a href="faq.html">FAQ</a></li>
+        <li><a href="contact.html">Contact and feedback</a></li></ul></div>
+      <div><h4>Legal</h4><ul>
+        <li><a href="privacy.html">Privacy policy</a></li><li><a href="terms.html">Terms of use</a></li>
+        <li><a href="refunds.html">Refund policy</a></li></ul></div>
+    </div>
+    <div class="legal">
+      <span>&copy; <span data-year>2026</span> FileDrop. Made in Canada. Beta software.</span>
+      <span>Windows is a trademark of Microsoft Corporation.</span>
+    </div>
+  </div>
+</footer>
+</body>
+</html>
