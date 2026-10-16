@@ -283,3 +283,49 @@ def test_overview_and_audit(ctx, admin):
     assert o["counts"]["users"] == 1 and "<svg" in o["qr"]
     actions = [a["action"] for a in admin.get("/api/audit").json()["entries"]]
     assert "user.create" in actions
+
+
+def test_subfolders_and_move(ctx, admin):
+    make_user(admin, "sam")
+    c = login(ctx, "sam")
+    space = my_space(c)
+    root = space["root_id"]
+    pics = c.post(f"/api/v1/spaces/{space['id']}/folders", json={"parent_id": root, "name": "Pics"}).json()
+    school = c.post(f"/api/v1/spaces/{space['id']}/folders", json={"parent_id": root, "name": "School"}).json()
+    term = c.post(f"/api/v1/spaces/{space['id']}/folders", json={"parent_id": school["id"], "name": "Term 1"}).json()
+    photo = upload(c, space["id"], root, "beach.jpg", b"jpg")
+
+    folders = c.get(f"/api/v1/spaces/{space['id']}/folders").json()["folders"]
+    assert [f["path"] for f in folders] == ["", "Pics", "School", "School/Term 1"]
+
+    moved = c.patch(f"/api/v1/items/{photo['id']}", json={"parent_id": pics["id"]}).json()
+    assert moved["name"] == "beach.jpg"
+    listing = c.get(f"/api/v1/spaces/{space['id']}/items?folder={pics['id']}").json()
+    assert [i["name"] for i in listing["items"]] == ["beach.jpg"]
+
+    # a clash is renamed, like uploads
+    upload(c, space["id"], root, "beach.jpg", b"other")
+    second = next(i for i in c.get(f"/api/v1/spaces/{space['id']}/items").json()["items"] if i["name"] == "beach.jpg")
+    assert c.patch(f"/api/v1/items/{second['id']}", json={"parent_id": pics["id"]}).json()["name"] == "beach (2).jpg"
+
+    # a folder can't go inside itself, and the move list hides it
+    assert c.patch(f"/api/v1/items/{school['id']}", json={"parent_id": term["id"]}).status_code == 400
+    paths = [f["path"] for f in c.get(f"/api/v1/spaces/{space['id']}/folders?exclude={school['id']}").json()["folders"]]
+    assert paths == ["", "Pics"]
+
+
+def test_move_rules_in_shared_folder(ctx, admin):
+    sam_id, alex_id = make_user(admin, "sam"), make_user(admin, "alex")
+    sid = admin.post("/api/spaces", json={"name": "Family"}).json()["id"]
+    admin.put(f"/api/spaces/{sid}/members/{sam_id}", json={"level": "upload"})
+    admin.put(f"/api/spaces/{sid}/members/{alex_id}", json={"level": "upload"})
+    sam, alex = login(ctx, "sam"), login(ctx, "alex")
+    root = admin.get(f"/api/spaces/{sid}/items").json()["folder_id"]
+    folder = sam.post(f"/api/v1/spaces/{sid}/folders", json={"parent_id": root, "name": "Trip"}).json()
+    item = upload(sam, sid, root, "pic.jpg", b"x")
+    assert alex.patch(f"/api/v1/items/{item['id']}", json={"parent_id": folder["id"]}).status_code == 403
+    assert sam.patch(f"/api/v1/items/{item['id']}", json={"parent_id": folder["id"]}).status_code == 200
+    # can't move into another space
+    private = my_space(sam)
+    r = sam.patch(f"/api/v1/items/{item['id']}", json={"parent_id": private["root_id"]})
+    assert r.status_code == 404

@@ -70,7 +70,10 @@
 
             <section class="card drop" id="drop">
                 <input type="file" id="picker" multiple hidden>
-                <button class="btn primary big" id="pickBtn" type="button"><span data-icon="upload"></span> Choose files to upload</button>
+                <div class="drop-actions">
+                    <button class="btn primary big" id="pickBtn" type="button"><span data-icon="upload"></span> Upload files</button>
+                    <button class="btn big" id="newFolderBtn" type="button"><span data-icon="folderPlus"></span> New folder</button>
+                </div>
                 <p class="muted small" id="dropHint">Uploading to <b id="destName">My files</b></p>
                 <p class="muted small" id="iosHint" hidden>Picked a lot of photos? Your iPhone may need a moment to prepare them before uploading starts.</p>
                 <div class="quota" id="quota" hidden><div class="muted small" id="quotaText"></div><div class="bar"><span id="quotaBar"></span></div></div>
@@ -91,7 +94,6 @@
                 <div class="card-head">
                     <nav class="crumbs" id="crumbs" aria-label="Folder"></nav>
                     <div class="row-actions">
-                        <button class="btn ghost small" id="newFolderBtn" type="button"><span data-icon="folderPlus"></span> New folder</button>
                         <button class="btn ghost small" id="trashBtn" type="button"><span data-icon="trash"></span> Trash</button>
                         <button class="btn ghost icon-only" id="refreshBtn" type="button" aria-label="Refresh"><span data-icon="refresh"></span></button>
                     </div>

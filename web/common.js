@@ -35,6 +35,7 @@ const FD = (() => {
         pause: '<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>',
         hdd: '<line x1="22" y1="12" x2="2" y2="12"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/><line x1="6" y1="16" x2="6.01" y2="16"/><line x1="10" y1="16" x2="10.01" y2="16"/>',
         ban: '<circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>',
+        move: '<path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/><polyline points="12 10 15 13 12 16"/><line x1="8" y1="13" x2="15" y2="13"/>',
         more: '<circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/>',
         external: '<path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>',
     };
@@ -164,8 +165,25 @@ const FD = (() => {
         });
     }
 
+    // Action sheet: sheet('photo.jpg', [{key, label, icon, danger}]) resolves to the chosen key or null.
+    function sheet(title, actions) {
+        return new Promise(resolve => {
+            const d = document.createElement('dialog');
+            d.className = 'sheet';
+            d.innerHTML = `<div class="sheet-title">${esc(title)}</div>` +
+                actions.map(a => `<button type="button" data-k="${a.key}" class="${a.danger ? 'danger' : ''}">${icon(a.icon)} ${esc(a.label)}</button>`).join('') +
+                `<button type="button" class="cancel" data-k="">Cancel</button>`;
+            document.body.appendChild(d);
+            const finish = v => { d.close(); d.remove(); resolve(v); };
+            d.querySelectorAll('button').forEach(b => b.onclick = () => finish(b.dataset.k || null));
+            d.addEventListener('cancel', e => { e.preventDefault(); finish(null); });
+            d.addEventListener('click', e => { if (e.target === d) finish(null); });
+            d.showModal();
+        });
+    }
+
     const confirmBox = (title, body, ok = 'Delete', danger = true) =>
         dialog({ title, body, ok, danger }).then(v => v !== null);
 
-    return { icon, hydrate, api, ApiError, fmtSize, fmtDate, fmtAgo, fmtTime, esc, kindOf, toast, dialog, confirmBox };
+    return { icon, hydrate, api, ApiError, fmtSize, fmtDate, fmtAgo, fmtTime, esc, kindOf, toast, dialog, confirmBox, sheet };
 })();

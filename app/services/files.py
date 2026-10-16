@@ -122,6 +122,43 @@ def rename(conn: sqlite3.Connection, item, new_name: str) -> str:
     return new_name
 
 
+def move(conn: sqlite3.Connection, item, target) -> str:
+    """Move into another folder of the same space. Renamed on a clash, like uploads."""
+    if item["parent_id"] is None:
+        raise ApiError(400, "INVALID_TARGET", "The top folder can't be moved.")
+    if target["space_id"] != item["space_id"]:
+        raise ApiError(400, "INVALID_TARGET", "Items can only be moved within the same space.")
+    if target["id"] == item["parent_id"]:
+        return item["name"]
+    if any(a["id"] == item["id"] for a in ancestors(conn, target["id"])):
+        raise ApiError(400, "INVALID_TARGET", "A folder can't be moved into itself.")
+    with transaction(conn):
+        name = unique_name(conn, target["id"], item["name"])
+        conn.execute("UPDATE items SET parent_id = ?, name = ?, name_key = ?, modified_at = ? WHERE id = ?",
+                     (target["id"], name, name_key(name), now_ms(), item["id"]))
+    return name
+
+
+def folder_paths(conn: sqlite3.Connection, space_id: str, exclude_id: str | None = None) -> list[dict]:
+    """Every visible folder in a space with its path, for "Move to". Skips exclude_id and what's inside it."""
+    rows = conn.execute("SELECT id, parent_id, name, trashed_at FROM items WHERE space_id = ? AND kind = 'folder'",
+                        (space_id,)).fetchall()
+    by_id = {r["id"]: r for r in rows}
+    out = []
+    for r in rows:
+        parts, node, ok = [], r, True
+        while node is not None:
+            if node["trashed_at"] is not None or node["id"] == exclude_id:
+                ok = False
+                break
+            if node["parent_id"] is not None:
+                parts.append(node["name"])
+            node = by_id.get(node["parent_id"])
+        if ok:
+            out.append({"id": r["id"], "path": "/".join(reversed(parts)), "is_root": r["parent_id"] is None})
+    return sorted(out, key=lambda f: (not f["is_root"], f["path"].casefold()))
+
+
 def trash(conn: sqlite3.Connection, item, actor_id: str | None) -> None:
     if item["parent_id"] is None:
         raise ApiError(400, "INVALID_TARGET", "The top folder can't be deleted.")

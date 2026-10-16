@@ -30,6 +30,11 @@ class NameBody(BaseModel):
     name: str
 
 
+class ItemPatch(BaseModel):
+    name: str | None = None
+    parent_id: str | None = None
+
+
 class FolderBody(BaseModel):
     parent_id: str
     name: str
@@ -144,11 +149,24 @@ def new_folder(space_id: str, body: FolderBody, user=Depends(current_user), conn
 
 
 @api.patch("/items/{item_id}")
-def rename_item(item_id: str, body: NameBody, user=Depends(current_user), conn=Depends(db)):
+def update_item(item_id: str, body: ItemPatch, user=Depends(current_user), conn=Depends(db)):
+    """Rename (name) and/or move to another folder in the same space (parent_id)."""
     item, space, level = _item_access(conn, user, item_id)
     _require_modify(level, item, user)
-    files.rename(conn, item, body.name)
+    if body.parent_id is not None:
+        if not spaces.can_upload(level):
+            raise ApiError(403, "FORBIDDEN", "You can't add things to that folder.")
+        files.move(conn, item, files.require_folder(conn, body.parent_id, item["space_id"]))
+        item = files.get(conn, item_id)
+    if body.name is not None:
+        files.rename(conn, item, body.name)
     return files.to_json(files.get(conn, item_id), user, True)
+
+
+@api.get("/spaces/{space_id}/folders")
+def list_folders(space_id: str, exclude: str | None = None, user=Depends(current_user), conn=Depends(db)):
+    space, level = _space_access(conn, user, space_id)
+    return {"folders": files.folder_paths(conn, space_id, exclude)}
 
 
 @api.delete("/items/{item_id}")

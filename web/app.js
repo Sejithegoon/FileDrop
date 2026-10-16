@@ -222,8 +222,7 @@ function itemRow(it) {
         <div class="meta">${nameEl}<span class="sub">${sub}</span></div>
         <div class="row-actions">
             ${!isFolder ? `<a class="btn ghost small icon-only" href="${dl}" download aria-label="Download" title="Download">${FD.icon('download')}</a>` : ''}
-            ${it.can_modify ? `<button class="btn ghost small icon-only" data-act="rename" aria-label="Rename" title="Rename">${FD.icon('edit')}</button>
-            <button class="btn ghost small icon-only danger" data-act="delete" aria-label="Delete" title="Delete">${FD.icon('trash')}</button>` : ''}
+            ${it.can_modify ? `<button class="btn ghost small icon-only" data-act="more" aria-label="More actions" title="Move, rename or delete">${FD.icon('more')}</button>` : ''}
             ${isFolder ? FD.icon('chevron', 'go') : ''}
         </div></li>`;
 }
@@ -231,24 +230,58 @@ function itemRow(it) {
 function renderList() {
     $('#list').innerHTML = view.items.map(itemRow).join('');
     $('#empty').hidden = view.items.length > 0;
-    $('#empty').textContent = view.can_upload ? 'Nothing here yet. Upload something!' : 'Nothing here yet.';
+    $('#empty').textContent = view.can_upload
+        ? (view.crumbs.length > 1 ? 'This folder is empty. Upload files into it.' : 'Nothing here yet. Upload files, or make folders like "Pics" and "School".')
+        : 'Nothing here yet.';
     $('#list').querySelectorAll('.item').forEach(li => {
         const it = view.items.find(x => x.id === li.dataset.id);
         li.onclick = e => {
             if (e.target.closest('a, button')) return;
             if (it.kind === 'folder') openFolder(cur.spaceId, it.id);
         };
-        li.querySelector('[data-act=rename]')?.addEventListener('click', () => renameItem(it));
-        li.querySelector('[data-act=delete]')?.addEventListener('click', () => deleteItem(it));
+        li.querySelector('[data-act=more]')?.addEventListener('click', () => itemMenu(it));
     });
 }
 
 $('#newFolderBtn').onclick = async () => {
-    const v = await FD.dialog({ title: 'New folder', ok: 'Create', fields: [{ name: 'name', label: 'Folder name', placeholder: 'e.g. Vacation photos' }] });
+    const where = view.crumbs.length > 1 ? ` inside "${view.crumbs[view.crumbs.length - 1].name}"` : '';
+    const v = await FD.dialog({ title: `New folder${where}`, ok: 'Create', fields: [{ name: 'name', label: 'Folder name', placeholder: 'e.g. Pics or School' }] });
     if (!v || !v.name.trim()) return;
-    try { await call(`/spaces/${cur.spaceId}/folders`, { json: { parent_id: cur.folderId, name: v.name } }); refresh(); }
+    try { await call(`/spaces/${cur.spaceId}/folders`, { json: { parent_id: cur.folderId, name: v.name } }); FD.toast(`Folder "${v.name.trim()}" created. Tap it to open.`); refresh(); }
     catch (e) { FD.toast(e.message, 'err'); }
 };
+
+async function itemMenu(it) {
+    const actions = [
+        { key: 'move', label: 'Move to folder', icon: 'move' },
+        { key: 'rename', label: 'Rename', icon: 'edit' },
+        { key: 'delete', label: 'Delete', icon: 'trash', danger: true },
+    ];
+    const pick = await FD.sheet(it.name, actions);
+    if (pick === 'move') moveItem(it);
+    else if (pick === 'rename') renameItem(it);
+    else if (pick === 'delete') deleteItem(it);
+}
+
+async function moveItem(it) {
+    let folders;
+    try { folders = (await call(`/spaces/${cur.spaceId}/folders?exclude=${encodeURIComponent(it.id)}`)).folders; }
+    catch (e) { return FD.toast(e.message, 'err'); }
+    const options = folders.filter(f => f.id !== cur.folderId)
+        .map(f => ({ value: f.id, label: f.is_root ? `${spaceLabel()} (top)` : `${spaceLabel()} / ${f.path.replaceAll('/', ' / ')}` }));
+    if (!options.length) return FD.toast('Make a folder first, then move things into it.', 'err');
+    const v = await FD.dialog({
+        title: `Move "${it.name}"`, ok: 'Move',
+        fields: [{ name: 'target', label: 'Move to', type: 'select', value: options[0].value, options }],
+    });
+    if (!v) return;
+    try {
+        const moved = await call(`/items/${it.id}`, { method: 'PATCH', json: { parent_id: v.target } });
+        const dest = options.find(o => o.value === v.target).label;
+        FD.toast(moved.name !== it.name ? `Moved to ${dest} as "${moved.name}"` : `Moved to ${dest}`);
+        refresh();
+    } catch (e) { FD.toast(e.message, 'err'); }
+}
 
 async function renameItem(it) {
     const v = await FD.dialog({ title: `Rename ${it.kind}`, ok: 'Rename', fields: [{ name: 'name', label: 'New name', value: it.name }] });
