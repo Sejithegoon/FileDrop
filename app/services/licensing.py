@@ -45,17 +45,17 @@ def _post(url: str, action: str, body: dict, timeout: float) -> dict:
 
 
 def contact_server(ctx, conn, action: str = "activate", timeout: float = 10) -> dict:
-    """Activate or check this PC. Returns {"online": bool, "message": str}."""
+    """Activate or check this PC. Returns {"online": bool, "notice": str} (notice: a line for a toast)."""
     text, url = settings_store.get(conn, LICENCE), ctx.settings.licence_url
     if not text or not url:
-        return {"online": False, "message": ""}
+        return {"online": False, "notice": ""}
     settings_store.set_value(conn, LAST_TRY, now_ms())
     try:
         reply = _post(url, action, {"licence": text, "install_id": storage_config.install_id(conn),
                                     "app_version": __version__}, timeout)
     except (OSError, ValueError) as exc:
         log.info("Licence server not reached: %s", exc)
-        return {"online": False, "message": "Couldn't reach the licence server. Pro keeps working; FileDrop will "
+        return {"online": False, "notice": "Couldn't reach the licence server. Pro keeps working; FileDrop will "
                                             "try again later."}
     blob = reply.get("status")
     if blob:
@@ -63,7 +63,7 @@ def contact_server(ctx, conn, action: str = "activate", timeout: float = 10) -> 
         if edition.parse_status(blob, lid, storage_config.install_id(conn)):
             settings_store.set_value(conn, STATUS, blob)
     refresh(ctx, conn)
-    return {"online": True, "message": str(reply.get("message", ""))[:300]}
+    return {"online": True, "notice": str(reply.get("message", ""))[:300]}
 
 
 def install(ctx, conn, text: str) -> dict:
@@ -79,7 +79,7 @@ def install(ctx, conn, text: str) -> dict:
 
 def remove(ctx, conn) -> dict:
     """Frees this PC's activation (when online) and goes back to Free. Files and accounts are untouched."""
-    result = {"online": False, "message": ""}
+    result = {"online": False, "notice": ""}
     if settings_store.get(conn, LICENCE):
         result = contact_server(ctx, conn, "deactivate", timeout=6)
     for key in (LICENCE, STATUS, LAST_TRY):

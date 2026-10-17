@@ -143,7 +143,7 @@ def test_offline_activation_keeps_pro(admin, server):
     server.offline = True
     body = admin.post("/api/licence", json={"licence": licence()}).json()
     assert body["pro"] and not body["activated"] and not body["online"]
-    assert "try again" in body["message"]
+    assert "try again" in body["notice"]
 
 
 def test_revoked_licence_turns_pro_read_only_without_touching_files(ctx, admin, server):

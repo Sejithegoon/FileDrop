@@ -667,14 +667,14 @@ $('#licSave').onclick = async () => {
         $('#licInput').value = '';
         renderLicence(r);
         FD.toast(r.pro ? (r.online ? 'FileDrop Pro is active' : 'Pro is on. FileDrop will confirm it when online.')
-            : (r.message || 'Licence saved'), r.pro ? 'ok' : 'err');
+            : (r.message || r.notice || 'Licence saved'), r.pro ? 'ok' : 'err');
     } catch (e) { fail(e); } finally { $('#licSave').disabled = false; }
 };
 $('#licCheck').onclick = async () => {
     try {
         const r = await api('/licence/check', { json: {} });
         renderLicence(r);
-        FD.toast(r.online ? 'Licence checked' : r.message, r.online ? 'ok' : 'err');
+        FD.toast(r.online ? 'Licence checked' : r.notice, r.online ? 'ok' : 'err');
     } catch (e) { fail(e); }
 };
 $('#licRemove').onclick = async () => {
