@@ -12,6 +12,10 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 
+WEBSITE = "https://sejithegoon.github.io/filedrop-website"  # becomes the real domain at launch
+LICENCE_URL = "https://chpjqelrwlowdiwxfugl.supabase.co/functions/v1/licence"
+
+
 def _default_data_dir() -> Path:
     base = os.environ.get("PROGRAMDATA") or str(Path.home() / "AppData" / "Local")
     return Path(base) / "FileDrop"
@@ -31,8 +35,9 @@ class Settings:
     lan_port: int = 8443
     start_server_on_launch: bool = True
     https: bool | None = None  # None: use the admin's choice (default on); True/False: forced by FILEDROP_HTTPS
-    update_feed_url: str = ""  # JSON {version, url, notes}; set once the website hosts it
-    website_url: str = ""  # e.g. https://example.ca; enables "Send feedback" in the admin window
+    update_feed_url: str = WEBSITE + "/update.json"  # JSON {version, url, notes}; "" turns the check off
+    website_url: str = WEBSITE  # links to feedback, pricing and help; "" hides them
+    licence_url: str = LICENCE_URL  # licence server; "" turns activation and check-ins off
     data_dir: Path = field(default_factory=_default_data_dir)
     storage_dir: Path | None = None  # fixed storage folder; normally chosen in the admin window
 
@@ -74,6 +79,8 @@ def load_settings() -> Settings:
         s.website_url = env["FILEDROP_WEBSITE"].rstrip("/")
     if "FILEDROP_UPDATE_FEED" in env:
         s.update_feed_url = env["FILEDROP_UPDATE_FEED"]
+    if "FILEDROP_LICENCE_URL" in env:
+        s.licence_url = env["FILEDROP_LICENCE_URL"]
     if "FILEDROP_HTTPS" in env:
         s.https = env["FILEDROP_HTTPS"] == "1"
     if "FILEDROP_START_SERVER" in env:

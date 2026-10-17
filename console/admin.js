@@ -1,4 +1,4 @@
-// Admin window: server controls, users, shared folders, file browser, activity.
+// Admin window: server controls, users, shared folders, file browser, activity, backups, licence.
 const $ = s => document.querySelector(s);
 const GB = 1024 ** 3;
 let page = 'dashboard';
@@ -18,7 +18,7 @@ const quotaText = (used, quota) => quota == null ? `${FD.fmtSize(used)} · no li
 
 // ---------- navigation
 
-const PAGES = ['dashboard', 'users', 'shared', 'files', 'activity'];
+const PAGES = ['dashboard', 'users', 'shared', 'files', 'activity', 'backups', 'licence'];
 
 function go(p) {
     if (!PAGES.includes(p)) p = 'dashboard';
@@ -26,7 +26,8 @@ function go(p) {
     history.replaceState(null, '', '#' + p);
     document.querySelectorAll('#nav button').forEach(b => b.toggleAttribute('aria-current', b.dataset.page === p));
     document.querySelectorAll('[data-view]').forEach(v => { v.hidden = v.dataset.view !== p; });
-    ({ dashboard: loadDashboard, users: loadUsers, shared: loadSpaces, files: loadBrowser, activity: loadActivity })[p]();
+    ({ dashboard: loadDashboard, users: loadUsers, shared: loadSpaces, files: loadBrowser, activity: loadActivity,
+       backups: loadBackups, licence: loadLicence })[p]();
     if (p !== 'dashboard') refreshSide();
 }
 
@@ -36,12 +37,20 @@ function renderSide(o) {
     $('#version').textContent = `v${o.version}`;
     $('#sidePill').className = `pill ${running ? '' : 'bad'}`;
     $('#sideState').textContent = running ? 'Server running' : 'Server stopped';
+    if (o.edition) renderEdition(o.edition, o.website_url);
+}
+
+function renderEdition(e, website) {
+    $('#navEdition').textContent = e.pro ? 'PRO' : 'FREE';
+    $('#navEdition').className = `badge ${e.pro ? 'accent' : ''}`;
+    if (website) { $('#licBuy').href = `${website}/pricing.html`; $('#licBuy').hidden = false; }
 }
 
 async function refreshSide() {
     try { renderSide(await api('/overview')); } catch { markOffline(); }
 }
 document.querySelectorAll('#nav button').forEach(b => b.onclick = () => go(b.dataset.page));
+document.querySelectorAll('[data-goto]').forEach(b => b.onclick = () => go(b.dataset.goto));
 window.addEventListener('hashchange', () => { const p = location.hash.slice(1); if (p !== page && $('#lockScreen').hidden) go(p); });
 
 // ---------- dashboard
@@ -296,6 +305,12 @@ async function loadUsers() {
     let data;
     try { data = await api('/users'); } catch (e) { return fail(e); }
     $('#usersEmpty').hidden = data.users.length > 0;
+    api('/licence').then(e => {
+        $('#userLimitNote').hidden = e.max_users == null || data.users.length < e.max_users - 1;
+        $('#userLimitText').textContent = data.users.length >= (e.max_users ?? Infinity)
+            ? `You're using all ${e.max_users} accounts in FileDrop Free. Pro has unlimited accounts.`
+            : `${data.users.length} of ${e.max_users} accounts used in FileDrop Free.`;
+    }).catch(() => {});
     $('#usersTbl').innerHTML = data.users.length ? `<tr><th>User</th><th>Role</th><th>Status</th><th>Storage</th><th>Last active</th><th></th></tr>` +
         data.users.map(u => {
             const status = u.status === 'active'
@@ -562,6 +577,110 @@ async function loadActivity() {
     }).join('');
 }
 $('#activityRefresh').onclick = loadActivity;
+
+// ---------- backups (Pro)
+
+let backupTimer = null;
+
+async function loadBackups() {
+    let b;
+    try { b = await api('/backup'); } catch (e) { return fail(e); }
+    $('#backupProNote').hidden = b.pro;
+    ['#backupEnabled', '#backupFolder', '#backupEvery', '#backupKeep', '#backupSave', '#backupBrowse']
+        .forEach(id => { $(id).disabled = !b.pro; });
+    $('#backupBrowse').hidden = !b.can_browse;
+    if (!document.activeElement || !document.activeElement.closest('[data-view=backups]')) {
+        $('#backupEnabled').checked = b.config.enabled;
+        $('#backupFolder').value = b.config.folder;
+        $('#backupEvery').value = String(b.config.every_hours);
+        $('#backupKeep').value = b.config.keep;
+    }
+    $('#backupRun').disabled = !b.pro || b.running || !b.config.folder;
+    const s = b.state;
+    $('#backupLast').innerHTML = b.running ? '<b>Backing up now…</b> You can keep using FileDrop.'
+        : !s.last_at ? 'No backup yet.'
+        : s.ok ? `<span class="badge ok">OK</span> ${FD.fmtAgo(s.last_at)}: ${s.files} file(s), ${s.copied} new (${FD.fmtSize(s.copied_bytes || 0)}), took ${s.seconds}s.<br><span class="muted">${FD.esc(s.folder || '')}</span>`
+        : `<span class="badge bad">Failed</span> ${FD.fmtAgo(s.last_at)}: ${FD.esc(s.error)} FileDrop tries again every hour.`;
+    clearTimeout(backupTimer);
+    if (b.running && page === 'backups') backupTimer = setTimeout(loadBackups, 2000);
+}
+
+$('#backupBrowse').onclick = async () => {
+    try { const r = await api('/storage/choose', { json: {} }); if (r.path) $('#backupFolder').value = r.path; } catch (e) { fail(e); }
+};
+$('#backupSave').onclick = async () => {
+    try {
+        await api('/backup', { method: 'PUT', json: { enabled: $('#backupEnabled').checked, folder: $('#backupFolder').value,
+            every_hours: Number($('#backupEvery').value), keep: Number($('#backupKeep').value) } });
+        FD.toast('Backup settings saved');
+        $('#backupSave').blur();
+        loadBackups();
+    } catch (e) { fail(e); }
+};
+$('#backupRun').onclick = async () => {
+    try { await api('/backup/run', { json: {} }); FD.toast('Backup started'); loadBackups(); } catch (e) { fail(e); }
+};
+
+// ---------- licence
+
+const LIC_STATE = {
+    free: ['FileDrop Free', '', 'Free includes up to 5 accounts and everything you need to share files at home.'],
+    pro: ['FileDrop Pro', 'ok', 'Thank you for supporting FileDrop! Pro is active on this PC.'],
+    revoked: ['FileDrop Pro (cancelled)', 'bad', ''],
+    limit: ['FileDrop Pro (too many PCs)', 'warn', ''],
+    updates_ended: ['FileDrop Pro (updates ended)', 'warn', ''],
+    invalid: ['FileDrop Free', 'bad', ''],
+};
+
+function renderLicence(e) {
+    renderEdition(e, overview && overview.website_url);
+    const [title, badge, text] = LIC_STATE[e.state] || LIC_STATE.free;
+    $('#licTitle').textContent = title;
+    $('#licBadge').textContent = e.pro ? 'PRO' : 'FREE';
+    $('#licBadge').className = `badge ${badge}`;
+    $('#licText').textContent = text;
+    $('#licProblem').hidden = !e.message;
+    $('#licProblemText').textContent = e.message || '';
+    $('#freeLimitCell').textContent = e.free_max_users;
+    const has = !!e.licence_id;
+    $('#licActions').hidden = !has;
+    $('#licPasteCard').hidden = has;
+    $('#licMeta').hidden = !has;
+    if (has) {
+        const rows = [['Licence', e.licence_id], ['Licensed to', e.licensee], ['Updates until', e.updates_until],
+            ['This PC', e.activated ? 'Activated' : 'Not confirmed yet (FileDrop will try again when online)'],
+            ['Use on up to', e.max_activations ? `${e.max_activations} PCs` : '']].filter(([, v]) => v);
+        $('#licMeta').innerHTML = rows.map(([k, v]) => `<dt>${k}</dt><dd>${FD.esc(v)}</dd>`).join('');
+    }
+}
+
+async function loadLicence() {
+    try { if (!overview) overview = await api('/overview'); renderLicence(await api('/licence')); } catch (e) { fail(e); }
+}
+
+$('#licSave').onclick = async () => {
+    const text = $('#licInput').value.trim();
+    if (!text) return FD.toast('Paste your licence first', 'err');
+    $('#licSave').disabled = true;
+    try {
+        const r = await api('/licence', { json: { licence: text } });
+        $('#licInput').value = '';
+        renderLicence(r);
+        FD.toast(r.pro ? (r.online ? 'FileDrop Pro is active' : 'Pro is on. FileDrop will confirm it when online.')
+            : (r.message || 'Licence saved'), r.pro ? 'ok' : 'err');
+    } catch (e) { fail(e); } finally { $('#licSave').disabled = false; }
+};
+$('#licCheck').onclick = async () => {
+    try {
+        const r = await api('/licence/check', { json: {} });
+        renderLicence(r);
+        FD.toast(r.online ? 'Licence checked' : r.message, r.online ? 'ok' : 'err');
+    } catch (e) { fail(e); }
+};
+$('#licRemove').onclick = async () => {
+    if (!await FD.confirmBox('Remove the licence from this PC?', 'FileDrop goes back to Free and frees this PC so you can use the licence on another one. Your files and accounts stay. Keep your licence email to add it again.', 'Remove licence')) return;
+    try { const r = await api('/licence/remove', { json: {} }); renderLicence(r); FD.toast('Licence removed'); } catch (e) { fail(e); }
+};
 
 // ---------- admin PIN
 

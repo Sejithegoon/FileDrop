@@ -17,6 +17,8 @@
             <button data-page="shared"><span data-icon="share"></span> Shared folders</button>
             <button data-page="files"><span data-icon="folder"></span> Browse files</button>
             <button data-page="activity"><span data-icon="activity"></span> Activity</button>
+            <button data-page="backups"><span data-icon="hdd"></span> Backups</button>
+            <button data-page="licence"><span data-icon="key"></span> Licence <span class="badge accent" id="navEdition">FREE</span></button>
         </nav>
         <div class="foot">
             <span class="pill" id="sidePill"><span class="dot"></span><span id="sideState">…</span></span>
@@ -103,6 +105,8 @@
         <section data-view="users" hidden>
             <div class="page-head"><h1>Users</h1>
                 <button class="btn primary" id="addUserBtn" type="button"><span data-icon="plus"></span> Add user</button></div>
+            <p class="notice" id="userLimitNote" hidden><span data-icon="users"></span> <span id="userLimitText"></span>
+                <button class="btn ghost small" type="button" data-goto="licence">Get Pro</button></p>
             <div class="card"><div class="tbl-wrap"><table class="tbl" id="usersTbl"></table></div>
                 <p class="empty muted" id="usersEmpty" hidden>No users yet. Add the first one so people can sign in.</p></div>
         </section>
@@ -138,6 +142,75 @@
             <div class="page-head"><h1>Activity</h1>
                 <button class="btn ghost small" id="activityRefresh" type="button"><span data-icon="refresh"></span> Refresh</button></div>
             <div class="card"><ul class="log" id="log"></ul><p class="empty muted" id="logEmpty" hidden>Nothing yet.</p></div>
+        </section>
+
+        <!-- Backups (Pro) -->
+        <section data-view="backups" hidden>
+            <div class="page-head"><h1>Backups</h1></div>
+            <p class="notice" id="backupProNote" hidden><span data-icon="lock"></span>
+                <span>Scheduled backups are part of FileDrop Pro. They copy every file and account to another drive, every day or week.</span>
+                <button class="btn ghost small" type="button" data-goto="licence">Get Pro</button></p>
+            <div class="grid">
+                <div class="card">
+                    <div class="card-head"><h2>Schedule</h2></div>
+                    <label class="switch-row"><span>Back up automatically<small>Runs in the background while FileDrop is open</small></span>
+                        <span class="switch"><input type="checkbox" id="backupEnabled"><i></i></span></label>
+                    <label class="label" for="backupFolder">Backup folder (another drive is best, for example an external disk)</label>
+                    <div class="folder-pick">
+                        <input class="input" id="backupFolder" spellcheck="false" autocomplete="off" placeholder="E:\Backups">
+                        <button class="btn" id="backupBrowse" type="button"><span data-icon="folder"></span> Browse…</button>
+                    </div>
+                    <div class="row-2">
+                        <div><label class="label" for="backupEvery">How often</label>
+                            <select class="input" id="backupEvery"><option value="24">Every day</option><option value="168">Every week</option></select></div>
+                        <div><label class="label" for="backupKeep">Copies to keep</label>
+                            <input class="input" id="backupKeep" type="number" min="1" max="60" value="7"></div>
+                    </div>
+                    <div class="row-actions" style="margin-top:12px">
+                        <button class="btn primary" id="backupSave" type="button">Save</button>
+                        <button class="btn ghost" id="backupRun" type="button"><span data-icon="download"></span> Back up now</button>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-head"><h2>Last backup</h2></div>
+                    <p id="backupLast" class="small"></p>
+                    <p class="muted small">Each backup folder has a <b>READ ME.txt</b> that explains how to restore. Files are copied once, so later backups are quick.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Licence -->
+        <section data-view="licence" hidden>
+            <div class="page-head"><h1>Licence</h1></div>
+            <div class="card">
+                <div class="card-head"><h2 id="licTitle">FileDrop Free</h2><span class="badge" id="licBadge"></span></div>
+                <p id="licText" class="small"></p>
+                <p class="notice bad" id="licProblem" hidden><span data-icon="alert"></span> <span id="licProblemText"></span></p>
+                <dl class="meta-list" id="licMeta" hidden></dl>
+                <div class="row-actions" id="licActions" style="margin-top:12px" hidden>
+                    <button class="btn ghost small" id="licCheck" type="button"><span data-icon="refresh"></span> Check again</button>
+                    <button class="btn ghost small danger" id="licRemove" type="button">Remove from this PC</button>
+                </div>
+            </div>
+            <div class="card" id="licPasteCard">
+                <div class="card-head"><h2>Add your Pro licence</h2></div>
+                <p class="muted small">Paste the whole licence from your purchase email, including the BEGIN and END lines.</p>
+                <textarea class="input mono" id="licInput" rows="7" spellcheck="false" placeholder="-----BEGIN FILEDROP LICENCE-----"></textarea>
+                <div class="row-actions" style="margin-top:12px">
+                    <button class="btn primary" id="licSave" type="button"><span data-icon="key"></span> Activate Pro</button>
+                    <a class="btn ghost" id="licBuy" target="_blank" rel="noopener" hidden>See Pro features and pricing</a>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-head"><h2>Free and Pro</h2></div>
+                <div class="tbl-wrap"><table class="tbl">
+                    <tr><th>Feature</th><th>Free</th><th>Pro</th></tr>
+                    <tr><td>Accounts</td><td id="freeLimitCell">5</td><td>Unlimited</td></tr>
+                    <tr><td>Private and shared folders, phone uploads</td><td>Yes</td><td>Yes</td></tr>
+                    <tr><td>Scheduled backups to another drive</td><td>No</td><td>Yes</td></tr>
+                </table></div>
+                <p class="muted small" style="margin-top:8px">Pro works offline. If the licence ever stops (for example after a refund), Pro features become read-only: your files, accounts and Free features keep working.</p>
+            </div>
         </section>
     </main>
 </div>

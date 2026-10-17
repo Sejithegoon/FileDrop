@@ -17,7 +17,8 @@ H = {"X-FileDrop": "1"}
 
 @pytest.fixture
 def ctx(tmp_path):
-    settings = Settings(data_dir=tmp_path, console_port=8442)
+    # No website, update feed or licence server: tests never touch the internet.
+    settings = Settings(data_dir=tmp_path, console_port=8442, website_url="", update_feed_url="", licence_url="")
     storage = Storage(tmp_path / "storage")
     storage.ensure()
     conn, _ = open_database(settings.db_path, __version__, settings.backup_dir)

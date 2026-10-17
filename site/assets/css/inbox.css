@@ -54,3 +54,8 @@ label { font-size: 13px; color: var(--muted); font-weight: 600; }
   .filters .btn { grid-column: span 2; justify-content: center; }
 }
 .actions select { width: auto; min-width: 150px; }
+
+.pcs { list-style: none; display: grid; gap: 6px; margin-top: 6px; }
+.pcs li { display: flex; justify-content: space-between; align-items: center; gap: 8px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 8px 12px; font-size: 14px; }
+.licence-text { font: 12.5px/1.45 ui-monospace, "Cascadia Code", Consolas, monospace; }
+.filters:has(#issue:not([hidden])) { grid-template-columns: 1fr auto auto; }

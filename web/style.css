@@ -437,3 +437,12 @@ dialog.sheet::backdrop { background: rgb(0 0 0 / .6); }
 .notice.update-note .btn { margin-left: auto; }
 
 .switch-row.compact-row { padding: 6px 0 0; border-top: 0; font-size: 14px; }
+
+/* Licence and backups pages */
+.row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
+.meta-list { display: grid; grid-template-columns: max-content 1fr; gap: 4px 16px; font-size: 14px; margin-top: 12px; }
+.meta-list dt { color: var(--muted); }
+.meta-list dd { overflow-wrap: anywhere; }
+textarea.input { resize: vertical; min-height: 120px; width: 100%; }
+.input.mono { font-family: ui-monospace, "Cascadia Code", Consolas, monospace; font-size: 13px; }
+.nav .badge { margin-left: auto; font-size: 10.5px; }

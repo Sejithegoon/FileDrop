@@ -110,6 +110,7 @@
 
     function query(limit) {
         if (kind === "waitlist") return `waitlist?select=*&order=consent_at.desc&limit=${limit}${searchFilter(["email"])}`;
+        if (kind === "licences") return `licences?select=*,activations(install_id,app_version,activated_at,last_seen_at)&order=issued_at.desc&limit=${limit}${searchFilter(["email", "id", "note"])}`;
         const status = $("#status").value;
         return `submissions?select=*,attachments(id,filename,content_type,size_bytes,storage_path)&kind=eq.${kind}`
             + (status ? `&status=eq.${status}` : "") + `&order=created_at.desc&limit=${limit}`
@@ -118,9 +119,12 @@
 
     async function load() {
         const isWaitlist = kind === "waitlist";
-        $("#status").hidden = isWaitlist;
+        $("#status").hidden = isWaitlist || kind === "licences";
+        $("#issue").hidden = kind !== "licences";
         items = await rest(query(500));
-        if (isWaitlist) {
+        if (kind === "licences") {
+            $("#list").innerHTML = items.map(i => `<li data-id="${esc(i.id)}" aria-selected="${i.id === selected}"><div class="row1"><span>${i.revoked_at ? '<span class="badge bug">Revoked</span>' : '<span class="badge idea">Active</span>'} ${i.activations.length}/${i.max_activations} PCs</span><span>${when(i.issued_at)}</span></div><div class="title">${esc(i.email)}</div><div class="muted">${esc(i.id)}${i.note ? " · " + esc(i.note) : ""}</div></li>`).join("");
+        } else if (isWaitlist) {
             $("#list").innerHTML = items.map(i => `<li data-id="${i.id}" aria-selected="${i.id === selected}"><div class="row1"><span>${i.unsubscribed_at ? "Unsubscribed" : "Subscribed"}</span><span>${when(i.consent_at)}</span></div><div class="title">${esc(i.email)}</div></li>`).join("");
         } else {
             $("#list").innerHTML = items.map(i => `<li data-id="${i.id}" aria-selected="${i.id === selected}">
@@ -129,7 +133,7 @@
                 <div class="muted">${esc(i.name || i.email || "Anonymous")}</div></li>`).join("");
         }
         $("#empty").hidden = items.length > 0;
-        document.querySelectorAll("#list li").forEach(li => li.onclick = () => open(Number(li.dataset.id)));
+        document.querySelectorAll("#list li").forEach(li => li.onclick = () => open(kind === "licences" ? li.dataset.id : Number(li.dataset.id)));
         counts().catch(() => {});
     }
 
@@ -146,10 +150,11 @@
 
     function open(id) {
         selected = id;
-        document.querySelectorAll("#list li").forEach(li => li.setAttribute("aria-selected", String(Number(li.dataset.id) === id)));
+        document.querySelectorAll("#list li").forEach(li => li.setAttribute("aria-selected", String(li.dataset.id === String(id))));
         const s = items.find(i => i.id === id);
         if (!s) return;
         if (kind === "waitlist") return openWaitlist(s);
+        if (kind === "licences") return openLicence(s);
         const d = s.details || {};
         const rows = [["Received", when(s.created_at)], ["Type", LABELS[s.category] || s.category], ["Name", s.name], ["Email", s.email],
             ["App version", d.app_version], ["Windows", d.windows], ["Phone or browser", d.device],
@@ -206,11 +211,79 @@
         };
     }
 
+    // ---- licences
+    async function functionCall(path, body) {
+        const r = await call(`/functions/v1/licence/${path}`, { method: "POST", json: body });
+        return r.json();
+    }
+
+    function openLicence(l) {
+        $("#detail").innerHTML = `<h2>${esc(l.email)}</h2>
+            <dl class="meta"><dt>Licence</dt><dd>${esc(l.id)}</dd><dt>Issued</dt><dd>${when(l.issued_at)}</dd>
+            <dt>Updates until</dt><dd>${esc(l.updates_until)}</dd>
+            <dt>Status</dt><dd>${l.revoked_at ? "Revoked " + when(l.revoked_at) + (l.revoke_reason ? " (" + esc(l.revoke_reason) + ")" : "") : "Active"}</dd>
+            ${l.order_id ? `<dt>Order</dt><dd>${esc(l.order_id)}</dd>` : ""}</dl>
+            <div><label>PCs (${l.activations.length} of ${l.max_activations})</label>
+            ${l.activations.length ? `<ul class="pcs">${l.activations.map((a, n) => `<li><span>PC ${esc(a.install_id.slice(0, 8))}… · v${esc(a.app_version)} · last seen ${when(a.last_seen_at)}</span><button class="btn" type="button" data-pc="${n}">Remove</button></li>`).join("")}</ul>` : '<p class="muted">Not activated on any PC yet.</p>'}</div>
+            <div><label>Licence (send this to the customer)</label><pre class="message licence-text">${esc(l.licence_text)}</pre></div>
+            <div><label for="lnote">Private note</label><textarea id="lnote">${esc(l.note)}</textarea></div>
+            <div class="actions">
+                <button class="btn primary" id="lcopy" type="button">Copy licence</button>
+                <a class="btn" href="mailto:${encodeURIComponent(l.email)}?subject=${encodeURIComponent("Your FileDrop Pro licence")}&body=${encodeURIComponent("Open FileDrop, go to Licence, and paste this:\n\n" + l.licence_text)}">Email it</a>
+                <button class="btn" id="lsave" type="button">Save note</button>
+                <button class="btn danger" id="lrevoke" type="button">${l.revoked_at ? "Restore licence" : "Revoke licence"}</button>
+            </div>`;
+        $("#lcopy").onclick = () => navigator.clipboard.writeText(l.licence_text).then(() => toast("Copied"), fail);
+        const patch = async (fields, msg) => {
+            try {
+                await rest(`licences?id=eq.${encodeURIComponent(l.id)}`, { method: "PATCH", headers: { Prefer: "return=minimal" }, json: fields });
+                toast(msg); await load(); open(l.id);
+            } catch (err) { fail(err); }
+        };
+        $("#lsave").onclick = () => patch({ note: $("#lnote").value }, "Saved");
+        $("#lrevoke").onclick = () => {
+            if (l.revoked_at) return patch({ revoked_at: null, revoke_reason: "" }, "Licence restored");
+            const reason = prompt("Revoke this licence? Pro turns read-only on the customer's PCs at their next check-in.\nReason (for example: refund):", "refund");
+            if (reason !== null) patch({ revoked_at: new Date().toISOString(), revoke_reason: reason.slice(0, 200) }, "Licence revoked");
+        };
+        document.querySelectorAll("[data-pc]").forEach(b => b.onclick = async () => {
+            const a = l.activations[Number(b.dataset.pc)];
+            if (!confirm("Remove this PC from the licence? The customer can then activate another PC.")) return;
+            try {
+                await rest(`activations?licence_id=eq.${encodeURIComponent(l.id)}&install_id=eq.${encodeURIComponent(a.install_id)}`,
+                    { method: "DELETE", headers: { Prefer: "return=minimal" } });
+                toast("PC removed"); await load(); open(l.id);
+            } catch (err) { fail(err); }
+        });
+    }
+
+    $("#issue").onclick = () => {
+        selected = null;
+        const year = new Date(); year.setFullYear(year.getFullYear() + 1);
+        $("#detail").innerHTML = `<h2>Issue a Pro licence</h2>
+            <p class="muted">For testing, giveaways and support. Paid licences will be issued automatically once payments are set up.</p>
+            <div><label for="iemail">Customer email</label><input id="iemail" type="email" required></div>
+            <div><label for="iupd">Updates until</label><input id="iupd" type="date" value="${year.toISOString().slice(0, 10)}"></div>
+            <div><label for="imax">PCs</label><input id="imax" type="number" min="1" max="50" value="3"></div>
+            <div><label for="inote">Private note</label><input id="inote" placeholder="e.g. beta tester"></div>
+            <div class="actions"><button class="btn primary" id="igo" type="button">Issue licence</button></div>`;
+        $("#igo").onclick = async () => {
+            try {
+                $("#igo").disabled = true;
+                const r = await functionCall("issue", { email: $("#iemail").value, updates_until: $("#iupd").value,
+                    max_activations: Number($("#imax").value), note: $("#inote").value });
+                if (!r.ok) throw new Error(r.message);
+                toast("Licence issued"); await load(); open(r.id);
+            } catch (err) { fail(err); $("#igo").disabled = false; }
+        };
+    };
+
     // CSV of everything matching the current tab, status and search (up to 10,000 rows).
     $("#export").onclick = async () => {
         try {
             const rows = await rest(query(10000));
-            const cols = kind === "waitlist"
+            const cols = kind === "licences" ? ["id", "email", "issued_at", "updates_until", "max_activations", "revoked_at", "revoke_reason", "order_id", "note"]
+                : kind === "waitlist"
                 ? ["id", "email", "consent_at", "consent_text", "unsubscribed_at"]
                 : ["id", "created_at", "category", "status", "name", "email", "subject", "message", "details", "admin_note"];
             const cell = v => {

@@ -21,7 +21,7 @@ H = {"X-FileDrop": "1"}
 
 @pytest.fixture
 def ctx(tmp_path):
-    settings = Settings(data_dir=tmp_path / "data", console_port=8442)
+    settings = Settings(data_dir=tmp_path / "data", console_port=8442, website_url="", update_feed_url="", licence_url="")
     conn, _ = open_database(settings.db_path, __version__, settings.backup_dir)
     conn.close()
     c = AppContext(settings=settings)

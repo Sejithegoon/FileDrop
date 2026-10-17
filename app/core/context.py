@@ -7,11 +7,12 @@ from dataclasses import dataclass, field
 from typing import Callable
 
 from app.core.adminlock import AdminLock
+from app.core.edition import Capabilities
 from app.core.errors import ApiError
 from app.core.settings import Settings
 from app.core.storage import Storage
 from app.db.database import connect
-from app.services import settings_store
+from app.services import licensing, settings_store
 from app.services.storage_config import StorageMover
 
 
@@ -29,6 +30,7 @@ class AppContext:
     update_available: dict | None = None  # set by upkeep when the feed has a newer version
     mover: StorageMover = field(default_factory=StorageMover)
     admin_lock: AdminLock = field(default_factory=AdminLock)
+    caps: Capabilities = field(default_factory=Capabilities)  # Free or Pro, from the verified licence
 
     def connect(self) -> sqlite3.Connection:
         return connect(self.settings.db_path)
@@ -59,5 +61,6 @@ class AppContext:
             self.uploads_paused = bool(settings_store.get(conn, "uploads_paused"))
             self.downloads_paused = bool(settings_store.get(conn, "downloads_paused"))
             self.admin_lock.load(conn)
+            licensing.refresh(self, conn)
         finally:
             conn.close()

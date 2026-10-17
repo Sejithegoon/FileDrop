@@ -27,3 +27,7 @@ def set_value(conn: sqlite3.Connection, key: str, value, by: str | None = None) 
         "updated_by = excluded.updated_by",
         (key, json.dumps(value), now_ms(), by),
     )
+
+
+def delete(conn: sqlite3.Connection, key: str) -> None:
+    conn.execute("DELETE FROM settings WHERE key = ?", (key,))

@@ -1,4 +1,4 @@
-"""Background upkeep: old trash, stale uploads, and the update check.
+"""Background upkeep: old trash, stale uploads, scheduled backups, licence check-in and the update check.
 
 Runs in one daemon thread. Every task is best-effort: a failure is logged and
 retried on the next round, and never affects file sharing.
@@ -14,7 +14,7 @@ import urllib.request
 
 from app import __version__
 from app.db.ids import now_ms
-from app.services import files, uploads
+from app.services import backups, files, licensing, uploads
 
 log = logging.getLogger(__name__)
 
@@ -76,10 +76,21 @@ class Upkeep:
                 if n:
                     log.info("Removed %s item(s) that were in the trash for over %s days", n, TRASH_DAYS)
                 uploads.sweep(conn, ctx.storage)
+                if ctx.caps.scheduled_backups and backups.due(conn):
+                    cfg = backups.config(conn)
+                    backups.run(conn, ctx.storage, cfg["folder"], cfg["keep"])
             except Exception as exc:
                 log.warning("Upkeep failed: %s", exc)
             finally:
                 conn.close()
+        conn = ctx.connect()
+        try:
+            if licensing.due(ctx, conn):
+                licensing.contact_server(ctx, conn, "check" if ctx.caps.activated else "activate")
+        except Exception as exc:  # never let the licence check affect file sharing
+            log.warning("Licence check failed: %s", exc)
+        finally:
+            conn.close()
         feed = ctx.settings.update_feed_url
         if feed and now_ms() - self._last_update_check > UPDATE_EVERY_MS:
             try:

@@ -28,7 +28,8 @@ from app.core import adminlock
 from app.core.errors import ApiError, install_error_handlers
 from app.core.network import primary_ipv4
 from app.core.settings import resource_path
-from app.services import audit, auth, files, settings_store, spaces, storage_config, uploads, users
+from app.services import (audit, auth, backups, files, licensing, settings_store, spaces, storage_config,
+                          uploads, users)
 
 ACTOR = "admin (this PC)"
 api = APIRouter(prefix="/api", dependencies=[Depends(csrf)])
@@ -88,6 +89,17 @@ class NameBody(BaseModel):
     name: str
 
 
+class LicenceBody(BaseModel):
+    licence: str
+
+
+class BackupBody(BaseModel):
+    enabled: bool
+    folder: str = ""
+    every_hours: int = 24
+    keep: int = 7
+
+
 def _qr_svg(text: str) -> str:
     try:
         import qrcode
@@ -120,7 +132,8 @@ def overview(request: Request, conn=Depends(db)):
         "uploads_paused": ctx.uploads_paused, "downloads_paused": ctx.downloads_paused,
         "storage": storage, "storage_override": bool(ctx.settings.storage_dir), "move": ctx.mover.status(),
         "update": ctx.update_available, "https_forced": ctx.settings.https is not None,
-        "feedback_url": feedback_url(ctx.settings),
+        "feedback_url": feedback_url(ctx.settings), "edition": ctx.caps.to_json(),
+        "website_url": ctx.settings.website_url,
         "can_browse": ctx.choose_folder is not None, "suggested_root": str(storage_config.suggested_root()),
         "files_bytes": conn.execute("SELECT COALESCE(SUM(size_bytes), 0) FROM items").fetchone()[0],
         "counts": {
@@ -283,6 +296,82 @@ def show_window(request: Request):
     return {"ok": True}
 
 
+# ---- licence and backups -----------------------------------------------------------
+
+@api.get("/licence")
+def licence_status(request: Request):
+    return ctx_of(request).caps.to_json()
+
+
+@api.post("/licence")
+def licence_install(body: LicenceBody, request: Request, conn=Depends(db)):
+    ctx = ctx_of(request)
+    result = licensing.install(ctx, conn, body.licence)
+    audit.record(conn, "licence.install", actor=ACTOR, target_name=ctx.caps.licence_id,
+                 details={"state": ctx.caps.state})
+    return {**ctx.caps.to_json(), **result}
+
+
+@api.post("/licence/check")
+def licence_check(request: Request, conn=Depends(db)):
+    ctx = ctx_of(request)
+    result = licensing.contact_server(ctx, conn, "activate", timeout=8)
+    return {**ctx.caps.to_json(), **result}
+
+
+@api.post("/licence/remove")
+def licence_remove(request: Request, conn=Depends(db)):
+    ctx = ctx_of(request)
+    licence_id = ctx.caps.licence_id
+    result = licensing.remove(ctx, conn)
+    audit.record(conn, "licence.remove", actor=ACTOR, target_name=licence_id)
+    return {**ctx.caps.to_json(), **result}
+
+
+def _backup_json(ctx, conn) -> dict:
+    return {"config": backups.config(conn), "state": backups.state(conn), "running": backups.running(),
+            "pro": ctx.caps.scheduled_backups, "can_browse": ctx.choose_folder is not None}
+
+
+@api.get("/backup")
+def backup_status(request: Request, conn=Depends(db)):
+    return _backup_json(ctx_of(request), conn)
+
+
+@api.put("/backup")
+def backup_settings(body: BackupBody, request: Request, conn=Depends(db)):
+    ctx = ctx_of(request)
+    licensing.require_pro(ctx, "Scheduled backups")
+    backups.save_config(conn, ctx.require_storage().root, body.enabled, body.folder, body.every_hours, body.keep)
+    audit.record(conn, "backup.settings", actor=ACTOR, target_name=body.folder or None,
+                 details={"enabled": body.enabled, "every_hours": body.every_hours, "keep": body.keep})
+    return _backup_json(ctx, conn)
+
+
+@api.post("/backup/run")
+def backup_now(request: Request, conn=Depends(db)):
+    ctx = ctx_of(request)
+    licensing.require_pro(ctx, "Backups")
+    storage = ctx.require_storage()
+    if ctx.storage_moving:
+        raise ApiError(409, "STORAGE_MOVING", "Wait for the storage folder move to finish.")
+    cfg = backups.config(conn)
+    backups.check_folder(cfg["folder"], storage.root)
+    if backups.running():
+        raise ApiError(409, "BACKUP_RUNNING", "A backup is already running.")
+
+    def work():
+        c = ctx.connect()
+        try:
+            r = backups.run(c, storage, cfg["folder"], cfg["keep"])
+            audit.record(c, "backup.run", actor=ACTOR, result="ok" if r["ok"] else "error",
+                         details={k: r.get(k) for k in ("files", "copied", "error")})
+        finally:
+            c.close()
+    threading.Thread(target=work, name="backup", daemon=True).start()
+    return {"started": True}
+
+
 # ---- users ------------------------------------------------------------------------
 
 @api.get("/users")
@@ -291,9 +380,9 @@ def list_users(conn=Depends(db)):
 
 
 @api.post("/users")
-def create_user(body: NewUserBody, conn=Depends(db)):
+def create_user(body: NewUserBody, request: Request, conn=Depends(db)):
     uid = users.create(conn, body.username, body.password, body.display_name, body.role, body.quota_bytes,
-                       body.must_change_password)
+                       body.must_change_password, max_users=ctx_of(request).caps.max_users)
     user = users.get(conn, uid)
     audit.record(conn, "user.create", actor=ACTOR, target_type="user", target_id=uid, target_name=user["username"],
                  details={"role": body.role})
@@ -467,7 +556,7 @@ def admin_download(item_id: str, request: Request, conn=Depends(db)):
 
 
 _OPEN_PATHS = {"/api/lock", "/api/unlock", "/api/show"}
-_POLL_PATHS = {"/api/overview", "/api/sessions", "/api/storage/move"}
+_POLL_PATHS = {"/api/overview", "/api/sessions", "/api/storage/move", "/api/backup"}
 
 
 class PinBody(BaseModel):
