@@ -20,4 +20,13 @@ window.SITE = {
     // Supabase project URL and publishable key (safe to publish; used only by admin.html to sign in).
     supabaseUrl: "https://chpjqelrwlowdiwxfugl.supabase.co",
     supabaseKey: "sb_publishable_15mUk_xDPw92KhFEg0l7MA_yg-d_jb-",
+
+    // Licence service (re-send page) and Paddle checkout. The client-side token is public by design.
+    licenceApi: "https://chpjqelrwlowdiwxfugl.supabase.co/functions/v1/licence",
+    paddle: {
+        env: "sandbox",   // "production" at launch; until then the Buy button shows only with ?buytest=1
+        token: "test_4aa1cd7b4dad71cdabc78bcf640",  // Paddle > My account > Settings > Authentication > Client-side tokens
+        priceId: "pri_01m55sj9bqk0j030ysrazcxwta",  // "FileDrop Pro" (sandbox)
+        price: "$29 CAD", // placeholder, shown on the pricing page
+    },
 };

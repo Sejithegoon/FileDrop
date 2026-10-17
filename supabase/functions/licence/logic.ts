@@ -1,6 +1,7 @@
 // FileDrop Pro licences: issue, activate on up to N PCs, check, deactivate, re-send.
 // Licences and statuses are JSON signed with Ed25519. The private key exists only in this
 // function's secrets; the FileDrop app has the public key and verifies everything offline.
+import { licenceEmail } from "./email.ts";
 
 export interface LicenceRow {
   id: string;
@@ -25,8 +26,11 @@ export interface LicenceStore {
 }
 
 export interface Mailer {
-  send(to: string, subject: string, text: string): Promise<void>;
+  send(to: string, subject: string, text: string, html?: string): Promise<void>;
 }
+
+/** An email the provider refused for good (bad address, sender not allowed). Retrying won't help. */
+export class PermanentMailError extends Error {}
 
 export interface Config {
   allowedOrigins: string[];
@@ -114,26 +118,29 @@ async function sha256(input: string): Promise<string> {
   return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
-function addMonths(date: Date, months: number): string {
+export function addMonths(date: Date, months: number): string {
   const d = new Date(date);
   d.setUTCMonth(d.getUTCMonth() + months);
   return d.toISOString().slice(0, 10);
 }
 
-function licenceEmail(cfg: Config, rows: LicenceRow[]): string {
-  const blocks = rows.map((r) => `Licence ${r.id} (updates until ${r.updates_until}):\n\n${r.licence_text}`).join("\n\n");
-  return `Thank you for buying FileDrop Pro!
+/** Sends the branded licence email (HTML with a plain-text version) for one or more licences. */
+export async function sendLicences(mailer: Mailer, websiteUrl: string, to: string, rows: LicenceRow[]): Promise<void> {
+  const m = licenceEmail(websiteUrl, rows);
+  await mailer.send(to, m.subject, m.text, m.html);
+}
 
-To turn on Pro, open the FileDrop window on your PC, go to Licence, paste the whole licence below
-(including the BEGIN and END lines) and press Activate Pro.
-
-${blocks}
-
-You can use a licence on up to 3 PCs. To move it to a new PC, choose "Remove from this PC" on the old one first.
-Keep this email: you'll need the licence if you reinstall Windows.
-
-Need help? ${cfg.websiteUrl}/contact.html
-`;
+/** Creates, signs and stores a new Pro licence. Used by the inbox and by the payment webhook. */
+export async function issueLicence(store: LicenceStore, keys: Keys, o: {
+  email: string; updatesUntil: string; max: number; note: string; orderId: string | null; now: number;
+}): Promise<LicenceRow> {
+  const id = newLicenceId();
+  const text = formatLicence(await signJson(keys, {
+    v: 1, typ: "licence", lid: id, ed: "pro", to: o.email, iat: new Date(o.now).toISOString(), upd: o.updatesUntil, max: o.max,
+  }));
+  const row = { id, email: o.email, updates_until: o.updatesUntil, max_activations: o.max, revoked_at: null, licence_text: text };
+  await store.insertLicence({ ...row, note: o.note, order_id: o.orderId });
+  return row;
 }
 
 export async function handle(req: Request, store: LicenceStore, keys: Keys, cfg: Config,
@@ -171,7 +178,9 @@ export async function handle(req: Request, store: LicenceStore, keys: Keys, cfg:
   try {
     let body: Record<string, unknown>;
     try {
-      body = await req.json();
+      // JSON from the app and the inbox; a normal form post from the website's re-send page.
+      body = (req.headers.get("content-type") || "").includes("application/json")
+        ? await req.json() : Object.fromEntries((await req.formData()).entries());
     } catch {
       throw new HttpError(400, "INVALID", "The request could not be read.");
     }
@@ -214,7 +223,7 @@ export async function handle(req: Request, store: LicenceStore, keys: Keys, cfg:
       await limit(`resend-ip:${ipHash}`, cfg.resendLimit, 3600000);
       await limit(`resend-email:${(await sha256(cfg.ipSalt + email)).slice(0, 16)}`, cfg.resendLimit, 3600000);
       const rows = (await store.licencesByEmail(email)).filter((r) => !r.revoked_at);
-      if (rows.length && opts.mailer) await opts.mailer.send(email, "Your FileDrop Pro licence", licenceEmail(cfg, rows));
+      if (rows.length && opts.mailer) await sendLicences(opts.mailer, cfg.websiteUrl, email, rows);
       // Same answer either way, so nobody can find out who bought FileDrop.
       return json({ ok: true, message: "If that email address bought FileDrop Pro, we've sent the licence to it. Check your spam folder too." });
     }
@@ -230,19 +239,14 @@ export async function handle(req: Request, store: LicenceStore, keys: Keys, cfg:
       if (!/^\d{4}-\d{2}-\d{2}$/.test(updates)) throw new HttpError(400, "INVALID", "Updates until must be a date.");
       const max = Number(body.max_activations ?? 3);
       if (!Number.isInteger(max) || max < 1 || max > 50) throw new HttpError(400, "INVALID", "PCs must be 1 to 50.");
-      const id = newLicenceId();
-      const text = formatLicence(await signJson(keys, {
-        v: 1, typ: "licence", lid: id, ed: "pro", to: email, iat: new Date(now).toISOString(), upd: updates, max,
-      }));
-      await store.insertLicence({ id, email, updates_until: updates, max_activations: max, revoked_at: null,
-        licence_text: text, note: str("note", 500), order_id: str("order_id", 100) || null });
+      const row = await issueLicence(store, keys, { email, updatesUntil: updates, max, note: str("note", 500),
+        orderId: str("order_id", 100) || null, now });
       let emailed = false;
       if (body.send_email && opts.mailer) {
-        await opts.mailer.send(email, "Your FileDrop Pro licence",
-          licenceEmail(cfg, [{ id, email, updates_until: updates, max_activations: max, revoked_at: null, licence_text: text }]));
+        await sendLicences(opts.mailer, cfg.websiteUrl, email, [row]);
         emailed = true;
       }
-      return json({ ok: true, id, licence: text, emailed });
+      return json({ ok: true, id: row.id, licence: row.licence_text, emailed });
     }
 
     return json({ ok: false, code: "NOT_FOUND", message: "Unknown request." }, 404);

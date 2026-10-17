@@ -1,5 +1,5 @@
 // LicenceStore backed by Supabase REST with the service role key (provided to Edge Functions automatically).
-import type { LicenceRow, LicenceStore, Mailer } from "./logic.ts";
+import { type LicenceRow, type LicenceStore, type Mailer, PermanentMailError } from "./logic.ts";
 
 export class SupabaseLicenceStore implements LicenceStore {
   constructor(private url: string, private key: string, private fetcher: typeof fetch = fetch) {}
@@ -77,12 +77,16 @@ export class SupabaseLicenceStore implements LicenceStore {
 export class ResendMailer implements Mailer {
   constructor(private apiKey: string, private from: string, private fetcher: typeof fetch = fetch) {}
 
-  async send(to: string, subject: string, text: string): Promise<void> {
+  async send(to: string, subject: string, text: string, html?: string): Promise<void> {
     const r = await this.fetcher("https://api.resend.com/emails", {
       method: "POST",
       headers: { Authorization: `Bearer ${this.apiKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ from: this.from, to: [to], subject, text }),
+      body: JSON.stringify({ from: this.from, to: [to], subject, text, ...(html ? { html } : {}) }),
     });
-    if (!r.ok) throw new Error(`email: ${r.status} ${await r.text()}`);
+    if (r.ok) return;
+    const detail = `email: ${r.status} ${(await r.text()).slice(0, 300)}`;
+    // 4xx (except rate limits) means the email itself was refused; 5xx and 429 are worth retrying.
+    if (r.status >= 400 && r.status < 500 && r.status !== 429) throw new PermanentMailError(detail);
+    throw new Error(detail);
   }
 }

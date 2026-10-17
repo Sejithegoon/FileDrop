@@ -175,9 +175,11 @@
 
     // ---------- forms (feedback, contact, beta, waitlist) post to the feedback server
     const api = (S.apiBase || "").replace(/\/$/, "");
+    const bases = { licence: (S.licenceApi || "").replace(/\/$/, "") };
     const params = new URLSearchParams(location.search);
     $$("form[data-api]").forEach(form => {
-        if (!api) {  // forms not connected yet: say so instead of failing on submit
+        const base = form.dataset.apiBase ? bases[form.dataset.apiBase] : api;
+        if (!base) {  // forms not connected yet: say so instead of failing on submit
             $$("input, textarea, select, button", form).forEach(el => { el.disabled = true; });
             const note = $("[data-form-status]", form);
             if (note) {
@@ -208,7 +210,7 @@
             button.textContent = "Sending…";
             show("busy", "Sending…");
             try {
-                const r = await fetch(`${api}/${form.dataset.api}`, { method: "POST", body: new FormData(form) });
+                const r = await fetch(`${base}/${form.dataset.api}`, { method: "POST", body: new FormData(form) });
                 const data = await r.json().catch(() => null);
                 if (!data) throw new Error("offline");
                 if (!r.ok || !data.ok) { show("err", data.message || "Something went wrong. Please try again."); return; }
@@ -263,5 +265,46 @@
         };
         people.addEventListener("input", update);
         update();
+    }
+
+    // ---------- Buy Pro with Paddle's checkout (only on the pricing page, only when configured).
+    // While payments are in test mode the button shows only with ?buytest=1, so visitors can't make test purchases.
+    const buy = $("[data-buy]");
+    const pay = S.paddle || {};
+    if (buy && pay.token && pay.priceId && (pay.env === "production" || params.has("buytest"))) {
+        buy.hidden = false;
+        $$('form[data-api=waitlist], [data-waitlist-note]').forEach(el => { el.hidden = true; });
+        const soon = $(".plan.pro .soon");
+        if (soon) soon.textContent = pay.env === "production" ? "Available now" : "Test mode";
+        if (pay.price) { const price = $(".plan.pro .price"); if (price) price.innerHTML = `${pay.price} <small>one-time</small>`; }
+        const note = $("[data-buy-note]");
+        if (pay.env !== "production" && note) note.textContent = "Test mode: use a Paddle test card. No real money is taken.";
+        let ready = null;
+        const load = () => ready || (ready = new Promise((resolve, reject) => {
+            const tag = document.createElement("script");
+            tag.src = "https://cdn.paddle.com/paddle/v2/paddle.js";
+            tag.onload = () => {
+                if (pay.env !== "production") window.Paddle.Environment.set("sandbox");
+                window.Paddle.Initialize({
+                    token: pay.token,
+                    eventCallback: e => {
+                        if (e.name === "checkout.completed" && note) {
+                            note.textContent = "Thank you! Your licence is on its way to your email. It usually arrives within a minute.";
+                        }
+                    },
+                });
+                resolve(window.Paddle);
+            };
+            tag.onerror = () => { ready = null; reject(new Error("checkout unavailable")); };
+            document.head.appendChild(tag);
+        }));
+        $("[data-buy-btn]").addEventListener("click", async () => {
+            try {
+                const paddle = await load();
+                paddle.Checkout.open({ items: [{ priceId: pay.priceId, quantity: 1 }], settings: { displayMode: "overlay", theme: "dark" } });
+            } catch {
+                if (note) note.textContent = "The checkout couldn't load. Check your connection or ad blocker, then try again.";
+            }
+        });
     }
 })();

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en-CA">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; connect-src 'self' https://*.supabase.co; form-action 'self'; base-uri 'self'; object-src 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>Your licence | FileDrop</title>
+<meta name="description" content="Re-send your FileDrop Pro licence, add it to FileDrop, or move it to another PC.">
+<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f7f9fd" media="(prefers-color-scheme: light)">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Your licence | FileDrop">
+<meta property="og:description" content="Re-send your FileDrop Pro licence, add it to FileDrop, or move it to another PC.">
+<meta property="og:image" content="assets/img/admin-dashboard.webp">
+<link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/css/site.css">
+<script src="assets/js/theme.js"></script>
+<script src="assets/js/config.js" defer></script>
+<script src="assets/js/site.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="index.html"><img src="assets/img/favicon.svg" alt="" width="30" height="30">FILEDROP <span class="beta">BETA</span></a>
+    <nav class="nav" id="nav" aria-label="Main">
+      <a href="features.html">Features</a>
+      <a href="pricing.html">Pricing</a>
+      <a href="guide.html">Setup guide</a>
+      <a href="faq.html">FAQ</a>
+      <a class="btn primary small" href="download.html">Download free</a>
+    </nav>
+    <button class="icon-btn theme-toggle" type="button" aria-label="Switch theme"><svg class="moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg><svg class="sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg></button>
+    <button class="icon-btn menu-btn" type="button" aria-expanded="false" aria-controls="nav" aria-label="Menu"><svg class="open" viewBox="0 0 24 24" aria-hidden="true"><line x1="3" y1="7" x2="21" y2="7"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="17" x2="21" y2="17"/></svg><svg class="close" viewBox="0 0 24 24" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+  </div>
+</header>
+<main id="main">
+<div class="wrap page-hero"><h1>Your FileDrop Pro licence</h1><p>Get your licence again, add it to FileDrop, or move it to a new PC.</p></div>
+<section><div class="wrap slim">
+  <form class="form-card" data-api="resend" data-api-base="licence" method="post">
+    <h2>Re-send my licence</h2>
+    <p>Enter the email address you used to buy FileDrop Pro. We'll email every licence bought with it.</p>
+    <label for="rs-email">Email</label>
+    <input id="rs-email" name="email" type="email" autocomplete="email" required>
+    <div class="hp" aria-hidden="true"><label>Leave this empty<input name="website" tabindex="-1" autocomplete="off"></label></div><input type="hidden" name="started" value="">
+    <button class="btn primary" type="submit">Email my licence</button>
+    <p class="form-status" data-form-status role="status" aria-live="polite" hidden></p>
+  </form>
+  <div class="doc">
+    <h2>Add your licence to FileDrop</h2>
+    <ol><li>Open the FileDrop window on your PC (double-click the tray icon).</li>
+      <li>Go to <b>Licence</b>, paste the whole licence including the BEGIN and END lines, and press <b>Activate Pro</b>.</li></ol>
+    <h2>Move Pro to a new PC</h2>
+    <p>A licence works on up to 3 PCs. On the PC you no longer use, open <b>Licence</b> and press <b>Remove from this PC</b>, then add the licence on the new one. If the old PC is gone, <a href="contact.html">contact us</a> with your licence ID and we'll free it up.</p>
+    <h2>Refunds</h2>
+    <p>After a refund, Pro features turn read-only the next time FileDrop checks the licence. Your files, accounts and Free features keep working. See the <a href="refunds.html">refund policy</a>.</p>
+  </div>
+</div></section>
+</main>
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="cols">
+      <div>
+        <a class="brand" href="index.html"><img src="assets/img/favicon.svg" alt="" width="30" height="30">FILEDROP</a>
+        <p>Your own private file-sharing space, hosted on your Windows PC.</p>
+      </div>
+      <div><h4>Product</h4><ul>
+        <li><a href="features.html">Features</a></li><li><a href="pricing.html">Pricing</a></li>
+        <li><a href="download.html">Download</a></li><li><a href="changelog.html">Changelog</a></li></ul></div>
+      <div><h4>Help</h4><ul>
+        <li><a href="guide.html">Setup guide</a></li><li><a href="faq.html">FAQ</a></li>
+        <li><a href="feedback.html">Send feedback</a></li><li><a href="beta.html">Join the beta</a></li>
+        <li><a href="contact.html">Contact</a></li><li><a href="licence.html">Lost your licence?</a></li></ul></div>
+      <div><h4>Legal</h4><ul>
+        <li><a href="privacy.html">Privacy policy</a></li><li><a href="terms.html">Terms of use</a></li>
+        <li><a href="refunds.html">Refund policy</a></li></ul></div>
+    </div>
+    <div class="legal">
+      <span>&copy; <span data-year>2026</span> FileDrop. Made in Canada. Beta software.</span>
+      <span>Windows is a trademark of Microsoft Corporation.</span>
+    </div>
+  </div>
+</footer>
+</body>
+</html>

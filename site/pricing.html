@@ -3,15 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; connect-src 'self' https://*.supabase.co; form-action 'self'; base-uri 'self'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: https://*.paddle.com; style-src 'self' 'unsafe-inline' https://*.paddle.com; script-src 'self' https://cdn.paddle.com; frame-src https://buy.paddle.com https://sandbox-buy.paddle.com; connect-src 'self' https://*.supabase.co https://*.paddle.com; form-action 'self'; base-uri 'self'; object-src 'none'">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <title>Pricing | FileDrop</title>
-<meta name="description" content="FileDrop Free is a complete local file-sharing product. FileDrop Pro adds backups, guest upload links and advanced admin tools.">
+<meta name="description" content="FileDrop Free is a complete local file-sharing product. FileDrop Pro adds unlimited accounts and scheduled backups.">
 <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
 <meta name="theme-color" content="#f7f9fd" media="(prefers-color-scheme: light)">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Pricing | FileDrop">
-<meta property="og:description" content="FileDrop Free is a complete local file-sharing product. FileDrop Pro adds backups, guest upload links and advanced admin tools.">
+<meta property="og:description" content="FileDrop Free is a complete local file-sharing product. FileDrop Pro adds unlimited accounts and scheduled backups.">
 <meta property="og:image" content="assets/img/admin-dashboard.webp">
 <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="assets/css/site.css">
@@ -59,7 +59,7 @@
         <h3>FileDrop Pro <span class="soon">Coming soon</span></h3>
         <div class="price">TBA <small>one-time</small></div>
         <p class="muted">For bigger families, classrooms, clubs and small offices.</p>
-        <ul class="checks"><li><b>Everything in Free</b></li><li><b>Unlimited user accounts</b></li><li>Scheduled backups with one-click restore</li><li>Guest upload links (no account needed)</li><li>Transfer history and CSV export</li><li>Server hours and admin from another PC</li><li>Your name, logo and colour</li><li>Feature updates for 1 year</li></ul>
+        <ul class="checks"><li><b>Everything in Free</b></li><li><b>Unlimited user accounts</b></li><li>Scheduled backups of files and accounts to another drive</li><li>Use your licence on up to 3 PCs</li><li>Works offline, no account with us</li><li>Feature updates for 1 year</li></ul>
         <form class="form" data-api="waitlist" method="post">
           <label for="wl-email">Tell me when Pro launches</label>
           <input id="wl-email" name="email" type="email" placeholder="you@example.com" autocomplete="email" required>
@@ -69,7 +69,12 @@
           <button class="btn primary" type="submit">Notify me</button>
           <p class="form-status" data-form-status role="status" aria-live="polite" hidden></p>
         </form>
-        <p class="form-note">One email when Pro launches. No spam, ever.</p>
+        <p class="form-note" data-waitlist-note>One email when Pro launches. No spam, ever.</p>
+        <div class="buy" data-buy hidden>
+          <button class="btn primary big" type="button" data-buy-btn>Buy FileDrop Pro</button>
+          <p class="form-note" data-buy-note>Your licence arrives by email within a minute. Paste it into FileDrop to unlock Pro. Taxes are calculated at checkout by our reseller, Paddle.</p>
+          <p class="form-note"><a href="licence.html">Lost your licence?</a></p>
+        </div>
       </div>
     </div>
   </div>
@@ -77,7 +82,7 @@
 
 <section class="alt">
   <div class="wrap">
-    <div class="section-head reveal"><h2>Compare plans</h2><p>Pro features are planned and not available yet. The price will be set after the beta.</p></div>
+    <div class="section-head reveal"><h2>Compare plans</h2><p>Pro is being tested now. The price will be set before launch. Features marked "planned" aren't available yet.</p></div>
     <div class="table-wrap reveal"><table class="compare">
       <thead><tr><th scope="col">Feature</th><th scope="col">Free</th><th scope="col">Pro</th></tr></thead>
       <tbody>
@@ -88,8 +93,9 @@
         <tr><td>Storage limits you set</td><td class="yes">Included</td><td class="yes">Included</td></tr>
         <tr><td>HTTPS and admin PIN</td><td class="yes">Included</td><td class="yes">Included</td></tr>
         <tr><td>User accounts</td><td>Up to 5</td><td>Unlimited</td></tr>
-        <tr><td>Activity log</td><td>Last 30 days</td><td>Full history and CSV export</td></tr>
-        <tr><td>Backups</td><td>Manual database backup</td><td>Scheduled files and database, with restore</td></tr>
+        <tr><td>Activity log</td><td class="yes">Included</td><td class="yes">Included</td></tr>
+        <tr><td>Scheduled backups of files and accounts</td><td class="no">&mdash;</td><td class="yes">Daily or weekly, to another drive</td></tr>
+        <tr><td>Transfer history CSV export</td><td class="no">&mdash;</td><td>Planned</td></tr>
         <tr><td>Guest upload links</td><td class="no">&mdash;</td><td>Planned</td></tr>
         <tr><td>Server hours, admin from another PC</td><td class="no">&mdash;</td><td>Planned</td></tr>
         <tr><td>Custom name, logo and colour</td><td class="no">&mdash;</td><td>Planned</td></tr>
@@ -114,7 +120,7 @@
       <div><h4>Help</h4><ul>
         <li><a href="guide.html">Setup guide</a></li><li><a href="faq.html">FAQ</a></li>
         <li><a href="feedback.html">Send feedback</a></li><li><a href="beta.html">Join the beta</a></li>
-        <li><a href="contact.html">Contact</a></li></ul></div>
+        <li><a href="contact.html">Contact</a></li><li><a href="licence.html">Lost your licence?</a></li></ul></div>
       <div><h4>Legal</h4><ul>
         <li><a href="privacy.html">Privacy policy</a></li><li><a href="terms.html">Terms of use</a></li>
         <li><a href="refunds.html">Refund policy</a></li></ul></div>
