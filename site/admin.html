@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en-CA">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; connect-src https://*.supabase.co; form-action 'none'; base-uri 'none'; object-src 'none'">
+<meta name="referrer" content="no-referrer">
+<meta name="robots" content="noindex, nofollow">
+<title>Feedback inbox | FileDrop</title>
+<link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/css/inbox.css">
+<script src="assets/js/config.js" defer></script>
+<script src="assets/js/inbox.js" defer></script>
+</head>
+<body>
+<section id="login" class="login" hidden>
+  <form class="card" id="loginForm">
+    <h1>FileDrop feedback</h1>
+    <p class="muted">Sign in with your Supabase admin account to review reports, messages, beta sign-ups and the waitlist.</p>
+    <label for="em">Email</label>
+    <input id="em" type="email" autocomplete="username" required>
+    <label for="pw">Password</label>
+    <input id="pw" type="password" autocomplete="current-password" required>
+    <p class="error" id="loginError" hidden></p>
+    <button class="btn primary" type="submit">Sign in</button>
+  </form>
+</section>
+
+<div id="app" class="app" hidden>
+  <header class="top">
+    <strong>FileDrop feedback</strong>
+    <nav class="tabs" id="tabs">
+      <button data-kind="feedback" aria-current="true">Feedback <span class="count" data-count="feedback"></span></button>
+      <button data-kind="contact">Messages <span class="count" data-count="contact"></span></button>
+      <button data-kind="beta">Beta <span class="count" data-count="beta"></span></button>
+      <button data-kind="waitlist">Waitlist <span class="count" data-count="waitlist"></span></button>
+    </nav>
+    <button class="btn" id="logout" type="button">Sign out</button>
+  </header>
+
+  <main class="layout">
+    <section class="list-pane">
+      <div class="filters" id="filters">
+        <select id="status">
+          <option value="">All statuses</option><option value="new" selected>New</option>
+          <option value="in_progress">In progress</option><option value="closed">Closed</option>
+        </select>
+        <input id="search" type="search" placeholder="Search">
+        <button class="btn" id="export" type="button">Export CSV</button>
+      </div>
+      <ul class="list" id="list"></ul>
+      <p class="muted empty" id="empty" hidden>Nothing here.</p>
+    </section>
+    <section class="detail" id="detail"><p class="muted">Select an item to see it.</p></section>
+  </main>
+</div>
+</body>
+</html>

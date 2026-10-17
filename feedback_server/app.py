@@ -81,7 +81,7 @@ class RateLimiter:
 
 
 def clean(value: str | None, limit: int, required: bool = False, label: str = "This field") -> str:
-    value = (value or "").replace("\x00", "").strip()
+    value = (value or "").replace("\x00", "").replace("\r\n", "\n").strip()
     if required and not value:
         raise FormError(f"{label} is required.")
     if len(value) > limit:

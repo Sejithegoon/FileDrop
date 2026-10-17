@@ -1,0 +1,6 @@
+# FileDrop Supabase project (forms backend). Deploy: see supabase/README.md
+project_id = "filedrop"
+
+[functions.forms]
+# Public website forms: the function does its own abuse checks, so no Supabase login is required to call it.
+verify_jwt = false

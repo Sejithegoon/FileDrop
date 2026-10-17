@@ -100,6 +100,7 @@ code, kbd {
 ::selection { background: var(--accent); color: #fff; }
 
 .wrap { max-width: 1160px; margin: 0 auto; padding: 0 clamp(16px, 4vw, 28px); }
+.wrap.slim { max-width: 680px; }
 .skip { position: absolute; left: -999px; top: 8px; background: var(--accent); color: #fff; padding: 8px 12px; border-radius: 8px; z-index: 100; }
 .skip:focus { left: 8px; }
 .muted { color: var(--muted); }

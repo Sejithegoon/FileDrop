@@ -192,7 +192,7 @@
         const started = $("input[name=started]", form);
         if (started) started.value = String(Date.now());
         // Prefill from links in the app, e.g. feedback.html?version=0.1.0&windows=Windows%2011
-        for (const [key, field] of [["version", "app_version"], ["windows", "windows"], ["type", "category"]]) {
+        for (const [key, field] of [["version", "app_version"], ["windows", "windows"], ["type", "category"], ["token", "token"]]) {
             const v = params.get(key);
             const el = form.elements[field];
             if (!v || !el) continue;

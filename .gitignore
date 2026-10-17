@@ -8,3 +8,5 @@ build/work/
 *.log
 .devdata*/
 feedback-data/
+
+supabase/.temp/
