@@ -4,7 +4,8 @@
 # First time:  powershell -ExecutionPolicy Bypass -File build\publish-site.ps1 -RemoteUrl https://github.com/<you>/filedrop-website.git
 # After that:  powershell -ExecutionPolicy Bypass -File build\publish-site.ps1
 param([string]$RemoteUrl = "")
-$ErrorActionPreference = "Stop"
+# git writes progress to stderr; PowerShell 5.1 would treat that as an error, so check exit codes instead.
+$ErrorActionPreference = "Continue"
 Set-Location (Split-Path -Parent $PSScriptRoot)
 
 $remotes = git remote
@@ -17,14 +18,14 @@ if ($remotes -notcontains "website") {
 if (git status --porcelain -- site) { throw "site/ has uncommitted changes. Commit them first so the published site matches the repo." }
 
 # Build a branch whose history contains only site/ (files at its root), then push it.
-git branch -D site-publish 2>$null | Out-Null
-git subtree split --prefix site -b site-publish | Out-Null
+if (git branch --list site-publish) { git branch -D site-publish | Out-Null }
+git subtree split --prefix site -b site-publish 2>&1 | Out-Null
 if ($LASTEXITCODE -ne 0) { throw "Could not split site/ out of the repo." }
 
 $leaked = git ls-tree -r --name-only site-publish | Where-Object { $_ -match '^(app|console|web|tests|build|feedback_server)/' -or $_ -match '\.py$' }
 if ($leaked) { git branch -D site-publish | Out-Null; throw "Refusing to publish: app files found in the website branch: $leaked" }
 
-git push website site-publish:main
+git push website site-publish:main 2>&1 | ForEach-Object { "$_" }
 $code = $LASTEXITCODE
 git branch -D site-publish | Out-Null
 if ($code -ne 0) {
