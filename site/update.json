@@ -1,5 +1,5 @@
 {
-  "version": "0.1.2",
+  "version": "0.1.3",
   "url": "https://wifidrop.ca/download.html",
-  "notes": "WiFiDrop 0.1.2 moves its data to a WiFiDrop folder automatically. Your files, accounts and licence carry over."
+  "notes": "Live updates (no more refreshing), clearer downloads, and restore from a backup."
 }

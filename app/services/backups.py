@@ -39,7 +39,11 @@ README = """WiFiDrop backup
 database\\  Copies of the WiFiDrop database (accounts, folders, file names). The newest is the latest backup.
 files\\     The stored files, under ID names. The database knows which ID is which file.
 
-To restore on this PC or a new one:
+To restore:
+- On this PC: open WiFiDrop, go to Backups, and use "Restore from a backup".
+- On a new PC: install WiFiDrop. On the first screen, choose "Restore from a backup" and pick this folder.
+
+Manual restore (only if the steps above aren't possible):
 1. Install WiFiDrop, then quit it from the tray icon.
 2. Copy the newest file from database\\ to C:\\ProgramData\\WiFiDrop\\wifidrop.db (replace the old one).
 3. Copy everything inside files\\ into the "blobs" folder of your WiFiDrop storage folder.

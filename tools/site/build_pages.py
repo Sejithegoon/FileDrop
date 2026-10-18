@@ -440,7 +440,7 @@ page("pricing.html", "Pricing",
 page("download.html", "Download",
      "Download WiFiDrop for Windows 10 and 11. Version, release notes, checksum and install steps.",
      f"""<div class="wrap page-hero"><h1>Download WiFiDrop</h1>
-  <p>Free for Windows 10 and 11. Version <span data-site="version">0.1.2</span> (beta), released <span data-site="releaseDate">2026-10-18</span>.</p></div>
+  <p>Free for Windows 10 and 11. Version <span data-site="version">0.1.3</span> (beta), released <span data-site="releaseDate">2026-10-18</span>.</p></div>
 
 <section>
   <div class="wrap doc">
@@ -448,7 +448,7 @@ page("download.html", "Download",
       <div>
         <h3>WiFiDrop for Windows</h3>
         <dl class="meta-list">
-          <dt>Version</dt><dd><span data-site="version">0.1.2</span> beta</dd>
+          <dt>Version</dt><dd><span data-site="version">0.1.3</span> beta</dd>
           <dt>Size</dt><dd><span data-site="downloadSize">To be announced</span></dd>
           <dt>SHA-256</dt><dd><code data-site="sha256">Published with the download</code></dd>
         </dl>
@@ -467,7 +467,7 @@ page("download.html", "Download",
 
     <h2 id="install">Install</h2>
     <ol>
-      <li>Run <code>WiFiDrop-Setup-<span data-site="version">0.1.2</span>.exe</code>.</li>
+      <li>Run <code>WiFiDrop-Setup-<span data-site="version">0.1.3</span>.exe</code>.</li>
       <li>The beta isn't code-signed yet, so Windows may show <b>"Windows protected your PC"</b>. Click <b>More info</b>, then <b>Run anyway</b>. If you want to be sure first, check the SHA-256 (below).</li>
       <li>Choose whether WiFiDrop starts when you sign in. The installer also adds a Windows Firewall rule so phones can connect.</li>
       <li>WiFiDrop opens and asks where to save uploaded files. Then follow the <a href="guide.html">setup guide</a>.</li>
@@ -475,7 +475,7 @@ page("download.html", "Download",
 
     <h2 id="verify">Check the download</h2>
     <p>In PowerShell, in your Downloads folder, run:</p>
-    <div class="copy-row"><code id="hash-cmd">Get-FileHash .\\WiFiDrop-Setup-0.1.2.exe</code><button class="btn small copy-btn" type="button" data-copy="#hash-cmd">Copy</button></div>
+    <div class="copy-row"><code id="hash-cmd">Get-FileHash .\\WiFiDrop-Setup-0.1.3.exe</code><button class="btn small copy-btn" type="button" data-copy="#hash-cmd">Copy</button></div>
     <p>The result should match the SHA-256 above exactly.</p>
 
     <h2 id="uninstall">Uninstall</h2>
@@ -583,6 +583,12 @@ page("faq.html", "FAQ", "Answers to common questions about WiFiDrop: cloud, inte
 page("changelog.html", "Changelog", "What changed in each WiFiDrop release.",
      """<div class="wrap page-hero"><h1>Changelog</h1><p>Every WiFiDrop release, newest first.</p></div>
 <section><div class="wrap doc">
+  <h2 id="v0-1-3">0.1.3 beta &middot; October 18, 2026</h2>
+  <ul>
+    <li><b>Live updates:</b> the phone page and the admin window update by themselves within a few seconds when someone uploads, deletes, signs in or changes anything. No more refreshing.</li>
+    <li>Downloading a file someone just deleted now says so and refreshes the list, instead of failing.</li>
+    <li><b>Restore from a backup:</b> roll back from the Backups page, or bring everything back on a new PC from the first-run screen. Works on Free and Pro; your current state is saved first.</li>
+  </ul>
   <h2 id="v0-1-2">0.1.2 beta &middot; October 18, 2026</h2>
   <ul>
     <li>The data folder moves from <code>%ProgramData%\\FileDrop</code> to <code>%ProgramData%\\WiFiDrop</code> automatically the first time WiFiDrop starts. Nothing is lost; if it can't be moved, WiFiDrop keeps using the old folder.</li>
