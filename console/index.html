@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FileDrop Admin</title>
+    <title>WiFiDrop Admin</title>
     <link rel="icon" href="/shared/favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="/shared/style.css">
 </head>
 <body>
 <div class="app">
     <aside class="side">
-        <span class="brand">FILEDROP <span class="tag">ADMIN</span></span>
+        <span class="brand">WIFIDROP <span class="tag">ADMIN</span></span>
         <nav class="nav" id="nav">
             <button data-page="dashboard" aria-current="page"><span data-icon="grid"></span> Dashboard</button>
             <button data-page="users"><span data-icon="users"></span> Users</button>
@@ -25,8 +25,8 @@
             <span class="pill" id="sidePill"><span class="dot"></span><span id="sideState">…</span></span>
             <button class="btn ghost small" id="feedbackBtn" type="button" hidden><span data-icon="edit"></span> Send feedback</button>
             <button class="btn ghost small" id="lockNowBtn" type="button" hidden><span data-icon="lock"></span> Lock window</button>
-            <button class="btn ghost small danger" id="quitBtn" type="button"><span data-icon="power"></span> Quit FileDrop</button>
-            <span class="muted small">Closing this window keeps FileDrop running in the tray. <span id="version"></span></span>
+            <button class="btn ghost small danger" id="quitBtn" type="button"><span data-icon="power"></span> Quit WiFiDrop</button>
+            <span class="muted small">Closing this window keeps WiFiDrop running in the tray. <span id="version"></span></span>
         </div>
     </aside>
 
@@ -149,12 +149,12 @@
         <section data-view="backups" hidden>
             <div class="page-head"><h1>Backups</h1></div>
             <p class="notice" id="backupProNote" hidden><span data-icon="lock"></span>
-                <span>Scheduled backups are part of FileDrop Pro. They copy every file and account to another drive, every day or week.</span>
+                <span>Scheduled backups are part of WiFiDrop Pro. They copy every file and account to another drive, every day or week.</span>
                 <button class="btn ghost small" type="button" data-goto="licence">Get Pro</button></p>
             <div class="grid">
                 <div class="card">
                     <div class="card-head"><h2>Schedule</h2></div>
-                    <label class="switch-row"><span>Back up automatically<small>Runs in the background while FileDrop is open</small></span>
+                    <label class="switch-row"><span>Back up automatically<small>Runs in the background while WiFiDrop is open</small></span>
                         <span class="switch"><input type="checkbox" id="backupEnabled"><i></i></span></label>
                     <label class="label" for="backupFolder">Backup folder (another drive is best, for example an external disk)</label>
                     <div class="folder-pick">
@@ -184,7 +184,7 @@
         <section data-view="licence" hidden>
             <div class="page-head"><h1>Licence</h1></div>
             <div class="card">
-                <div class="card-head"><h2 id="licTitle">FileDrop Free</h2><span class="badge" id="licBadge"></span></div>
+                <div class="card-head"><h2 id="licTitle">WiFiDrop Free</h2><span class="badge" id="licBadge"></span></div>
                 <p id="licText" class="small"></p>
                 <p class="notice bad" id="licProblem" hidden><span data-icon="alert"></span> <span id="licProblemText"></span></p>
                 <dl class="meta-list" id="licMeta" hidden></dl>
@@ -196,7 +196,7 @@
             <div class="card" id="licPasteCard">
                 <div class="card-head"><h2>Add your Pro licence</h2></div>
                 <p class="muted small">Paste the whole licence from your purchase email, including the BEGIN and END lines.</p>
-                <textarea class="input mono" id="licInput" rows="7" spellcheck="false" placeholder="-----BEGIN FILEDROP LICENCE-----"></textarea>
+                <textarea class="input mono" id="licInput" rows="7" spellcheck="false" placeholder="-----BEGIN WIFIDROP LICENCE-----"></textarea>
                 <div class="row-actions" style="margin-top:12px">
                     <button class="btn primary" id="licSave" type="button"><span data-icon="key"></span> Activate Pro</button>
                     <a class="btn ghost" id="licBuy" target="_blank" rel="noopener" hidden>See Pro features and pricing</a>
@@ -216,11 +216,11 @@
 
         <!-- About and open-source licences -->
         <section data-view="about" hidden>
-            <div class="page-head"><h1>About FileDrop</h1></div>
+            <div class="page-head"><h1>About WiFiDrop</h1></div>
             <div class="card">
-                <div class="card-head"><h2>FileDrop <span id="aboutVersion"></span></h2><span class="badge" id="aboutEdition"></span></div>
+                <div class="card-head"><h2>WiFiDrop <span id="aboutVersion"></span></h2><span class="badge" id="aboutEdition"></span></div>
                 <p class="small" id="aboutBuilt"></p>
-                <p class="muted small">Your own private file-sharing space, hosted on this PC. FileDrop never sends us your files, file names or usage data.</p>
+                <p class="muted small">Your own private file-sharing space, hosted on this PC. WiFiDrop never sends us your files, file names or usage data.</p>
                 <div class="row-actions" style="margin-top:12px">
                     <a class="btn ghost small" href="/EULA.txt" target="_blank" rel="noopener">Licence agreement</a>
                     <a class="btn ghost small" id="aboutPrivacy" target="_blank" rel="noopener" hidden>Privacy policy</a>
@@ -230,7 +230,7 @@
             <div class="card">
                 <div class="card-head"><h2>Open-source software</h2>
                     <a class="btn ghost small" href="/THIRD-PARTY-NOTICES.txt" target="_blank" rel="noopener">Full licence texts</a></div>
-                <p class="muted small">FileDrop is built with these open-source projects, each used under its own licence. Thank you to everyone who makes them.</p>
+                <p class="muted small">WiFiDrop is built with these open-source projects, each used under its own licence. Thank you to everyone who makes them.</p>
                 <div class="tbl-wrap"><table class="tbl" id="ossTbl"></table></div>
             </div>
         </section>
@@ -239,21 +239,21 @@
 <!-- Admin PIN lock screen -->
 <section class="setup" id="lockScreen" style="z-index:45" hidden>
     <form class="card setup-card" id="lockForm" style="max-width:420px">
-        <span class="brand big">FILEDROP</span>
+        <span class="brand big">WIFIDROP</span>
         <h1>Enter the admin PIN</h1>
-        <p class="muted small">FileDrop keeps running for everyone while this window is locked.</p>
+        <p class="muted small">WiFiDrop keeps running for everyone while this window is locked.</p>
         <input class="input" id="lockPin" type="password" autocomplete="off" inputmode="text">
         <p class="error" id="lockError" hidden></p>
         <button class="btn primary big" type="submit">Unlock</button>
-        <p class="muted small">Forgot it? Quit FileDrop from the tray and start it with <code>--reset-admin-pin</code>.</p>
+        <p class="muted small">Forgot it? Quit WiFiDrop from the tray and start it with <code>--reset-admin-pin</code>.</p>
     </form>
 </section>
 
 <!-- First run: choose where files are saved -->
 <section class="setup" id="setup" hidden>
     <div class="card setup-card">
-        <span class="brand big">FILEDROP</span>
-        <h1>Where should FileDrop save files?</h1>
+        <span class="brand big">WIFIDROP</span>
+        <h1>Where should WiFiDrop save files?</h1>
         <p class="muted">Everything people upload is stored in this folder on this PC. Pick a drive with plenty of free space. You can change it later from the Dashboard.</p>
         <div class="folder-pick">
             <input class="input" id="setupPath" spellcheck="false" autocomplete="off">
@@ -261,7 +261,7 @@
         </div>
         <p class="small muted" id="setupInfo"></p>
         <p class="error" id="setupError" hidden></p>
-        <button class="btn primary big" id="setupSave" type="button">Save and start FileDrop</button>
+        <button class="btn primary big" id="setupSave" type="button">Save and start WiFiDrop</button>
     </div>
 </section>
 
@@ -269,7 +269,7 @@
 <dialog class="dlg" id="moveDlg">
     <form method="dialog">
         <h2>Change storage folder</h2>
-        <p class="muted small">FileDrop copies every file to the new folder, switches over, then removes the old copies. Uploads pause while it runs. If anything goes wrong, nothing changes.</p>
+        <p class="muted small">WiFiDrop copies every file to the new folder, switches over, then removes the old copies. Uploads pause while it runs. If anything goes wrong, nothing changes.</p>
         <div class="folder-pick" style="margin-top:12px">
             <input class="input" id="movePath" spellcheck="false" autocomplete="off">
             <button class="btn" id="moveBrowse" type="button"><span data-icon="folder"></span> Browse…</button>

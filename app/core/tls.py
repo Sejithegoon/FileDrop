@@ -65,8 +65,8 @@ def ensure_certificate(directory: Path, ip: str) -> CertInfo:
             return CertInfo(cert_path, key_path, _fingerprint(cert))
 
     host = socket.gethostname()
-    name = x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, f"FileDrop on {host}"),
-                      x509.NameAttribute(NameOID.ORGANIZATION_NAME, "FileDrop")])
+    name = x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, f"WiFiDrop on {host}"),
+                      x509.NameAttribute(NameOID.ORGANIZATION_NAME, "WiFiDrop")])
     now = dt.datetime.now(dt.timezone.utc)
     alt = [x509.IPAddress(ipaddress.ip_address(ip)), x509.IPAddress(ipaddress.ip_address("127.0.0.1")),
            x509.DNSName("localhost")]

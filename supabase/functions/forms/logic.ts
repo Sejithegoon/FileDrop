@@ -1,4 +1,4 @@
-// FileDrop website forms: request handling, validation and spam protection.
+// WiFiDrop website forms: request handling, validation and spam protection.
 // Storage is behind the Store interface so this file can be tested without Supabase.
 
 export interface Submission {
@@ -34,7 +34,7 @@ export interface Config {
   purgeChance: number;
 }
 
-export const WAITLIST_CONSENT = "Yes, email me about the FileDrop Pro launch. I can unsubscribe at any time.";
+export const WAITLIST_CONSENT = "Yes, email me about the WiFiDrop Pro launch. I can unsubscribe at any time.";
 const EMAIL_RE = /^[^@\s]{1,64}@[^@\s]{1,255}\.[^@\s]{2,}$/;
 const ATTACH_TYPES: Record<string, string> = {
   ".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".webp": "image/webp",

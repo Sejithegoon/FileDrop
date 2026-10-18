@@ -27,7 +27,7 @@ function step(n: number, html: string): string {
 }
 
 // The licence body as one flowing block between the BEGIN and END lines, so it wraps evenly at any
-// width. FileDrop ignores line breaks inside a pasted licence.
+// width. WiFiDrop ignores line breaks inside a pasted licence.
 function flowing(licence: string): string {
   const lines = licence.trim().split(/\s*\n\s*/);
   if (lines.length < 3) return esc(licence.trim());
@@ -45,12 +45,12 @@ function licenceBlock(r: LicenceForEmail): string {
 export function licenceEmail(websiteUrl: string, rows: LicenceForEmail[]): EmailContent {
   const many = rows.length > 1;
   const max = Math.max(...rows.map((r) => r.max_activations || 3));
-  const subject = many ? "Your FileDrop Pro licences" : "Your FileDrop Pro licence";
+  const subject = many ? "Your WiFiDrop Pro licences" : "Your WiFiDrop Pro licence";
 
-  const text = `Thank you for buying FileDrop Pro!
+  const text = `Thank you for buying WiFiDrop Pro!
 
 To turn on Pro:
-1. Open the FileDrop window on your PC (double-click the tray icon).
+1. Open the WiFiDrop window on your PC (double-click the tray icon).
 2. Go to Licence.
 3. Paste the whole licence below, including the BEGIN and END lines, and press Activate Pro.
 
@@ -78,24 +78,24 @@ Need help? ${websiteUrl}/contact.html
   @media (max-width: 600px) { .fd-pad { padding-left:20px !important; padding-right:20px !important; } }
 </style></head>
 <body class="fd-bg" style="margin:0;padding:0;background:#eef2f8">
-<div style="display:none;max-height:0;overflow:hidden">Your FileDrop Pro licence is inside. Paste it into FileDrop to unlock Pro.</div>
+<div style="display:none;max-height:0;overflow:hidden">Your WiFiDrop Pro licence is inside. Paste it into WiFiDrop to unlock Pro.</div>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" class="fd-bg" style="background:#eef2f8"><tr><td align="center" style="padding:28px 12px">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px">
 
   <tr><td style="background:#05070c;border-radius:16px 16px 0 0;padding:22px 32px" class="fd-pad">
     <table role="presentation" cellpadding="0" cellspacing="0"><tr>
       <td style="width:32px;height:32px;border-radius:8px;background:${BLUE};color:#ffffff;font:800 18px/32px ${FONT};text-align:center">&#8593;</td>
-      <td style="padding-left:10px;font:800 17px/1 ${FONT};color:#ffffff;letter-spacing:.06em">FILEDROP</td>
+      <td style="padding-left:10px;font:800 17px/1 ${FONT};color:#ffffff;letter-spacing:.06em">WIFIDROP</td>
       <td style="padding-left:8px"><span style="display:inline-block;padding:3px 8px;border-radius:6px;background:${BLUE};color:#ffffff;font:700 11px/1.2 ${FONT};letter-spacing:.06em">PRO</span></td>
     </tr></table>
   </td></tr>
 
   <tr><td class="fd-card fd-pad" style="background:#ffffff;border:1px solid #dfe5ef;border-top:0;border-radius:0 0 16px 16px;padding:30px 32px 26px">
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
-      <tr><td class="fd-title" style="font:800 24px/1.25 ${FONT};color:#0b1220;padding-bottom:8px">Thank you for buying FileDrop Pro!</td></tr>
+      <tr><td class="fd-title" style="font:800 24px/1.25 ${FONT};color:#0b1220;padding-bottom:8px">Thank you for buying WiFiDrop Pro!</td></tr>
       <tr><td class="fd-muted" style="font:15px/1.55 ${FONT};color:#5b6578;padding-bottom:22px">Unlimited accounts and scheduled backups are one paste away.</td></tr>
       <tr><td><table role="presentation" width="100%" cellpadding="0" cellspacing="0">
-        ${step(1, "Open the FileDrop window on your PC <span class=\"fd-muted\" style=\"color:#5b6578\">(double-click the tray icon)</span>.")}
+        ${step(1, "Open the WiFiDrop window on your PC <span class=\"fd-muted\" style=\"color:#5b6578\">(double-click the tray icon)</span>.")}
         ${step(2, "Go to <b>Licence</b>.")}
         ${step(3, `Paste the whole licence below, including the BEGIN and END lines, and press <b>Activate Pro</b>.`)}
       </table></td></tr>
@@ -110,7 +110,7 @@ Need help? ${websiteUrl}/contact.html
 
   <tr><td class="fd-muted" style="padding:18px 8px 0;font:12.5px/1.6 ${FONT};color:#6b7487;text-align:center">
     Lost this email? <a href="${esc(websiteUrl)}/licence.html" style="color:${BLUE}">Re-send your licence</a>.<br>
-    FileDrop &middot; Made in Canada. Payments are handled by Paddle, our reseller.
+    WiFiDrop &middot; Made in Canada. Payments are handled by Paddle, our reseller.
   </td></tr>
 
 </table></td></tr></table>

@@ -69,7 +69,7 @@ def create(conn: sqlite3.Connection, username: str, password: str, display_name:
     uid, sid = new_id(), new_id()
     with transaction(conn):
         if max_users is not None and conn.execute("SELECT count(*) FROM users").fetchone()[0] >= max_users:
-            raise ApiError(402, "PRO_REQUIRED", f"FileDrop Free allows {max_users} accounts. Upgrade to Pro for "
+            raise ApiError(402, "PRO_REQUIRED", f"WiFiDrop Free allows {max_users} accounts. Upgrade to Pro for "
                            "unlimited accounts, or delete an account you no longer need.", limit=max_users)
         if conn.execute("SELECT 1 FROM users WHERE username_key = ?", (key,)).fetchone() or conn.execute(
             "SELECT 1 FROM reserved_usernames WHERE username_key = ? AND reserved_until > ?", (key, now)

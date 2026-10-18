@@ -18,13 +18,13 @@ const config: Config = {
   licence: {
     allowedOrigins: [], ipSalt: "", rateLimit: 0, resendLimit: 0, rateWindowMs: 0,
     defaultUpdatesMonths: Number(env("UPDATES_MONTHS", "12")),
-    websiteUrl: env("WEBSITE_URL", "https://sejithegoon.github.io/filedrop-website"),
+    websiteUrl: env("WEBSITE_URL", "https://wifidrop.ca"),
   },
 };
 
 const keys = await importKeys(env("LICENCE_PRIVATE_KEY"), env("LICENCE_PUBLIC_KEY"));
 const store = new SupabasePaymentStore(env("SUPABASE_URL"), env("SUPABASE_SERVICE_ROLE_KEY"));
 const paddle = new PaddleApi(env("PADDLE_API_KEY"), sandbox);
-const mailer = env("RESEND_API_KEY") ? new ResendMailer(env("RESEND_API_KEY"), env("EMAIL_FROM", "FileDrop <onboarding@resend.dev>")) : null;
+const mailer = env("RESEND_API_KEY") ? new ResendMailer(env("RESEND_API_KEY"), env("EMAIL_FROM", "WiFiDrop <onboarding@resend.dev>")) : null;
 
 Deno.serve((req) => handle(req, store, keys, paddle, mailer, config));

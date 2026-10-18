@@ -15,7 +15,7 @@ from fastapi.responses import HTMLResponse
 PAGE = """<!DOCTYPE html>
 <html lang="en"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#000000"><title>FileDrop</title>
+<meta name="theme-color" content="#000000"><title>WiFiDrop</title>
 <style>
 :root {{ color-scheme: dark; }}
 * {{ box-sizing: border-box; margin: 0; padding: 0; }}
@@ -31,16 +31,16 @@ a.btn {{ display: block; text-align: center; padding: 15px; border-radius: 12px;
         font-weight: 700; text-decoration: none; font-size: 17px; }}
 code {{ color: #5c9bff; word-break: break-all; }}
 </style></head><body><main class="card">
-<div class="brand">FILEDROP</div>
-<h1>Open FileDrop securely</h1>
-<p>FileDrop uses an encrypted connection. The first time, your browser warns that the connection
+<div class="brand">WIFIDROP</div>
+<h1>Open WiFiDrop securely</h1>
+<p>WiFiDrop uses an encrypted connection. The first time, your browser warns that the connection
 isn't private, because this computer made its own certificate. That's expected.</p>
 <ol>
 <li><b>iPhone:</b> tap <b>Show Details</b>, then <b>visit this website</b>.</li>
 <li><b>Android:</b> tap <b>Advanced</b>, then <b>Proceed</b>.</li>
 <li><b>Computer:</b> choose <b>Advanced</b>, then <b>Continue</b>.</li>
 </ol>
-<a class="btn" href="{url}">Continue to FileDrop</a>
+<a class="btn" href="{url}">Continue to WiFiDrop</a>
 <p style="margin-top:14px">Secure address: <code>{url}</code></p>
 </main></body></html>"""
 

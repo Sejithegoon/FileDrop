@@ -1,4 +1,4 @@
-// FileDrop website behaviour. Everything degrades gracefully without JavaScript.
+// WiFiDrop website behaviour. Everything degrades gracefully without JavaScript.
 (function () {
     "use strict";
     const S = window.SITE || {};
@@ -236,7 +236,7 @@
             const type = (fb.elements.category && fb.elements.category.value) || "bug";
             $$("[data-for]", fb).forEach(el => { el.hidden = !el.dataset.for.split(" ").includes(type); });
             const msg = $("#fb-message-label", fb);
-            if (msg) msg.textContent = { bug: "What went wrong?", idea: "What would you like FileDrop to do?", question: "Your question" }[type];
+            if (msg) msg.textContent = { bug: "What went wrong?", idea: "What would you like WiFiDrop to do?", question: "Your question" }[type];
         };
         fb.addEventListener("change", sync);
         sync();
@@ -254,8 +254,8 @@
             out.textContent = n >= 20 ? "20+" : String(n);
             const pick = n <= 5 ? "free" : "pro";
             verdict.textContent = pick === "free"
-                ? "FileDrop Free covers you, with room to spare."
-                : "You'll want FileDrop Pro for more than 5 accounts. Free still works for up to 5.";
+                ? "WiFiDrop Free covers you, with room to spare."
+                : "You'll want WiFiDrop Pro for more than 5 accounts. Free still works for up to 5.";
             if (pick !== last && plans[pick] && !reduceMotion) {
                 plans[pick].classList.remove("highlight");
                 void plans[pick].offsetWidth;

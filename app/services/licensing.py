@@ -33,7 +33,7 @@ def refresh(ctx, conn) -> edition.Capabilities:
 
 def _post(url: str, action: str, body: dict, timeout: float) -> dict:
     req = urllib.request.Request(f"{url.rstrip('/')}/{action}", data=json.dumps(body).encode(), method="POST",
-                                 headers={"Content-Type": "application/json", "User-Agent": f"FileDrop/{__version__}"})
+                                 headers={"Content-Type": "application/json", "User-Agent": f"WiFiDrop/{__version__}"})
     try:
         with urllib.request.urlopen(req, timeout=timeout) as r:
             return json.loads(r.read(64 * 1024))
@@ -55,7 +55,7 @@ def contact_server(ctx, conn, action: str = "activate", timeout: float = 10) -> 
                                     "app_version": __version__}, timeout)
     except (OSError, ValueError) as exc:
         log.info("Licence server not reached: %s", exc)
-        return {"online": False, "notice": "Couldn't reach the licence server. Pro keeps working; FileDrop will "
+        return {"online": False, "notice": "Couldn't reach the licence server. Pro keeps working; WiFiDrop will "
                                             "try again later."}
     blob = reply.get("status")
     if blob:
@@ -97,4 +97,4 @@ def due(ctx, conn) -> bool:
 
 def require_pro(ctx, feature: str) -> None:
     if not ctx.caps.pro:
-        raise ApiError(402, "PRO_REQUIRED", f"{feature} needs FileDrop Pro.", state=ctx.caps.state)
+        raise ApiError(402, "PRO_REQUIRED", f"{feature} needs WiFiDrop Pro.", state=ctx.caps.state)

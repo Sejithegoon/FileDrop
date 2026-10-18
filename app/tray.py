@@ -34,10 +34,10 @@ def build_tray(lan: LanServer, show: Callable[[], None], request_quit: Callable[
         request_quit()
 
     menu = pystray.Menu(
-        pystray.MenuItem("Open FileDrop", lambda icon, item: show(), default=True),
+        pystray.MenuItem("Open WiFiDrop", lambda icon, item: show(), default=True),
         pystray.MenuItem(lambda item: "Stop web server" if lan.state == "running" else "Start web server",
                          toggle_server),
         pystray.Menu.SEPARATOR,
-        pystray.MenuItem("Quit FileDrop", quit_app),
+        pystray.MenuItem("Quit WiFiDrop", quit_app),
     )
-    return pystray.Icon("FileDrop", icon_image(), "FileDrop", menu)
+    return pystray.Icon("WiFiDrop", icon_image(), "WiFiDrop", menu)

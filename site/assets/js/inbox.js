@@ -159,7 +159,7 @@
         const rows = [["Received", when(s.created_at)], ["Type", LABELS[s.category] || s.category], ["Name", s.name], ["Email", s.email],
             ["App version", d.app_version], ["Windows", d.windows], ["Phone or browser", d.device],
             ["Devices", (d.phones || []).join(", ")], ["Consent", d.consent_at ? when(d.consent_at) : ""]].filter(([, v]) => v);
-        const reply = s.email ? `mailto:${encodeURIComponent(s.email)}?subject=${encodeURIComponent("Re: " + (s.subject || "your FileDrop " + (LABELS[s.category] || "message").toLowerCase()))}` : "";
+        const reply = s.email ? `mailto:${encodeURIComponent(s.email)}?subject=${encodeURIComponent("Re: " + (s.subject || "your WiFiDrop " + (LABELS[s.category] || "message").toLowerCase()))}` : "";
         $("#detail").innerHTML = `
             <h2>${esc(s.subject || LABELS[s.category] || "Submission")}</h2>
             <dl class="meta">${rows.map(([k, v]) => `<dt>${k}</dt><dd>${esc(v)}</dd>`).join("")}</dl>
@@ -229,7 +229,7 @@
             <div><label for="lnote">Private note</label><textarea id="lnote">${esc(l.note)}</textarea></div>
             <div class="actions">
                 <button class="btn primary" id="lcopy" type="button">Copy licence</button>
-                <a class="btn" href="mailto:${encodeURIComponent(l.email)}?subject=${encodeURIComponent("Your FileDrop Pro licence")}&body=${encodeURIComponent("Open FileDrop, go to Licence, and paste this:\n\n" + l.licence_text)}">Email it</a>
+                <a class="btn" href="mailto:${encodeURIComponent(l.email)}?subject=${encodeURIComponent("Your WiFiDrop Pro licence")}&body=${encodeURIComponent("Open WiFiDrop, go to Licence, and paste this:\n\n" + l.licence_text)}">Email it</a>
                 <button class="btn" id="lsave" type="button">Save note</button>
                 <button class="btn danger" id="lrevoke" type="button">${l.revoked_at ? "Restore licence" : "Revoke licence"}</button>
             </div>`;

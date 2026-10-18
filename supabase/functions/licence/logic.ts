@@ -1,6 +1,6 @@
-// FileDrop Pro licences: issue, activate on up to N PCs, check, deactivate, re-send.
+// WiFiDrop Pro licences: issue, activate on up to N PCs, check, deactivate, re-send.
 // Licences and statuses are JSON signed with Ed25519. The private key exists only in this
-// function's secrets; the FileDrop app has the public key and verifies everything offline.
+// function's secrets; the WiFiDrop app has the public key and verifies everything offline.
 import { licenceEmail } from "./email.ts";
 
 export interface LicenceRow {
@@ -47,8 +47,8 @@ export interface Keys {
   verify(sig: Uint8Array, data: Uint8Array): Promise<boolean>;
 }
 
-const BEGIN = "-----BEGIN FILEDROP LICENCE-----";
-const END = "-----END FILEDROP LICENCE-----";
+const BEGIN = "-----BEGIN WIFIDROP LICENCE-----";
+const END = "-----END WIFIDROP LICENCE-----";
 const EMAIL_RE = /^[^@\s]{1,64}@[^@\s]{1,255}\.[^@\s]{2,}$/;
 const ALPHABET = "0123456789ABCDEFGHJKMNPQRSTVWXYZ"; // Crockford base32: no I, L, O, U
 const INSTALL_RE = /^[A-Za-z0-9_-]{8,64}$/;
@@ -93,7 +93,8 @@ export function formatLicence(blob: string): string {
 /** Verifies a pasted licence and returns its payload, or null. */
 export async function readLicence(keys: Keys, text: string): Promise<Record<string, unknown> | null> {
   let body = String(text || "");
-  if (body.includes(BEGIN) && body.includes(END)) body = body.split(BEGIN)[1].split(END)[0];
+  // Accept any armour name, including licences issued as "FILEDROP LICENCE" before the rename.
+  body = body.replace(/-----(?:BEGIN|END) [A-Z]+ LICENCE-----/g, "");
   body = body.replace(/\s+/g, "");
   const parts = body.split(".");
   if (parts.length !== 2) return null;
@@ -157,7 +158,7 @@ export async function handle(req: Request, store: LicenceStore, keys: Keys, cfg:
     new Response(JSON.stringify(body), { status, headers: { ...headers, "Content-Type": "application/json" } });
   if (req.method === "OPTIONS") return new Response(null, { status: 204, headers });
   if (req.method !== "POST") return json({ ok: false, code: "METHOD", message: "Use POST." }, 405);
-  // The FileDrop app sends no Origin header; browsers always do, so other websites are refused.
+  // The WiFiDrop app sends no Origin header; browsers always do, so other websites are refused.
   if (origin && !cfg.allowedOrigins.includes(origin)) return json({ ok: false, code: "ORIGIN", message: "Request blocked." }, 403);
 
   const now = opts.now ?? Date.now();
@@ -186,7 +187,7 @@ export async function handle(req: Request, store: LicenceStore, keys: Keys, cfg:
     }
     const str = (k: string, max = 200) => String(body[k] ?? "").trim().slice(0, max);
 
-    // ---- from the FileDrop app ----------------------------------------------------
+    // ---- from the WiFiDrop app ----------------------------------------------------
     if (route === "activate" || route === "check" || route === "deactivate") {
       await limit(`licence:${ipHash}`, cfg.rateLimit, cfg.rateWindowMs);
       const lic = await readLicence(keys, String(body.licence ?? "").slice(0, 4000));
@@ -213,7 +214,7 @@ export async function handle(req: Request, store: LicenceStore, keys: Keys, cfg:
       } else {
         await store.addActivation(lid, iid, version);
       }
-      return json({ ok: true, status: await status(lid, iid, "active"), message: "FileDrop Pro is active on this PC." });
+      return json({ ok: true, status: await status(lid, iid, "active"), message: "WiFiDrop Pro is active on this PC." });
     }
 
     // ---- from the website: re-send a lost licence -----------------------------------
@@ -224,8 +225,8 @@ export async function handle(req: Request, store: LicenceStore, keys: Keys, cfg:
       await limit(`resend-email:${(await sha256(cfg.ipSalt + email)).slice(0, 16)}`, cfg.resendLimit, 3600000);
       const rows = (await store.licencesByEmail(email)).filter((r) => !r.revoked_at);
       if (rows.length && opts.mailer) await sendLicences(opts.mailer, cfg.websiteUrl, email, rows);
-      // Same answer either way, so nobody can find out who bought FileDrop.
-      return json({ ok: true, message: "If that email address bought FileDrop Pro, we've sent the licence to it. Check your spam folder too." });
+      // Same answer either way, so nobody can find out who bought WiFiDrop.
+      return json({ ok: true, message: "If that email address bought WiFiDrop Pro, we've sent the licence to it. Check your spam folder too." });
     }
 
     // ---- admins (the website inbox) ---------------------------------------------------

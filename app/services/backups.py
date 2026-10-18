@@ -2,7 +2,7 @@
 
 Layout of the backup folder (for example on an external drive):
 
-    FileDrop backup/
+    WiFiDrop backup/
         database/filedrop-<time>-scheduled.db   one per run; the newest `keep` are kept
         files/ab/cd/<blob id>                    each stored file, copied once
         READ ME.txt                              how to restore
@@ -28,22 +28,22 @@ from app.services import settings_store
 log = logging.getLogger(__name__)
 
 CONFIG, STATE = "backup", "backup_state"
-FOLDER_NAME = "FileDrop backup"
+FOLDER_NAME = "WiFiDrop backup"
 DEFAULTS = {"enabled": False, "folder": "", "every_hours": 24, "keep": 7}
 EVERY = (24, 168)  # daily or weekly
 _running = threading.Lock()
 
-README = """FileDrop backup
+README = """WiFiDrop backup
 ===============
 
-database\\  Copies of the FileDrop database (accounts, folders, file names). The newest is the latest backup.
+database\\  Copies of the WiFiDrop database (accounts, folders, file names). The newest is the latest backup.
 files\\     The stored files, under ID names. The database knows which ID is which file.
 
 To restore on this PC or a new one:
-1. Install FileDrop, then quit it from the tray icon.
+1. Install WiFiDrop, then quit it from the tray icon.
 2. Copy the newest file from database\\ to C:\\ProgramData\\FileDrop\\filedrop.db (replace the old one).
-3. Copy everything inside files\\ into the "blobs" folder of your FileDrop storage folder.
-4. Start FileDrop. If it asks where to save files, choose that storage folder.
+3. Copy everything inside files\\ into the "blobs" folder of your WiFiDrop storage folder.
+4. Start WiFiDrop. If it asks where to save files, choose that storage folder.
 """
 
 
@@ -66,7 +66,7 @@ def check_folder(folder: str, storage_root: Path) -> Path:
     except OSError:
         raise ApiError(400, "INVALID_FOLDER", "That folder isn't available.")
     if path == root or root in path.parents or path in root.parents:
-        raise ApiError(400, "INVALID_FOLDER", "Choose a folder outside the FileDrop storage folder, ideally on "
+        raise ApiError(400, "INVALID_FOLDER", "Choose a folder outside the WiFiDrop storage folder, ideally on "
                                               "another drive.")
     return path
 

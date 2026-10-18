@@ -1,4 +1,4 @@
-// Supabase Edge Function: FileDrop website forms.
+// Supabase Edge Function: WiFiDrop website forms.
 // POST /functions/v1/forms/{feedback|contact|beta|waitlist|unsubscribe}
 import { type Config, handle } from "./logic.ts";
 import { SupabaseStore } from "./store.ts";
@@ -6,7 +6,7 @@ import { SupabaseStore } from "./store.ts";
 const env = (k: string, d = "") => Deno.env.get(k) ?? d;
 
 const config: Config = {
-  allowedOrigins: env("ALLOWED_ORIGINS", "https://sejithegoon.github.io").split(",").map((s) => s.trim()).filter(Boolean),
+  allowedOrigins: env("ALLOWED_ORIGINS", "https://wifidrop.ca,https://www.wifidrop.ca").split(",").map((s) => s.trim()).filter(Boolean),
   ipSalt: env("IP_SALT") || crypto.randomUUID(), // set IP_SALT so hashes stay stable between restarts
   turnstileSecret: env("TURNSTILE_SECRET"),
   maxAttachmentBytes: Number(env("MAX_ATTACHMENT_MB", "5")) * 1048576,

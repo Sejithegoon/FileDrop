@@ -12,7 +12,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 
-WEBSITE = "https://sejithegoon.github.io/filedrop-website"  # becomes the real domain at launch
+WEBSITE = "https://wifidrop.ca"  # becomes the real domain at launch
 LICENCE_URL = "https://chpjqelrwlowdiwxfugl.supabase.co/functions/v1/licence"
 
 

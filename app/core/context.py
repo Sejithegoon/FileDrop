@@ -37,7 +37,7 @@ class AppContext:
 
     def require_storage(self) -> Storage:
         if self.storage is None:
-            raise ApiError(409, "STORAGE_NOT_SET", "Choose where FileDrop saves files first.")
+            raise ApiError(409, "STORAGE_NOT_SET", "Choose where WiFiDrop saves files first.")
         return self.storage
 
     def https_enabled(self) -> bool:

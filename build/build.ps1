@@ -1,4 +1,4 @@
-# Builds FileDrop: runs the tests, the PyInstaller app folder, then the installer if Inno Setup is present.
+# Builds WiFiDrop: runs the tests, the PyInstaller app folder, then the installer if Inno Setup is present.
 #   powershell -ExecutionPolicy Bypass -File build\build.ps1
 $ErrorActionPreference = "Stop"
 $root = Split-Path -Parent $PSScriptRoot
@@ -13,17 +13,17 @@ if ($LASTEXITCODE -ne 0) { throw "Tests failed; not building." }
 if ($LASTEXITCODE -ne 0) { throw "Could not write the open-source notices." }
 
 $version = (& $py -c "import app; print(app.__version__)").Trim()
-Write-Host "Building FileDrop $version"
+Write-Host "Building WiFiDrop $version"
 
 & (Join-Path $root ".venv\Scripts\pyinstaller.exe") build\filedrop.spec --distpath build\out --workpath build\work --noconfirm
 if ($LASTEXITCODE -ne 0) { throw "PyInstaller failed." }
 Remove-Item -Recurse -Force build\work -ErrorAction SilentlyContinue
 
 # Smoke test the frozen EXE: catches missing DLLs/modules that the source tests can't see.
-if (Get-Process FileDrop -ErrorAction SilentlyContinue) { throw "Quit the running FileDrop first; the smoke test needs to start its own copy." }
+if (Get-Process WiFiDrop -ErrorAction SilentlyContinue) { throw "Quit the running WiFiDrop first; the smoke test needs to start its own copy." }
 $smokeDir = Join-Path $env:TEMP "filedrop-smoke-$(Get-Random)"
 $env:FILEDROP_CONSOLE_PORT = "8452"
-$proc = Start-Process build\out\FileDrop\FileDrop.exe -ArgumentList "--headless", "--no-server", "--data-dir", "`"$smokeDir`"" -PassThru
+$proc = Start-Process build\out\WiFiDrop\WiFiDrop.exe -ArgumentList "--headless", "--no-server", "--data-dir", "`"$smokeDir`"" -PassThru
 $ok = $false
 foreach ($i in 1..30) {
     Start-Sleep -Milliseconds 500
@@ -45,13 +45,13 @@ $iscc = @("${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe", "$env:ProgramFiles\I
           "$env:LOCALAPPDATA\Programs\Inno Setup 6\ISCC.exe") | Where-Object { Test-Path $_ } | Select-Object -First 1
 if (-not $iscc) {
     Write-Warning "Inno Setup 6 not found, so no installer was made. Install it from https://jrsoftware.org/isdl.php"
-    Write-Host "App folder: build\out\FileDrop\FileDrop.exe"
+    Write-Host "App folder: build\out\WiFiDrop\WiFiDrop.exe"
     exit 0
 }
 & $iscc "/DMyAppVersion=$version" build\installer.iss
 if ($LASTEXITCODE -ne 0) { throw "Inno Setup failed." }
 
-$setup = "build\out\FileDrop-Setup-$version.exe"
+$setup = "build\out\WiFiDrop-Setup-$version.exe"
 $hash = (Get-FileHash $setup -Algorithm SHA256).Hash
 Write-Host "Installer: $setup"
 Write-Host "SHA-256:   $hash"

@@ -1,5 +1,5 @@
-"""FileDrop: a LAN file server that runs in the Windows system tray."""
+"""WiFiDrop: a LAN file server that runs in the Windows system tray."""
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 # Release date of this version. Pro licences cover versions released up to their "updates until" date.
-BUILD_DATE = "2026-10-16"
+BUILD_DATE = "2026-10-18"

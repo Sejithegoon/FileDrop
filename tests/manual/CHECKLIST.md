@@ -1,4 +1,4 @@
-# FileDrop release checklist (manual)
+# WiFiDrop release checklist (manual)
 
 Run this on a release candidate before giving it to anyone. Note the date, build version, PC, and phones used. Mark each line **Pass**, **Fail** (file a bug with steps) or **Skip** (say why).
 
@@ -6,19 +6,19 @@ Build: `________`  Date: `________`  Host PC / Windows version: `________`
 
 ## Install and first run (clean Windows 11 PC or VM)
 
-- [ ] Run `FileDrop-Setup-<version>.exe`. The publisher shows as expected (unsigned builds show "Unknown publisher" until signing is set up).
-- [ ] Installer finishes; "Start FileDrop now" opens the admin window.
+- [ ] Run `WiFiDrop-Setup-<version>.exe`. The publisher shows as expected (unsigned builds show "Unknown publisher" until signing is set up).
+- [ ] Installer finishes; "Start WiFiDrop now" opens the admin window.
 - [ ] First run asks where to save files. **Browse…** opens the Windows folder picker and fills in the path.
 - [ ] No Windows Firewall prompt appears (the installer added a rule).
 - [ ] Start menu entry works. Desktop icon appears only if ticked.
-- [ ] With "Start FileDrop when I sign in" ticked: sign out and back in; FileDrop is in the tray and the window is **not** open.
+- [ ] With "Start WiFiDrop when I sign in" ticked: sign out and back in; WiFiDrop is in the tray and the window is **not** open.
 
 ## Tray and window
 
-- [ ] Clicking **X** hides the window; a one-time notification says FileDrop is still running.
-- [ ] Tray icon → **Open FileDrop** brings the window back.
-- [ ] Tray icon → **Quit FileDrop** with the window hidden quits within a few seconds (check Task Manager).
-- [ ] Launching FileDrop again while it runs brings the existing window forward (no second copy).
+- [ ] Clicking **X** hides the window; a one-time notification says WiFiDrop is still running.
+- [ ] Tray icon → **Open WiFiDrop** brings the window back.
+- [ ] Tray icon → **Quit WiFiDrop** with the window hidden quits within a few seconds (check Task Manager).
+- [ ] Launching WiFiDrop again while it runs brings the existing window forward (no second copy).
 
 ## Phones over HTTPS
 
@@ -26,7 +26,7 @@ Build: `________`  Date: `________`  Host PC / Windows version: `________`
 - [ ] The certificate fingerprint on the warning page matches the start of the one on the Dashboard.
 - [ ] Same with an **Android** phone (Chrome): Advanced → Proceed.
 - [ ] Sign in, change temporary password, see "My files".
-- [ ] Restart FileDrop: phones reconnect **without** a new warning.
+- [ ] Restart WiFiDrop: phones reconnect **without** a new warning.
 - [ ] Switch the PC to a different network (new IP): the Dashboard link changes after Stop/Start, and phones warn once more.
 
 ## Uploads and downloads
@@ -49,18 +49,18 @@ Build: `________`  Date: `________`  Host PC / Windows version: `________`
 
 ## Failure and recovery
 
-- [ ] Kill `FileDrop.exe` in Task Manager during an upload. Start it again: no half-finished file appears, the phone's upload restarts or resumes.
-- [ ] Unplug the drive holding the storage folder while FileDrop runs: phones get a clear error, nothing crashes. Plug it back and restart FileDrop: everything is there.
+- [ ] Kill `WiFiDrop.exe` in Task Manager during an upload. Start it again: no half-finished file appears, the phone's upload restarts or resumes.
+- [ ] Unplug the drive holding the storage folder while WiFiDrop runs: phones get a clear error, nothing crashes. Plug it back and restart WiFiDrop: everything is there.
 - [ ] Pull the power (or force shutdown) while idle. On restart the database opens and files are intact.
 - [ ] Check `%ProgramData%\FileDrop\logs\filedrop.log` has no unexpected errors.
 
 ## Privacy and permissions
 
 - [ ] Sign in to the PC as a **different Windows user**: they can't open `%ProgramData%\FileDrop` or the storage folder.
-- [ ] With a network monitor (e.g. Resource Monitor → Network), confirm FileDrop makes no outgoing internet connections except the update check (if a feed is configured).
+- [ ] With a network monitor (e.g. Resource Monitor → Network), confirm WiFiDrop makes no outgoing internet connections except the update check (if a feed is configured).
 
 ## Uninstall
 
-- [ ] Uninstall from Settings → Apps. FileDrop stops, the Start menu entry and firewall rule are gone.
+- [ ] Uninstall from Settings → Apps. WiFiDrop stops, the Start menu entry and firewall rule are gone.
 - [ ] `%ProgramData%\FileDrop` and the storage folder are **kept** (users' files are never deleted by uninstalling).
 - [ ] Reinstall: accounts and files are all still there.

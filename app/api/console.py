@@ -1,6 +1,6 @@
 """Admin API and page for the desktop window. Served on 127.0.0.1 only.
 
-Only the FileDrop window on this PC talks to it. Requests must carry
+Only the WiFiDrop window on this PC talks to it. Requests must carry
 X-FileDrop: 1 (blocks other websites) and a localhost Host header (blocks DNS
 rebinding).
 """
@@ -289,7 +289,7 @@ def quit_app(request: Request):
 
 @api.post("/show")
 def show_window(request: Request):
-    """Called by a second copy of FileDrop: bring this window to the front."""
+    """Called by a second copy of WiFiDrop: bring this window to the front."""
     ctx = ctx_of(request)
     if ctx.show_window:
         ctx.show_window()
@@ -610,7 +610,7 @@ def lock_now(request: Request):
 
 
 def create_console_app(ctx) -> FastAPI:
-    app = FastAPI(title="FileDrop admin", version=__version__, docs_url=None, redoc_url=None, openapi_url=None)
+    app = FastAPI(title="WiFiDrop admin", version=__version__, docs_url=None, redoc_url=None, openapi_url=None)
     app.state.ctx = ctx
     install_error_handlers(app)
     allowed_hosts = {f"127.0.0.1:{ctx.settings.console_port}", f"localhost:{ctx.settings.console_port}"}

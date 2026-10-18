@@ -20,6 +20,6 @@ a = Analysis(
     hiddenimports=collect_submodules("uvicorn") + collect_submodules("app") + ["qrcode.image.svg"],
 )
 pyz = PYZ(a.pure)
-exe = EXE(pyz, a.scripts, [], exclude_binaries=True, name="FileDrop", console=False,
+exe = EXE(pyz, a.scripts, [], exclude_binaries=True, name="WiFiDrop", console=False,
           icon=os.path.join(SPECPATH, "filedrop.ico"))
-coll = COLLECT(exe, a.binaries, a.datas, name="FileDrop")
+coll = COLLECT(exe, a.binaries, a.datas, name="WiFiDrop")

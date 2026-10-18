@@ -119,7 +119,7 @@ Deno.test("resend never reveals whether an email bought Pro, and is rate limited
   await issue(s, keys);
   const a = await (await handle(post("resend", { email: "sam@example.com" }), s, keys, cfg, { mailer: mail })).json();
   const b = await (await handle(post("resend", { email: "nobody@example.com" }), s, keys, cfg, { mailer: mail })).json();
-  assert(a.message === b.message && mail.sent.length === 1 && mail.sent[0].text.includes("BEGIN FILEDROP LICENCE"));
+  assert(a.message === b.message && mail.sent.length === 1 && mail.sent[0].text.includes("BEGIN WIFIDROP LICENCE"));
   const codes = [];
   for (let i = 0; i < 3; i++) codes.push((await handle(post("resend", { email: "sam@example.com" }, {}, "9.9.9.9"), s, keys, cfg)).status);
   assert(codes.join() === "200,200,429", codes.join());

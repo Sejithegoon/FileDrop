@@ -55,7 +55,7 @@ const FD = (() => {
         const o = { method: opts.method || (opts.json !== undefined ? 'POST' : 'GET'), headers: { 'X-FileDrop': '1' }, credentials: 'same-origin' };
         if (opts.json !== undefined) { o.body = JSON.stringify(opts.json); o.headers['Content-Type'] = 'application/json'; }
         let r;
-        try { r = await fetch(url, o); } catch { throw new ApiError(0, 'NETWORK', "Can't reach the server. Is FileDrop still running?"); }
+        try { r = await fetch(url, o); } catch { throw new ApiError(0, 'NETWORK', "Can't reach the server. Is WiFiDrop still running?"); }
         let data = null;
         try { data = await r.json(); } catch { /* not JSON */ }
         if (!r.ok) {

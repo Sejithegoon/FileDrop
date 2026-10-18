@@ -29,7 +29,9 @@ PUBLIC_KEYS: list[str] = [
     "8Cgb3LhmrkK3Fdu9BsJlxuf4B9zgXrc0Yok5kRRAVuA=",
 ]
 
-BEGIN, END = "-----BEGIN FILEDROP LICENCE-----", "-----END FILEDROP LICENCE-----"
+BEGIN, END = "-----BEGIN WIFIDROP LICENCE-----", "-----END WIFIDROP LICENCE-----"
+# Any BEGIN/END armour line, including licences issued as "FILEDROP LICENCE" before the rename.
+ARMOUR = re.compile(r"-----(?:BEGIN|END) [A-Z]+ LICENCE-----")
 
 
 class LicenceError(ValueError):
@@ -46,7 +48,7 @@ def _verify(blob: str, keys: list[str] | None = None) -> dict:
         payload_b64, sig_b64 = blob.split(".")
         payload, sig = _b64d(payload_b64), _b64d(sig_b64)
     except (ValueError, TypeError):
-        raise LicenceError("This doesn't look like a FileDrop licence. Paste the whole text, including the BEGIN and END lines.")
+        raise LicenceError("This doesn't look like a WiFiDrop licence. Paste the whole text, including the BEGIN and END lines.")
     for key in keys if keys is not None else PUBLIC_KEYS:
         try:
             Ed25519PublicKey.from_public_bytes(base64.b64decode(key)).verify(sig, payload)
@@ -64,22 +66,16 @@ def _verify(blob: str, keys: list[str] | None = None) -> dict:
 
 def parse_licence(text: str, keys: list[str] | None = None) -> dict:
     """Accepts the licence block as emailed (extra spaces and line breaks are fine)."""
-    body = text.strip()
-    if BEGIN in body and END in body:
-        body = body.split(BEGIN, 1)[1].split(END, 1)[0]
-    body = re.sub(r"\s+", "", body)
+    body = re.sub(r"\s+", "", ARMOUR.sub("", text))
     data = _verify(body, keys)
     if data.get("typ") != "licence" or data.get("v") != 1 or not data.get("lid") or data.get("ed") != "pro":
-        raise LicenceError("This licence isn't valid for this version of FileDrop.")
+        raise LicenceError("This licence isn't valid for this version of WiFiDrop.")
     return data
 
 
 def normalise(text: str) -> str:
     """The licence in its standard form, for storing and sending to the licence server."""
-    body = text.strip()
-    if BEGIN in body and END in body:
-        body = body.split(BEGIN, 1)[1].split(END, 1)[0]
-    body = re.sub(r"\s+", "", body)
+    body = re.sub(r"\s+", "", ARMOUR.sub("", text))
     lines = [body[i:i + 64] for i in range(0, len(body), 64)]
     return "\n".join([BEGIN, *lines, END])
 

@@ -232,3 +232,9 @@ def test_failed_backup_is_recorded_and_retried_sooner(ctx, admin, server, tmp_pa
     settings_store.set_value(conn, backups.STATE, {**r, "last_at": r["last_at"] - 2 * 3600 * 1000})
     assert backups.due(conn)  # failed 2 hours ago: try again now, not tomorrow
     conn.close()
+
+
+def test_licences_issued_before_the_rename_still_work():
+    old = licence().replace("WIFIDROP LICENCE", "FILEDROP LICENCE")
+    assert "FILEDROP" in old and edition.parse_licence(old)["lid"] == "FDP-TEST-0001"
+    assert edition.normalise(old).startswith("-----BEGIN WIFIDROP LICENCE-----")

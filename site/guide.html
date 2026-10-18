@@ -5,13 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; connect-src 'self' https://*.supabase.co; form-action 'self'; base-uri 'self'; object-src 'none'">
 <meta name="referrer" content="strict-origin-when-cross-origin">
-<title>Setup guide | FileDrop</title>
-<meta name="description" content="How to set up FileDrop: choose a storage folder, add users, connect phones over Wi-Fi or a hotspot, and get past the one-time HTTPS warning.">
+<title>Setup guide | WiFiDrop</title>
+<meta name="description" content="How to set up WiFiDrop: choose a storage folder, add users, connect phones over Wi-Fi or a hotspot, and get past the one-time HTTPS warning.">
 <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
 <meta name="theme-color" content="#f7f9fd" media="(prefers-color-scheme: light)">
 <meta property="og:type" content="website">
-<meta property="og:title" content="Setup guide | FileDrop">
-<meta property="og:description" content="How to set up FileDrop: choose a storage folder, add users, connect phones over Wi-Fi or a hotspot, and get past the one-time HTTPS warning.">
+<meta property="og:title" content="Setup guide | WiFiDrop">
+<meta property="og:description" content="How to set up WiFiDrop: choose a storage folder, add users, connect phones over Wi-Fi or a hotspot, and get past the one-time HTTPS warning.">
 <meta property="og:image" content="assets/img/admin-dashboard.webp">
 <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="assets/css/site.css">
@@ -23,7 +23,7 @@
 <a class="skip" href="#main">Skip to content</a>
 <header class="site-header">
   <div class="wrap">
-    <a class="brand" href="index.html"><img src="assets/img/favicon.svg" alt="" width="30" height="30">FILEDROP <span class="beta">BETA</span></a>
+    <a class="brand" href="index.html"><img src="assets/img/favicon.svg" alt="" width="30" height="30">WIFIDROP <span class="beta">BETA</span></a>
     <nav class="nav" id="nav" aria-label="Main">
       <a href="features.html">Features</a>
       <a href="pricing.html">Pricing</a>
@@ -45,17 +45,17 @@
 
 <section>
   <div class="wrap doc">
-    <h2 id="install">1. Install FileDrop</h2>
-    <p>Download and run the installer from the <a href="download.html">download page</a>. FileDrop opens its admin window when it's done. Closing that window keeps FileDrop running in the system tray; right-click the tray icon and choose <b>Quit FileDrop</b> to stop it.</p>
+    <h2 id="install">1. Install WiFiDrop</h2>
+    <p>Download and run the installer from the <a href="download.html">download page</a>. WiFiDrop opens its admin window when it's done. Closing that window keeps WiFiDrop running in the system tray; right-click the tray icon and choose <b>Quit WiFiDrop</b> to stop it.</p>
 
     <h2 id="storage">2. Choose where files are saved</h2>
-    <p>The first time, FileDrop asks where to store uploaded files. Click <b>Browse</b> and pick a drive with plenty of space. If the folder already has other things in it, FileDrop creates a <b>FileDrop Files</b> folder inside it so nothing gets mixed up.</p>
+    <p>The first time, WiFiDrop asks where to store uploaded files. Click <b>Browse</b> and pick a drive with plenty of space. If the folder already has other things in it, WiFiDrop creates a <b>WiFiDrop Files</b> folder inside it so nothing gets mixed up.</p>
     <p class="callout">Files are stored under internal ID names, not their real names, so they can't clash or break. To move everything to another drive later, use <b>Dashboard &rarr; Storage &rarr; Change folder</b>.</p>
 
     <h2 id="users">3. Add people</h2>
-    <p>Go to <b>Users &rarr; Add user</b>. Choose a username and display name; FileDrop suggests a temporary password. Give those to the person. They choose their own password the first time they sign in.</p>
-    <figure><div class="browser-frame"><div class="titlebar"><img src="assets/img/favicon.svg" alt="" width="16" height="16"><span>FileDrop Admin</span><span class="caps" aria-hidden="true"><i class="min"></i><i class="max"></i><i class="close"></i></span></div><div class="screen"><img class="zoomable" src="assets/img/admin-add-user.webp" alt="The Add user dialog in the FileDrop admin window" width="2880" height="1800" loading="lazy" decoding="async"></div></div><figcaption>Adding a user. Click to enlarge.</figcaption></figure>
-    <p>FileDrop Free includes up to 5 accounts. You can set a storage limit for each person, suspend an account at any time or reset a password.</p>
+    <p>Go to <b>Users &rarr; Add user</b>. Choose a username and display name; WiFiDrop suggests a temporary password. Give those to the person. They choose their own password the first time they sign in.</p>
+    <figure><div class="browser-frame"><div class="titlebar"><img src="assets/img/favicon.svg" alt="" width="16" height="16"><span>WiFiDrop Admin</span><span class="caps" aria-hidden="true"><i class="min"></i><i class="max"></i><i class="close"></i></span></div><div class="screen"><img class="zoomable" src="assets/img/admin-add-user.webp" alt="The Add user dialog in the WiFiDrop admin window" width="2880" height="1800" loading="lazy" decoding="async"></div></div><figcaption>Adding a user. Click to enlarge.</figcaption></figure>
+    <p>WiFiDrop Free includes up to 5 accounts. You can set a storage limit for each person, suspend an account at any time or reset a password.</p>
 
     <h2 id="connect">4. Connect a phone</h2>
     <ol>
@@ -64,11 +64,11 @@
       <li>Sign in with the username and temporary password, then choose a new password.</li>
       <li>Tap <b>Upload files</b>.</li>
     </ol>
-    <figure><div class="phone-frame"><div class="screen"><img class="zoomable" src="assets/img/phone-signin.webp" alt="The FileDrop sign-in page on a phone" width="1170" height="2532" loading="lazy" decoding="async"></div></div><figcaption>The sign-in page people see.</figcaption></figure>
-    <p class="callout"><b>Tip:</b> if someone types just the PC's address without <code>https://</code>, FileDrop shows a help page with a button to the secure link.</p>
+    <figure><div class="phone-frame"><div class="screen"><img class="zoomable" src="assets/img/phone-signin.webp" alt="The WiFiDrop sign-in page on a phone" width="1170" height="2532" loading="lazy" decoding="async"></div></div><figcaption>The sign-in page people see.</figcaption></figure>
+    <p class="callout"><b>Tip:</b> if someone types just the PC's address without <code>https://</code>, WiFiDrop shows a help page with a button to the secure link.</p>
 
     <h2 id="warning">5. The one-time "not private" warning</h2>
-    <p>FileDrop encrypts connections with HTTPS, using a certificate it creates on your PC. Phones don't recognize who made that certificate, so the first time they show a warning. That's expected.</p>
+    <p>WiFiDrop encrypts connections with HTTPS, using a certificate it creates on your PC. Phones don't recognize who made that certificate, so the first time they show a warning. That's expected.</p>
     <ul>
       <li><b>iPhone (Safari):</b> tap <b>Show Details</b>, then <b>visit this website</b>, then <b>Visit Website</b>.</li>
       <li><b>Android (Chrome):</b> tap <b>Advanced</b>, then <b>Proceed</b>.</li>
@@ -84,20 +84,20 @@
       <li><b>Upload:</b> also add files and folders, and change or delete only what they added.</li>
       <li><b>Manage:</b> change or delete anything in the folder.</li>
     </ul>
-    <figure><div class="browser-frame"><div class="titlebar"><img src="assets/img/favicon.svg" alt="" width="16" height="16"><span>FileDrop Admin</span><span class="caps" aria-hidden="true"><i class="min"></i><i class="max"></i><i class="close"></i></span></div><div class="screen"><img class="zoomable" src="assets/img/admin-shared.webp" alt="Shared folder access settings" width="2880" height="1800" loading="lazy" decoding="async"></div></div><figcaption>Access is set per person, per folder.</figcaption></figure>
+    <figure><div class="browser-frame"><div class="titlebar"><img src="assets/img/favicon.svg" alt="" width="16" height="16"><span>WiFiDrop Admin</span><span class="caps" aria-hidden="true"><i class="min"></i><i class="max"></i><i class="close"></i></span></div><div class="screen"><img class="zoomable" src="assets/img/admin-shared.webp" alt="Shared folder access settings" width="2880" height="1800" loading="lazy" decoding="async"></div></div><figcaption>Access is set per person, per folder.</figcaption></figure>
 
     <h2 id="trouble">Troubleshooting</h2>
     <h3>The phone can't open the link</h3>
     <ul>
       <li>Check that both devices are on the same network. Guest Wi-Fi networks often block devices from seeing each other.</li>
       <li>Check that the address on the Dashboard matches the one you typed. If the PC changed networks, click <b>Stop web server</b> and then <b>Start web server</b>.</li>
-      <li>If you didn't use the installer, Windows may have asked whether to allow FileDrop on the network. Allow it for Private and Public networks, or set your network to <b>Private</b> in Windows Settings.</li>
+      <li>If you didn't use the installer, Windows may have asked whether to allow WiFiDrop on the network. Allow it for Private and Public networks, or set your network to <b>Private</b> in Windows Settings.</li>
     </ul>
     <h3>Uploads from iPhone take a while to start</h3>
-    <p>When you pick many photos, iOS prepares each one first, downloading originals from iCloud or converting formats. FileDrop starts uploading as soon as iOS hands the files over. Smaller batches start sooner.</p>
+    <p>When you pick many photos, iOS prepares each one first, downloading originals from iCloud or converting formats. WiFiDrop starts uploading as soon as iOS hands the files over. Smaller batches start sooner.</p>
     <h3>I forgot the admin PIN</h3>
-    <p>Quit FileDrop from the tray, then start it once from a terminal with:</p>
-    <div class="copy-row"><code id="pin-cmd">FileDrop.exe --reset-admin-pin</code><button class="btn small copy-btn" type="button" data-copy="#pin-cmd">Copy</button></div>
+    <p>Quit WiFiDrop from the tray, then start it once from a terminal with:</p>
+    <div class="copy-row"><code id="pin-cmd">WiFiDrop.exe --reset-admin-pin</code><button class="btn small copy-btn" type="button" data-copy="#pin-cmd">Copy</button></div>
   </div>
 </section>
 </main>
@@ -105,7 +105,7 @@
   <div class="wrap">
     <div class="cols">
       <div>
-        <a class="brand" href="index.html"><img src="assets/img/favicon.svg" alt="" width="30" height="30">FILEDROP</a>
+        <a class="brand" href="index.html"><img src="assets/img/favicon.svg" alt="" width="30" height="30">WIFIDROP</a>
         <p>Your own private file-sharing space, hosted on your Windows PC.</p>
       </div>
       <div><h4>Product</h4><ul>
@@ -120,7 +120,7 @@
         <li><a href="refunds.html">Refund policy</a></li></ul></div>
     </div>
     <div class="legal">
-      <span>&copy; <span data-year>2026</span> FileDrop. Made in Canada. Beta software.</span>
+      <span>&copy; <span data-year>2026</span> WiFiDrop. Made in Canada. Beta software.</span>
       <span>Windows is a trademark of Microsoft Corporation.</span>
     </div>
   </div>

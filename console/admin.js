@@ -68,7 +68,7 @@ async function loadDashboard() {
     $('#tlsNote').hidden = !o.server.https;
     if (o.server.https) {
         const fp = o.server.fingerprint || '';
-        $('#tlsNote').innerHTML = `${FD.icon('lock')} <b>Secure connection (HTTPS).</b> The first time, phones warn the connection isn't private because FileDrop made its own certificate. ` +
+        $('#tlsNote').innerHTML = `${FD.icon('lock')} <b>Secure connection (HTTPS).</b> The first time, phones warn the connection isn't private because WiFiDrop made its own certificate. ` +
             `iPhone: tap <b>Show Details → visit this website</b>. Android: <b>Advanced → Proceed</b>.` +
             (fp ? `<br><span class="muted">Certificate fingerprint: <code title="${fp}">${fp.slice(0, 23)}…</code></span>` : '') +
             (o.server.helper_url ? `<br><span class="muted">Typing just <code>${FD.esc(o.server.helper_url)}</code> opens a help page with a button to the secure link.</span>` : '');
@@ -81,7 +81,7 @@ async function loadDashboard() {
     $('#serverBtnText').textContent = running ? 'Stop web server' : 'Start web server';
     $('#serverBtn').className = running ? 'btn danger' : 'btn primary';
     $('#updateNote').hidden = !o.update;
-    if (o.update) $('#updateText').textContent = `FileDrop ${o.update.version} is available (you have ${o.version}). ${o.update.notes || ''}`;
+    if (o.update) $('#updateText').textContent = `WiFiDrop ${o.update.version} is available (you have ${o.version}). ${o.update.notes || ''}`;
     $('#blockedNote').hidden = !o.server.error;
     $('#blockedText').textContent = o.server.error || '';
     $('#allowUploads').checked = !o.uploads_paused;
@@ -103,7 +103,7 @@ async function loadDashboard() {
 
 function markOffline() {
     $('#sidePill').className = 'pill bad';
-    $('#sideState').textContent = 'FileDrop not responding';
+    $('#sideState').textContent = 'WiFiDrop not responding';
 }
 
 $('#serverBtn').onclick = async () => {
@@ -165,7 +165,7 @@ function folderPicker(input, browse, info, error) {
             if (mine !== seq) return;
             last = c;
             info.innerHTML = `Files will be saved in <b>${FD.esc(c.path)}</b> · ${FD.fmtSize(c.free_bytes)} free` +
-                (c.existing_store ? ' · existing FileDrop folder' : c.exists ? '' : ' · will be created');
+                (c.existing_store ? ' · existing WiFiDrop folder' : c.exists ? '' : ' · will be created');
         } catch (e) {
             if (mine !== seq) return;
             last = null;
@@ -295,7 +295,7 @@ setInterval(() => { if (page === 'dashboard' && !document.hidden) loadDashboard(
 $('#feedbackBtn').onclick = () => api('/open-feedback', { json: {} }).catch(fail);
 
 $('#quitBtn').onclick = async () => {
-    if (!await FD.confirmBox('Quit FileDrop?', 'The web server stops for everyone until you open FileDrop again.', 'Quit')) return;
+    if (!await FD.confirmBox('Quit WiFiDrop?', 'The web server stops for everyone until you open WiFiDrop again.', 'Quit')) return;
     try { await api('/quit', { json: {} }); } catch { /* window closes */ }
 };
 
@@ -308,8 +308,8 @@ async function loadUsers() {
     api('/licence').then(e => {
         $('#userLimitNote').hidden = e.max_users == null || data.users.length < e.max_users - 1;
         $('#userLimitText').textContent = data.users.length >= (e.max_users ?? Infinity)
-            ? `You're using all ${e.max_users} accounts in FileDrop Free. Pro has unlimited accounts.`
-            : `${data.users.length} of ${e.max_users} accounts used in FileDrop Free.`;
+            ? `You're using all ${e.max_users} accounts in WiFiDrop Free. Pro has unlimited accounts.`
+            : `${data.users.length} of ${e.max_users} accounts used in WiFiDrop Free.`;
     }).catch(() => {});
     $('#usersTbl').innerHTML = data.users.length ? `<tr><th>User</th><th>Role</th><th>Status</th><th>Storage</th><th>Last active</th><th></th></tr>` +
         data.users.map(u => {
@@ -597,10 +597,10 @@ async function loadBackups() {
     }
     $('#backupRun').disabled = !b.pro || b.running || !b.config.folder;
     const s = b.state;
-    $('#backupLast').innerHTML = b.running ? '<b>Backing up now…</b> You can keep using FileDrop.'
+    $('#backupLast').innerHTML = b.running ? '<b>Backing up now…</b> You can keep using WiFiDrop.'
         : !s.last_at ? 'No backup yet.'
         : s.ok ? `<span class="badge ok">OK</span> ${FD.fmtAgo(s.last_at)}: ${s.files} file(s), ${s.copied} new (${FD.fmtSize(s.copied_bytes || 0)}), took ${s.seconds}s.<br><span class="muted">${FD.esc(s.folder || '')}</span>`
-        : `<span class="badge bad">Failed</span> ${FD.fmtAgo(s.last_at)}: ${FD.esc(s.error)} FileDrop tries again every hour.`;
+        : `<span class="badge bad">Failed</span> ${FD.fmtAgo(s.last_at)}: ${FD.esc(s.error)} WiFiDrop tries again every hour.`;
     clearTimeout(backupTimer);
     if (b.running && page === 'backups') backupTimer = setTimeout(loadBackups, 2000);
 }
@@ -624,12 +624,12 @@ $('#backupRun').onclick = async () => {
 // ---------- licence
 
 const LIC_STATE = {
-    free: ['FileDrop Free', '', 'Free includes up to 5 accounts and everything you need to share files at home.'],
-    pro: ['FileDrop Pro', 'ok', 'Thank you for supporting FileDrop! Pro is active on this PC.'],
-    revoked: ['FileDrop Pro (cancelled)', 'bad', ''],
-    limit: ['FileDrop Pro (too many PCs)', 'warn', ''],
-    updates_ended: ['FileDrop Pro (updates ended)', 'warn', ''],
-    invalid: ['FileDrop Free', 'bad', ''],
+    free: ['WiFiDrop Free', '', 'Free includes up to 5 accounts and everything you need to share files at home.'],
+    pro: ['WiFiDrop Pro', 'ok', 'Thank you for supporting WiFiDrop! Pro is active on this PC.'],
+    revoked: ['WiFiDrop Pro (cancelled)', 'bad', ''],
+    limit: ['WiFiDrop Pro (too many PCs)', 'warn', ''],
+    updates_ended: ['WiFiDrop Pro (updates ended)', 'warn', ''],
+    invalid: ['WiFiDrop Free', 'bad', ''],
 };
 
 function renderLicence(e) {
@@ -648,7 +648,7 @@ function renderLicence(e) {
     $('#licMeta').hidden = !has;
     if (has) {
         const rows = [['Licence', e.licence_id], ['Licensed to', e.licensee], ['Updates until', e.updates_until],
-            ['This PC', e.activated ? 'Activated' : 'Not confirmed yet (FileDrop will try again when online)'],
+            ['This PC', e.activated ? 'Activated' : 'Not confirmed yet (WiFiDrop will try again when online)'],
             ['Use on up to', e.max_activations ? `${e.max_activations} PCs` : '']].filter(([, v]) => v);
         $('#licMeta').innerHTML = rows.map(([k, v]) => `<dt>${k}</dt><dd>${FD.esc(v)}</dd>`).join('');
     }
@@ -666,7 +666,7 @@ $('#licSave').onclick = async () => {
         const r = await api('/licence', { json: { licence: text } });
         $('#licInput').value = '';
         renderLicence(r);
-        FD.toast(r.pro ? (r.online ? 'FileDrop Pro is active' : 'Pro is on. FileDrop will confirm it when online.')
+        FD.toast(r.pro ? (r.online ? 'WiFiDrop Pro is active' : 'Pro is on. WiFiDrop will confirm it when online.')
             : (r.message || r.notice || 'Licence saved'), r.pro ? 'ok' : 'err');
     } catch (e) { fail(e); } finally { $('#licSave').disabled = false; }
 };
@@ -678,7 +678,7 @@ $('#licCheck').onclick = async () => {
     } catch (e) { fail(e); }
 };
 $('#licRemove').onclick = async () => {
-    if (!await FD.confirmBox('Remove the licence from this PC?', 'FileDrop goes back to Free and frees this PC so you can use the licence on another one. Your files and accounts stay. Keep your licence email to add it again.', 'Remove licence')) return;
+    if (!await FD.confirmBox('Remove the licence from this PC?', 'WiFiDrop goes back to Free and frees this PC so you can use the licence on another one. Your files and accounts stay. Keep your licence email to add it again.', 'Remove licence')) return;
     try { const r = await api('/licence/remove', { json: {} }); renderLicence(r); FD.toast('Licence removed'); } catch (e) { fail(e); }
 };
 
@@ -744,7 +744,7 @@ async function refreshPin() {
 $('#pinSet').onclick = async () => {
     const v = await FD.dialog({
         title: pinSet ? 'Change admin PIN' : 'Set an admin PIN', ok: 'Save PIN',
-        body: 'Use 4 or more characters. FileDrop keeps serving files while this window is locked.',
+        body: 'Use 4 or more characters. WiFiDrop keeps serving files while this window is locked.',
         fields: [{ name: 'pin', label: 'New PIN', type: 'password' }, { name: 'pin2', label: 'New PIN again', type: 'password' }],
     });
     if (!v) return;

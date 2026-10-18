@@ -25,7 +25,7 @@ log = logging.getLogger(__name__)
 
 KEY = "storage_root"
 MARKER = "filedrop-storage.json"
-SUBFOLDER = "FileDrop Files"
+SUBFOLDER = "WiFiDrop Files"
 
 
 def is_store(path: Path) -> bool:
@@ -61,19 +61,19 @@ def _forbidden(path: Path, settings) -> str | None:
             return "Pick a folder outside Windows and Program Files."
     data = str(settings.data_dir).lower().rstrip("\\/")
     if p == data or p.startswith(data + "\\backups") or p.startswith(data + "\\logs"):
-        return "Pick a folder outside FileDrop's own data folder."
+        return "Pick a folder outside WiFiDrop's own data folder."
     return None
 
 
 def resolve_choice(raw: str, settings) -> Path:
     """The folder files will actually go into. A non-empty folder that isn't a
-    FileDrop store gets a "FileDrop Files" subfolder so nothing is mixed in."""
+    WiFiDrop store gets a "WiFiDrop Files" subfolder so nothing is mixed in."""
     raw = (raw or "").strip().strip('"')
     if not raw:
         raise ApiError(400, "INVALID_PATH", "Choose a folder.")
     path = Path(os.path.expandvars(raw)).expanduser()
     if not path.is_absolute():
-        raise ApiError(400, "INVALID_PATH", "Use a full path, like D:\\FileDrop Files.")
+        raise ApiError(400, "INVALID_PATH", "Use a full path, like D:\\WiFiDrop Files.")
     if path.exists() and not path.is_dir():
         raise ApiError(400, "INVALID_PATH", "That's a file, not a folder.")
     if path.is_dir() and any(path.iterdir()) and not is_store(path):
@@ -107,7 +107,7 @@ def prepare(path: Path, install_id: str) -> Storage:
             (path / MARKER).write_text(json.dumps({"install_id": install_id, "created_at": now_ms()}))
         winacl.ensure_private(path)
     except OSError as exc:
-        raise ApiError(400, "STORAGE_UNUSABLE", f"FileDrop can't write to {path}: {exc.strerror or exc}")
+        raise ApiError(400, "STORAGE_UNUSABLE", f"WiFiDrop can't write to {path}: {exc.strerror or exc}")
     return storage
 
 

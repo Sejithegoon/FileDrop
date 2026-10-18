@@ -40,7 +40,7 @@ def _version_tuple(v: str) -> tuple[int, ...]:
 
 def check_for_update(feed_url: str, current: str = __version__) -> dict | None:
     """Reads {"version": "0.2.0", "url": "https://...", "notes": "..."} and returns it if newer."""
-    req = urllib.request.Request(feed_url, headers={"User-Agent": f"FileDrop/{current}"})
+    req = urllib.request.Request(feed_url, headers={"User-Agent": f"WiFiDrop/{current}"})
     with urllib.request.urlopen(req, timeout=10) as r:
         data = json.loads(r.read(64 * 1024))
     version, url = str(data.get("version", "")), str(data.get("url", ""))

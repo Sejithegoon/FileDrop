@@ -1,4 +1,4 @@
-"""Restrict FileDrop's folders to the current Windows user, SYSTEM and Administrators.
+"""Restrict WiFiDrop's folders to the current Windows user, SYSTEM and Administrators.
 
 %ProgramData% lets every local user read new folders by default, which would
 expose the database (password hashes) and stored files to other accounts on
@@ -29,7 +29,7 @@ def _current_user_sid() -> str | None:
 
 
 def restrict_to_owner(path: Path) -> bool:
-    """True if the folder is now private. Never raises: failure is logged and FileDrop carries on."""
+    """True if the folder is now private. Never raises: failure is logged and WiFiDrop carries on."""
     if sys.platform != "win32" or not path.is_dir():
         return False
     try:
@@ -58,6 +58,6 @@ def ensure_private(path: Path) -> None:
         return
     if restrict_to_owner(path):
         try:
-            (path / MARKER).write_text("Access limited to the FileDrop user, SYSTEM and Administrators.\n")
+            (path / MARKER).write_text("Access limited to the WiFiDrop user, SYSTEM and Administrators.\n")
         except OSError:
             pass

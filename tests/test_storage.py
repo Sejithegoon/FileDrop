@@ -56,7 +56,7 @@ def test_choice_rules(ctx, tmp_path):
     busy = tmp_path / "Documents"
     busy.mkdir()
     (busy / "taxes.pdf").write_bytes(b"x")
-    assert storage_config.resolve_choice(str(busy), ctx.settings) == busy / "FileDrop Files"
+    assert storage_config.resolve_choice(str(busy), ctx.settings) == busy / "WiFiDrop Files"
     empty = tmp_path / "empty"
     empty.mkdir()
     assert storage_config.resolve_choice(str(empty), ctx.settings) == empty

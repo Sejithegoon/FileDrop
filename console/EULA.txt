@@ -1,68 +1,68 @@
-FILEDROP END USER LICENCE AGREEMENT
+WIFIDROP END USER LICENCE AGREEMENT
 Last updated October 17, 2026
 
-This agreement is between you and FileDrop, based in Winnipeg, Manitoba, Canada ("we" or "us").
-By installing or using FileDrop, you agree to it. If you install FileDrop for an organization,
-you confirm you can accept this agreement for it. If you don't agree, don't install FileDrop.
+This agreement is between you and WiFiDrop, based in Winnipeg, Manitoba, Canada ("we" or "us").
+By installing or using WiFiDrop, you agree to it. If you install WiFiDrop for an organization,
+you confirm you can accept this agreement for it. If you don't agree, don't install WiFiDrop.
 
 1. LICENCE
-We grant you a personal, non-exclusive, non-transferable licence to install and use FileDrop
+We grant you a personal, non-exclusive, non-transferable licence to install and use WiFiDrop
 on computers you own or control.
-- FileDrop Free: at no charge, for personal or business use, with up to 5 user accounts.
-- FileDrop Pro: with a valid Pro licence, on up to 3 computers at a time. Pro includes feature
+- WiFiDrop Free: at no charge, for personal or business use, with up to 5 user accounts.
+- WiFiDrop Pro: with a valid Pro licence, on up to 3 computers at a time. Pro includes feature
   updates released during the update period shown in your licence (normally one year from
   purchase). Pro features keep working in versions released during that period.
 
 2. WHAT YOU MAY NOT DO
-- Sell, rent, sublicense or redistribute FileDrop, or modified copies of it, without our
+- Sell, rent, sublicense or redistribute WiFiDrop, or modified copies of it, without our
   written permission.
 - Share your Pro licence with people outside your household or organization, or use it on
   more computers than it allows.
 - Remove copyright or licence notices, or get around licence checks or features reserved for
-  FileDrop Pro.
+  WiFiDrop Pro.
 
 3. LICENCE CHECKS AND UPDATES
-FileDrop checks for new versions about once a day by downloading a small file from our website.
-With a Pro licence, FileDrop also contacts our licence service when you add the licence and
-about once a week, sending the licence, a random installation ID and the app version. FileDrop
-never sends us your files, file names or usage data. If a check can't connect, FileDrop keeps
+WiFiDrop checks for new versions about once a day by downloading a small file from our website.
+With a Pro licence, WiFiDrop also contacts our licence service when you add the licence and
+about once a week, sending the licence, a random installation ID and the app version. WiFiDrop
+never sends us your files, file names or usage data. If a check can't connect, WiFiDrop keeps
 working. If a Pro licence is refunded or charged back, Pro features become read-only; your
 files, accounts and Free features keep working. Our privacy policy explains this in detail:
-https://sejithegoon.github.io/filedrop-website/privacy.html
+https://wifidrop.ca/privacy.html
 
 4. YOUR FILES AND YOUR RESPONSIBILITIES
-FileDrop runs on your computer. We don't host, see or control your files. You're responsible
+WiFiDrop runs on your computer. We don't host, see or control your files. You're responsible
 for the computer, the accounts you create, the people you give access to, and following the
 laws that apply to you. Only store and share files you have the right to share. Keep your own
 backups of anything important.
 
 5. BETA SOFTWARE
-FileDrop is currently in beta. It may contain bugs, and features may change.
+WiFiDrop is currently in beta. It may contain bugs, and features may change.
 
 6. OPEN-SOURCE COMPONENTS
-FileDrop includes open-source software licensed under its own terms. The list and full licence
-texts are in the FileDrop window under About, and in THIRD-PARTY-NOTICES.txt in the install
+WiFiDrop includes open-source software licensed under its own terms. The list and full licence
+texts are in the WiFiDrop window under About, and in THIRD-PARTY-NOTICES.txt in the install
 folder. Nothing in this agreement limits your rights under those licences.
 
 7. NO WARRANTY
-To the extent permitted by law, FileDrop is provided "as is", without warranties of any kind,
-including fitness for a particular purpose and non-infringement. We don't promise FileDrop will
+To the extent permitted by law, WiFiDrop is provided "as is", without warranties of any kind,
+including fitness for a particular purpose and non-infringement. We don't promise WiFiDrop will
 be error-free or that files will never be lost.
 
 8. LIMITATION OF LIABILITY
 To the extent permitted by law, we're not liable for indirect, incidental, special or
 consequential damages, or for lost data, profits or revenue. Our total liability for any claim
-is limited to what you paid us for FileDrop in the 12 months before the claim, or CAD $20 if
+is limited to what you paid us for WiFiDrop in the 12 months before the claim, or CAD $20 if
 you paid nothing.
 
 9. YOUR CONSUMER RIGHTS
 Nothing in this agreement limits rights you have under consumer protection laws that can't be
 waived, such as Quebec's Consumer Protection Act, or the laws of the country where you live.
-Refunds for FileDrop Pro are covered by our refund policy:
-https://sejithegoon.github.io/filedrop-website/refunds.html
+Refunds for WiFiDrop Pro are covered by our refund policy:
+https://wifidrop.ca/refunds.html
 
 10. ENDING THIS AGREEMENT
-You can end it at any time by uninstalling FileDrop. We may end your licence if you seriously
+You can end it at any time by uninstalling WiFiDrop. We may end your licence if you seriously
 break this agreement.
 
 11. GOVERNING LAW
@@ -70,4 +70,4 @@ This agreement is governed by the laws of Manitoba and the federal laws of Canad
 there, unless the consumer laws of your country give you the right to bring a claim in your
 local courts.
 
-Contact: filedrop.support@gmail.com or https://sejithegoon.github.io/filedrop-website/contact.html
+Contact: filedrop.support@gmail.com or https://wifidrop.ca/contact.html

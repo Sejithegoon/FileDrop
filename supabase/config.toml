@@ -1,4 +1,4 @@
-# FileDrop Supabase project (forms backend). Deploy: see supabase/README.md
+# WiFiDrop Supabase project (forms backend). Deploy: see supabase/README.md
 project_id = "filedrop"
 
 [functions.forms]
@@ -6,7 +6,7 @@ project_id = "filedrop"
 verify_jwt = false
 
 [functions.licence]
-# Called by the FileDrop app (no Supabase login); the inbox's "issue" route checks the admin's token itself.
+# Called by the WiFiDrop app (no Supabase login); the inbox's "issue" route checks the admin's token itself.
 verify_jwt = false
 
 [functions.payments]

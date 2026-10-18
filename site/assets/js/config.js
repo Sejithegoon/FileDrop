@@ -1,13 +1,13 @@
 // Site settings. Edit these, then run build/publish-site.ps1. Pages show sensible
 // "coming soon" text for anything left empty, so nothing breaks before launch.
 window.SITE = {
-    version: "0.1.0",
-    releaseDate: "2026-10-16",
+    version: "0.1.1",
+    releaseDate: "2026-10-18",
 
     // Link to the installer (for example a GitHub Release asset or an R2 bucket file).
-    downloadUrl: "https://github.com/Sejithegoon/filedrop-website/releases/download/v0.1.0-beta/FileDrop-Setup-0.1.0.exe",
+    downloadUrl: "https://github.com/Sejithegoon/filedrop-website/releases/download/v0.1.0-beta/WiFiDrop-Setup-0.1.1.exe",
     // From build/build.ps1 output: "SHA-256: ..."
-    sha256: "E6ACEA569107A07E23EC5B5F4FF369261C52BED513D737363186A15F773FF4D7",
+    sha256: "2467E58D909319BA47D07BE91685DAC0515C3A495D53D528722E08369623CF83",
     downloadSize: "24.6 MB",
 
     // Where people can write to you.
@@ -26,7 +26,7 @@ window.SITE = {
     paddle: {
         env: "sandbox",   // "production" at launch; until then the Buy button shows only with ?buytest=1
         token: "test_4aa1cd7b4dad71cdabc78bcf640",  // Paddle > My account > Settings > Authentication > Client-side tokens
-        priceId: "pri_01m55sj9bqk0j030ysrazcxwta",  // "FileDrop Pro" (sandbox)
+        priceId: "pri_01m55sj9bqk0j030ysrazcxwta",  // "WiFiDrop Pro" (sandbox)
         price: "$29 CAD", // placeholder, shown on the pricing page
     },
 };

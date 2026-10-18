@@ -1,4 +1,4 @@
-FileDrop includes the open-source software listed below. Each is used under its own licence,
+WiFiDrop includes the open-source software listed below. Each is used under its own licence,
 reproduced in full. Thank you to everyone who builds and maintains these projects.
 
   annotated-doc 0.0.5  (MIT)

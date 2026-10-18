@@ -91,7 +91,7 @@ async function process(ev: Event, store: PaymentStore, keys: Keys, paddle: Paddl
   const d = ev.data;
   if (ev.event_type === "transaction.completed") {
     const prices: string[] = (d.items || []).map((i: any) => i?.price?.id).filter(Boolean);
-    if (!prices.some((p) => cfg.priceIds.includes(p))) return "ignored: not FileDrop Pro";
+    if (!prices.some((p) => cfg.priceIds.includes(p))) return "ignored: not WiFiDrop Pro";
     let lic = await store.licenceByOrder(d.id);
     if (!lic) {
       const email = (await paddle.customerEmail(d.customer_id)).trim().toLowerCase();

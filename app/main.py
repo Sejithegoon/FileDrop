@@ -1,6 +1,6 @@
 """Entry point: single-instance check, database, listeners, admin window and tray.
 
-Closing the admin window only hides it. FileDrop keeps running in the tray
+Closing the admin window only hides it. WiFiDrop keeps running in the tray
 until Quit (tray menu or the window's Quit button) or Windows shutdown.
 """
 
@@ -80,7 +80,7 @@ def prepare_database(ctx: AppContext) -> None:
         log.info("Database at schema %s (was %s)", report.to_version, report.from_version)
         root = storage_config.configured_root(conn, ctx.settings)
         if root is None:
-            ctx.lan.block("Choose where FileDrop saves files to finish setup.", key="storage")
+            ctx.lan.block("Choose where WiFiDrop saves files to finish setup.", key="storage")
         else:
             try:
                 storage = Storage(root)
@@ -104,7 +104,7 @@ def run_window(ctx: AppContext, start_hidden: bool) -> None:
 
     webview.settings["ALLOW_DOWNLOADS"] = True
     quitting = threading.Event()
-    window = webview.create_window("FileDrop Admin", ctx.settings.console_url, width=1280, height=860,
+    window = webview.create_window("WiFiDrop Admin", ctx.settings.console_url, width=1280, height=860,
                                    min_size=(900, 600), hidden=start_hidden, background_color="#000000")
 
     told_about_tray = threading.Event()
@@ -117,8 +117,8 @@ def run_window(ctx: AppContext, start_hidden: bool) -> None:
         if not told_about_tray.is_set():
             told_about_tray.set()
             try:
-                icon.notify("FileDrop is still running. Right-click the tray icon and choose Quit FileDrop to stop it.",
-                            "FileDrop")
+                icon.notify("WiFiDrop is still running. Right-click the tray icon and choose Quit WiFiDrop to stop it.",
+                            "WiFiDrop")
             except Exception:  # notifications can be turned off in Windows
                 pass
         return False
@@ -153,7 +153,7 @@ def run_window(ctx: AppContext, start_hidden: bool) -> None:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(prog="FileDrop")
+    parser = argparse.ArgumentParser(prog="WiFiDrop")
     parser.add_argument("--headless", action="store_true", help="no window or tray; Ctrl+C quits (development)")
     parser.add_argument("--background", action="store_true", help="start hidden in the tray (Start with Windows)")
     parser.add_argument("--no-server", action="store_true", help="don't start the LAN web server on launch")
@@ -167,7 +167,7 @@ def main(argv: list[str] | None = None) -> int:
     setup_logging(settings)
 
     if not acquire_single_instance():
-        log.info("FileDrop is already running; showing its window")
+        log.info("WiFiDrop is already running; showing its window")
         ask_running_copy_to_show(settings)
         return 0
 
@@ -216,7 +216,7 @@ def main(argv: list[str] | None = None) -> int:
         upkeep.stop()
         ctx.lan.stop()
         console.stop()
-        log.info("FileDrop exited")
+        log.info("WiFiDrop exited")
     return 0
 
 

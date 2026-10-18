@@ -271,7 +271,7 @@ def download(item_id: str, request: Request, user=Depends(current_user), conn=De
 
 
 def create_lan_app(ctx) -> FastAPI:
-    app = FastAPI(title="FileDrop", version=__version__, docs_url=None, redoc_url=None, openapi_url=None)
+    app = FastAPI(title="WiFiDrop", version=__version__, docs_url=None, redoc_url=None, openapi_url=None)
     app.state.ctx = ctx
     install_error_handlers(app)
     app.include_router(api)

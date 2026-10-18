@@ -1,4 +1,4 @@
-"""Writes the open-source notices for everything FileDrop ships.
+"""Writes the open-source notices for everything WiFiDrop ships.
 
 Follows requirements.txt through each package's own dependencies (as installed in .venv),
 then adds Python itself and the PyInstaller launcher. Outputs:
@@ -99,7 +99,7 @@ def main() -> None:
         blocks.append((item, text))
 
     (ROOT / "console" / "licences.json").write_text(json.dumps(items, indent=1) + "\n", encoding="utf-8")
-    out = ["FileDrop includes the open-source software listed below. Each is used under its own licence,",
+    out = ["WiFiDrop includes the open-source software listed below. Each is used under its own licence,",
            "reproduced in full. Thank you to everyone who builds and maintains these projects.", ""]
     out += [f"  {i['name']} {i['version']}  ({i['license']})" for i in items]
     for item, text in blocks:

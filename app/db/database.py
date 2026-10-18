@@ -1,7 +1,7 @@
 """Opening, checking, backing up and migrating the SQLite database.
 
 open_database() is the only way the app gets a migrated database. It refuses
-to touch a database written by a newer FileDrop, backs up before every
+to touch a database written by a newer WiFiDrop, backs up before every
 migration, and runs each migration in its own transaction.
 """
 
@@ -42,8 +42,8 @@ class DatabaseError(RuntimeError):
 class DatabaseTooNewError(DatabaseError):
     def __init__(self, found: int, supported: int):
         super().__init__(
-            f"This data was written by a newer FileDrop (schema {found}); this version supports up to "
-            f"schema {supported}. Install the newer FileDrop again, or restore a backup."
+            f"This data was written by a newer WiFiDrop (schema {found}); this version supports up to "
+            f"schema {supported}. Install the newer WiFiDrop again, or restore a backup."
         )
         self.found, self.supported = found, supported
 
@@ -72,7 +72,7 @@ class OpenReport:
 
 
 def connect(path: Path) -> sqlite3.Connection:
-    """A connection with FileDrop's settings. Autocommit mode: use explicit BEGIN/COMMIT."""
+    """A connection with WiFiDrop's settings. Autocommit mode: use explicit BEGIN/COMMIT."""
     conn = sqlite3.connect(path, isolation_level=None, timeout=5.0, check_same_thread=False)
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA foreign_keys = ON")
@@ -198,7 +198,7 @@ def open_database(
         if current == 0 and existed:
             tables = conn.execute("SELECT count(*) FROM sqlite_master WHERE name NOT LIKE 'sqlite_%' AND name != 'schema_migrations'").fetchone()[0]
             if tables:
-                raise DatabaseError(f"{path} is not a FileDrop database.")
+                raise DatabaseError(f"{path} is not a WiFiDrop database.")
 
         conn.execute(_BOOTSTRAP)
         _verify_applied(conn, current)

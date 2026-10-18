@@ -100,7 +100,7 @@ def test_foreign_file_is_refused(paths):
     raw = sqlite3.connect(paths[0])
     raw.execute("CREATE TABLE something_else (x)")
     raw.close()
-    with pytest.raises(db.DatabaseError, match="not a FileDrop database"):
+    with pytest.raises(db.DatabaseError, match="not a WiFiDrop database"):
         open_db(paths)
 
 
