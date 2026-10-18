@@ -5,10 +5,10 @@ window.SITE = {
     releaseDate: "2026-10-16",
 
     // Link to the installer (for example a GitHub Release asset or an R2 bucket file).
-    downloadUrl: "",
+    downloadUrl: "https://github.com/Sejithegoon/filedrop-website/releases/download/v0.1.0-beta/FileDrop-Setup-0.1.0.exe",
     // From build/build.ps1 output: "SHA-256: ..."
-    sha256: "",
-    downloadSize: "",
+    sha256: "E6ACEA569107A07E23EC5B5F4FF369261C52BED513D737363186A15F773FF4D7",
+    downloadSize: "24.6 MB",
 
     // Where people can write to you.
     supportEmail: "filedrop.support@gmail.com",

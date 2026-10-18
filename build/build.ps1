@@ -9,8 +9,7 @@ $py = Join-Path $root ".venv\Scripts\python.exe"
 if ($LASTEXITCODE -ne 0) { throw "Tests failed; not building." }
 
 # Open-source notices for exactly the packages being bundled.
-& $py build
-otices.py
+& $py (Join-Path $root "build\notices.py")
 if ($LASTEXITCODE -ne 0) { throw "Could not write the open-source notices." }
 
 $version = (& $py -c "import app; print(app.__version__)").Trim()
