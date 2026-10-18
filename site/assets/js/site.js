@@ -276,7 +276,7 @@
         $$('form[data-api=waitlist], [data-waitlist-note]').forEach(el => { el.hidden = true; });
         const soon = $(".plan.pro .soon");
         if (soon) soon.textContent = pay.env === "production" ? "Available now" : "Test mode";
-        if (pay.price) { const price = $(".plan.pro .price"); if (price) price.innerHTML = `${pay.price} <small>one-time</small>`; }
+        if (pay.price) { const price = $(".plan.pro .price"); if (price) price.innerHTML = `${pay.price} <small>CAD, one-time</small>`; }
         const note = $("[data-buy-note]");
         if (pay.env !== "production" && note) note.textContent = "Test mode: use a Paddle test card. No real money is taken.";
         let ready = null;

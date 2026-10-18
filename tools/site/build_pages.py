@@ -366,7 +366,7 @@ li = lambda items: "".join(f"<li>{x}</li>" for x in items)
 page("pricing.html", "Pricing",
      "WiFiDrop Free is a complete local file-sharing product. WiFiDrop Pro adds unlimited accounts and scheduled backups.",
      f"""<div class="wrap page-hero center"><h1>Simple, honest pricing</h1>
-  <p>Free stays free. Pro will be a one-time purchase that includes a year of feature updates. No subscription, and no account with us needed to use WiFiDrop.</p></div>
+  <p>Free stays free. Pro is a one-time purchase of $29.99 CAD that includes a year of feature updates. No subscription, and no account with us needed to use WiFiDrop.</p></div>
 
 <section>
   <div class="wrap">
@@ -386,7 +386,7 @@ page("pricing.html", "Pricing",
       </div>
       <div class="plan pro reveal d1">
         <h3>WiFiDrop Pro <span class="soon">Coming soon</span></h3>
-        <div class="price">TBA <small>one-time</small></div>
+        <div class="price">$29.99 <small>CAD, one-time</small></div>
         <p class="muted">For bigger families, classrooms, clubs and small offices.</p>
         <ul class="checks">{li(CHECK_PRO)}</ul>
         <form class="form" data-api="waitlist" method="post">
@@ -411,7 +411,7 @@ page("pricing.html", "Pricing",
 
 <section class="alt">
   <div class="wrap">
-    <div class="section-head reveal"><h2>Compare plans</h2><p>Pro is being tested now. The price will be set before launch. Features marked "planned" aren't available yet.</p></div>
+    <div class="section-head reveal"><h2>Compare plans</h2><p>Pro is $29.99 CAD, one-time, and goes on sale soon. Features marked "planned" aren't available yet.</p></div>
     <div class="table-wrap reveal"><table class="compare">
       <thead><tr><th scope="col">Feature</th><th scope="col">Free</th><th scope="col">Pro</th></tr></thead>
       <tbody>
@@ -432,7 +432,7 @@ page("pricing.html", "Pricing",
         <tr><td>Feature updates</td><td>Free releases</td><td>1 year included, then optional renewal</td></tr>
       </tbody>
     </table></div>
-    <p>If you reach a Free limit, nothing stops working: your files and existing accounts stay available. Prices will be shown in Canadian dollars, with taxes calculated at checkout.</p>
+    <p>If you reach a Free limit, nothing stops working: your files and existing accounts stay available. Prices are in Canadian dollars; sales tax is added at checkout based on where you live.</p>
   </div>
 </section>""", csp=PADDLE_CSP)
 
@@ -565,7 +565,7 @@ faqs = [
     ("Is there a file size limit?", "There's no built-in limit. You can set storage limits for each person and each shared folder. Uploads are sent in pieces and resume if the connection drops, so large videos work."),
     ("What file types can people upload?", "Any type. Files are always downloaded as attachments, so nothing uploaded can run inside the page."),
     ("Does it work on Mac or Linux?", "The host app is Windows-only for now. People connecting can use any device with a modern browser."),
-    ("What will Pro cost?", "Pro isn't available yet. It will be a one-time purchase with a year of feature updates, priced in Canadian dollars. The price will be set after the beta. Free will stay free."),
+    ("What will Pro cost?", "$29.99 CAD, once. No subscription. That includes a year of feature updates, and Pro keeps working after that. Sales tax is added at checkout. Pro goes on sale soon; join the waitlist on the pricing page to hear first. Free stays free."),
     ("What data do you collect?", "The app sends us nothing about your files or how you use it. Our website and any forms you fill in receive limited information. The privacy policy explains exactly what."),
     ("Is WiFiDrop available outside Canada?", "Yes. WiFiDrop is made in Canada and anyone can download it. Our privacy policy covers visitors from Canada, the EU, the UK, the US and elsewhere."),
     ("How do I report a bug or suggest a feature?", "Use the feedback page. You can attach a screenshot, and the form asks for the details that help us fix problems quickly."),

@@ -26,6 +26,6 @@ window.SITE = {
         env: "sandbox",   // "production" at launch; until then the Buy button shows only with ?buytest=1
         token: "test_4aa1cd7b4dad71cdabc78bcf640",  // Paddle > My account > Settings > Authentication > Client-side tokens
         priceId: "pri_01m55sj9bqk0j030ysrazcxwta",  // "WiFiDrop Pro" (sandbox)
-        price: "$29 CAD", // placeholder, shown on the pricing page
+        price: "$29.99", // shown on the Pro card when checkout is on
     },
 };

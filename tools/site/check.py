@@ -160,6 +160,7 @@ sublicense non-exclusive non-transferable non-infringement commission d'accès l
 pics gb mb tb kb mins inc""".split())
 unknown = {}
 for name, text in texts.items():
+    text = re.sub(r"\b[0-9A-Fa-f]{32,}\b", " ", text)  # checksums and IDs aren't words
     for word in re.findall(r"[A-Za-zÀ-ÿ'][A-Za-zÀ-ÿ'\-]+", text):
         w = word.strip("'-").lower()
         if len(w) < 3 or w in allow or any(ch.isdigit() for ch in w):
