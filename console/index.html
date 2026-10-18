@@ -175,8 +175,19 @@
                 <div class="card">
                     <div class="card-head"><h2>Last backup</h2></div>
                     <p id="backupLast" class="small"></p>
-                    <p class="muted small">Each backup folder has a <b>READ ME.txt</b> that explains how to restore. Files are copied once, so later backups are quick.</p>
+                    <p class="muted small">Files are copied once, so later backups are quick. Restore any copy below.</p>
                 </div>
+            </div>
+            <div class="card" id="restoreCard">
+                <div class="card-head"><h2>Restore from a backup</h2></div>
+                <p class="muted small">Bring back accounts, folders and files from a backup, for example after a mistake or on a new PC. Works on Free and Pro. Your current state is saved first, so a restore can be undone.</p>
+                <div class="folder-pick">
+                        <input class="input" id="restoreFolder" spellcheck="false" autocomplete="off" placeholder="E:\WiFiDrop backup">
+                        <button class="btn" id="restoreBrowse" type="button"><span data-icon="folder"></span> Browse…</button>
+                        <button class="btn primary" id="restoreFind" type="button">Find backups</button>
+                    </div>
+                    <p class="error" id="restoreError" hidden></p>
+                    <div class="tbl-wrap"><table class="tbl" id="restoreTbl"></table></div>
             </div>
         </section>
 
@@ -262,6 +273,17 @@
         <p class="small muted" id="setupInfo"></p>
         <p class="error" id="setupError" hidden></p>
         <button class="btn primary big" id="setupSave" type="button">Save and start WiFiDrop</button>
+        <p class="small"><button class="linklike" id="setupRestoreToggle" type="button">Reinstalling, or moving from another PC? Restore from a backup</button></p>
+        <div id="setupRestore" hidden>
+            <p class="muted small">Choose the folder named <b>WiFiDrop backup</b> (for example on your external drive). The files are restored into the folder above.</p>
+            <div class="folder-pick">
+                        <input class="input" id="setupRestoreFolder" spellcheck="false" autocomplete="off" placeholder="E:\WiFiDrop backup">
+                        <button class="btn" id="setupRestoreBrowse" type="button"><span data-icon="folder"></span> Browse…</button>
+                        <button class="btn primary" id="setupRestoreFind" type="button">Find backups</button>
+                    </div>
+                    <p class="error" id="setupRestoreError" hidden></p>
+                    <div class="tbl-wrap"><table class="tbl" id="setupRestoreTbl"></table></div>
+        </div>
     </div>
 </section>
 

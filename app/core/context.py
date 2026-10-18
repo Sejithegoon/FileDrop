@@ -7,6 +7,7 @@ from dataclasses import dataclass, field
 from typing import Callable
 
 from app.core.adminlock import AdminLock
+from app.core.changes import ChangeFeed
 from app.core.edition import Capabilities
 from app.core.errors import ApiError
 from app.core.settings import Settings
@@ -30,6 +31,7 @@ class AppContext:
     update_available: dict | None = None  # set by upkeep when the feed has a newer version
     mover: StorageMover = field(default_factory=StorageMover)
     admin_lock: AdminLock = field(default_factory=AdminLock)
+    changes: ChangeFeed = field(default_factory=ChangeFeed)  # tells open pages to refresh
     caps: Capabilities = field(default_factory=Capabilities)  # Free or Pro, from the verified licence
 
     def connect(self) -> sqlite3.Connection:

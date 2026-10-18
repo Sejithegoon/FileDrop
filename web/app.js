@@ -113,7 +113,7 @@ $('#changePwBtn').onclick = async () => {
     catch (e) { FD.toast(e.message, 'err'); }
 };
 
-// ---------- pause banner (kept fresh by a light poll that also notices sign-outs)
+// ---------- pause banner
 
 function renderPause() {
     const s = me.status, parts = [];
@@ -124,10 +124,51 @@ function renderPause() {
     renderDrop();
 }
 
-setInterval(async () => {
-    if (!me || document.hidden) return;
-    try { me = await call('/me'); renderPause(); } catch { /* handled in call() */ }
-}, 15000);
+// ---------- live updates: when anyone changes something, reload what's on screen.
+// A tiny request every few seconds while the page is visible; it also notices sign-outs.
+
+let seenVersion = null;
+let liveBusy = false;
+
+async function checkForChanges() {
+    if (!me || document.hidden || liveBusy) return;
+    liveBusy = true;
+    try {
+        const { version } = await call('/changes');
+        if (seenVersion !== null && version !== seenVersion) {
+            me = await call('/me');
+            renderPause();
+            await loadSpaces();
+            await refresh();
+        }
+        seenVersion = version;
+    } catch { /* offline for a moment, or signed out (handled in call()) */ }
+    finally { liveBusy = false; }
+}
+setInterval(checkForChanges, 3000);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) checkForChanges(); });
+
+// Downloads: check the file still exists first, so a file someone just deleted gives a clear
+// message (and a fresh list) instead of a broken download.
+document.addEventListener('click', async e => {
+    const a = e.target.closest('#list a[download]');
+    if (!a || e.ctrlKey || e.metaKey) return;
+    e.preventDefault();
+    try {
+        const r = await fetch(a.href, { headers: { Range: 'bytes=0-0' }, credentials: 'same-origin' });
+        if (r.ok) {
+            const go = Object.assign(document.createElement('a'), { href: a.href, download: '' });
+            document.body.appendChild(go); go.click(); go.remove();
+            return;
+        }
+        const data = await r.json().catch(() => ({}));
+        FD.toast(r.status === 404 ? 'That file was deleted or moved. The list has been refreshed.'
+            : (data.error && data.error.message) || "Couldn't download that file.", 'err');
+        refresh();
+    } catch {
+        FD.toast("Can't reach the server. Is WiFiDrop still running?", 'err');
+    }
+});
 
 // ---------- spaces and folders
 

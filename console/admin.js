@@ -292,6 +292,45 @@ function device(ua) {
 
 setInterval(() => { if (page === 'dashboard' && !document.hidden) loadDashboard(); }, 3000);
 
+// ---------- live updates: reload the open page when anything changes (someone signs in,
+// uploads, deletes...). Skipped while you're typing or a dialog is open, then caught up.
+
+let adminVersion = null;
+async function checkForChanges() {
+    if (document.hidden || !$('#lockScreen').hidden || document.querySelector('dialog[open]')) return;
+    const active = document.activeElement;
+    if (active && active.matches('input, textarea, select') && active.closest('main')) return;
+    try {
+        const { version } = await api('/changes');
+        if (adminVersion !== null && version !== adminVersion) {
+            const reload = { users: loadUsers, shared: loadSpaces, activity: loadActivity, backups: loadBackups, licence: loadLicence,
+                files: loadBrowser }[page];
+            if (reload) await reload();
+            refreshSide();
+        }
+        adminVersion = version;
+    } catch { /* locked or offline; tried again shortly */ }
+}
+setInterval(checkForChanges, 3000);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) checkForChanges(); });
+
+// Admin downloads: same check as the phone page, so a deleted file gives a clear message.
+document.addEventListener('click', async e => {
+    const a = e.target.closest('#fileList a[download]');
+    if (!a) return;
+    e.preventDefault();
+    try {
+        const r = await fetch(a.href, { headers: { Range: 'bytes=0-0', 'X-WiFiDrop': '1' } });
+        if (r.ok) {
+            const go = Object.assign(document.createElement('a'), { href: a.href, download: '' });
+            document.body.appendChild(go); go.click(); go.remove();
+            return;
+        }
+        FD.toast(r.status === 404 ? 'That file was deleted or moved. The list has been refreshed.' : "Couldn't download that file.", 'err');
+        if (browse.spaceId) openBrowse(browse.spaceId, browse.folderId);
+    } catch { FD.toast("Couldn't download that file.", 'err'); }
+});
+
 $('#feedbackBtn').onclick = () => api('/open-feedback', { json: {} }).catch(fail);
 
 $('#quitBtn').onclick = async () => {
@@ -596,6 +635,7 @@ async function loadBackups() {
         $('#backupKeep').value = b.config.keep;
     }
     $('#backupRun').disabled = !b.pro || b.running || !b.config.folder;
+    pageRestore.setFolder(b.config.folder);
     const s = b.state;
     $('#backupLast').innerHTML = b.running ? '<b>Backing up now…</b> You can keep using WiFiDrop.'
         : !s.last_at ? 'No backup yet.'
@@ -620,6 +660,64 @@ $('#backupSave').onclick = async () => {
 $('#backupRun').onclick = async () => {
     try { await api('/backup/run', { json: {} }); FD.toast('Backup started'); loadBackups(); } catch (e) { fail(e); }
 };
+
+// ---------- restore from a backup (Backups page, and the first-run setup screen on a new PC)
+
+function restorePanel(prefix, { storagePath = null, done }) {
+    const show = msg => { $(`#${prefix}Error`).textContent = msg; $(`#${prefix}Error`).hidden = !msg; };
+    let folder = '';
+
+    async function find() {
+        show('');
+        $(`#${prefix}Tbl`).innerHTML = '';
+        try {
+            const r = await api('/backup/inspect', { json: { folder: $(`#${prefix}Folder`).value } });
+            folder = r.folder;
+            if (!r.snapshots.length) return show('That backup has no copies that can be restored.');
+            $(`#${prefix}Tbl`).innerHTML = '<tr><th>Backup from</th><th>Accounts</th><th>Files</th><th></th></tr>' + r.snapshots.map((s, i) => `
+                <tr><td><div class="strong">${FD.fmtDate(s.created_at)}</div><div class="muted small">${FD.fmtAgo(s.created_at)}</div></td>
+                <td>${s.users}</td><td class="small">${s.files} (${FD.fmtSize(s.bytes)})</td>
+                <td class="actions">${s.newer ? '<span class="badge warn">needs newer WiFiDrop</span>'
+                    : `<button class="btn ${i ? 'ghost' : 'primary'} small" type="button" data-restore="${FD.esc(s.name)}">Restore</button>`}</td></tr>`).join('');
+            $(`#${prefix}Tbl`).querySelectorAll('[data-restore]').forEach(b => b.onclick = () => restoreCopy(b.dataset.restore, b));
+        } catch (e) { show(e.message); }
+    }
+
+    async function restoreCopy(name, button) {
+        const row = button.closest('tr').querySelector('.strong').textContent;
+        if (!await FD.confirmBox(`Restore the backup from ${row}?`,
+            'Accounts, folders and files go back to how they were then. Anything added since won\'t show any more. Everyone signs in again. If the backup had an admin PIN, it comes back too. Your current state is saved first, so this can be undone.',
+            'Restore')) return;
+        button.disabled = true;
+        button.textContent = 'Restoring…';
+        try {
+            const body = { folder, name };
+            if (storagePath) body.storage_path = storagePath();
+            const r = await api('/backup/restore', { json: body });
+            FD.toast(`Restored: ${r.users} account(s) and ${r.files} file(s)${r.missing ? `, ${r.missing} file(s) missing from the backup` : ''}.`);
+            done(r);
+        } catch (e) {
+            show(e.message);
+            button.disabled = false;
+            button.textContent = 'Restore';
+        }
+    }
+
+    $(`#${prefix}Find`).onclick = find;
+    $(`#${prefix}Folder`).addEventListener('keydown', e => { if (e.key === 'Enter') find(); });
+    $(`#${prefix}Browse`).onclick = async () => {
+        try { const r = await api('/storage/choose', { json: {} }); if (r.path) { $(`#${prefix}Folder`).value = r.path; find(); } }
+        catch (e) { show(e.message); }
+    };
+    return { find, setFolder: f => { if (f && !$(`#${prefix}Folder`).value) $(`#${prefix}Folder`).value = f; } };
+}
+
+const pageRestore = restorePanel('restore', { done: () => { refreshPin(); go('dashboard'); } });
+const setupRestore = restorePanel('setupRestore', {
+    storagePath: () => $('#setupPath').value,
+    done: () => { $('#setup').hidden = true; refreshPin(); go('dashboard'); },
+});
+$('#setupRestoreToggle').onclick = () => { $('#setupRestore').hidden = !$('#setupRestore').hidden; };
 
 // ---------- licence
 

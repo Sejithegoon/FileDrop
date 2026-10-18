@@ -439,6 +439,10 @@ dialog.sheet::backdrop { background: rgb(0 0 0 / .6); }
 .switch-row.compact-row { padding: 6px 0 0; border-top: 0; font-size: 14px; }
 
 /* Licence and backups pages */
+.linklike { background: none; border: 0; padding: 0; color: var(--accent-2); font: inherit; cursor: pointer; text-decoration: underline; }
+#setupRestore { display: grid; gap: 10px; }
+#setupRestore .folder-pick, #restoreCard .folder-pick { flex-wrap: wrap; }
+#setupRestore .folder-pick .input, #restoreCard .folder-pick .input { min-width: min(100%, 260px); }
 .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
 .meta-list { display: grid; grid-template-columns: max-content 1fr; gap: 4px 16px; font-size: 14px; margin-top: 12px; }
 .meta-list dt { color: var(--muted); }

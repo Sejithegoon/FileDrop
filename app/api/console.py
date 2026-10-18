@@ -28,8 +28,8 @@ from app.core import adminlock
 from app.core.errors import ApiError, install_error_handlers
 from app.core.network import primary_ipv4
 from app.core.settings import resource_path
-from app.services import (audit, auth, backups, files, licensing, settings_store, spaces, storage_config,
-                          uploads, users)
+from app.services import (audit, auth, backups, files, licensing, restore, settings_store, spaces,
+                          storage_config, uploads, users)
 
 ACTOR = "admin (this PC)"
 api = APIRouter(prefix="/api", dependencies=[Depends(csrf)])
@@ -93,6 +93,12 @@ class LicenceBody(BaseModel):
     licence: str
 
 
+class RestoreBody(BaseModel):
+    folder: str
+    name: str = ""
+    storage_path: str = ""  # first run on a new PC: where to put the restored files
+
+
 class BackupBody(BaseModel):
     enabled: bool
     folder: str = ""
@@ -113,6 +119,11 @@ def _qr_svg(text: str) -> str:
 
 
 # ---- overview and server controls ----------------------------------------------
+
+@api.get("/changes")
+def changes(request: Request):
+    return {"version": ctx_of(request).changes.version}
+
 
 @api.get("/overview")
 def overview(request: Request, conn=Depends(db)):
@@ -188,20 +199,23 @@ def check_folder(body: PathBody, request: Request):
     return storage_config.check(body.path, ctx_of(request).settings)
 
 
-@api.post("/storage/setup")
-def setup_storage(body: PathBody, request: Request, conn=Depends(db)):
-    """First run: pick the folder. Later changes go through /storage/move."""
-    ctx = ctx_of(request)
+def _first_storage(ctx, conn, raw_path: str):
     if ctx.storage is not None:
         raise ApiError(409, "ALREADY_SET", "A storage folder is already set. Use Change folder instead.")
-    path = storage_config.resolve_choice(body.path, ctx.settings)
+    path = storage_config.resolve_choice(raw_path, ctx.settings)
     ctx.storage = storage_config.prepare(path, storage_config.install_id(conn))
     settings_store.set_value(conn, storage_config.KEY, str(path))
     audit.record(conn, "storage.setup", actor=ACTOR, target_name=str(path))
     ctx.lan.unblock("storage")
     if ctx.settings.start_server_on_launch:
         ctx.lan.start()
-    return {"path": str(path)}
+    return path
+
+
+@api.post("/storage/setup")
+def setup_storage(body: PathBody, request: Request, conn=Depends(db)):
+    """First run: pick the folder. Later changes go through /storage/move."""
+    return {"path": str(_first_storage(ctx_of(request), conn, body.path))}
 
 
 @api.post("/storage/move")
@@ -346,6 +360,36 @@ def backup_settings(body: BackupBody, request: Request, conn=Depends(db)):
     audit.record(conn, "backup.settings", actor=ACTOR, target_name=body.folder or None,
                  details={"enabled": body.enabled, "every_hours": body.every_hours, "keep": body.keep})
     return _backup_json(ctx, conn)
+
+
+@api.post("/backup/inspect")
+def backup_inspect(body: RestoreBody):
+    """List the copies in a backup folder. Free and Pro: restoring never needs a licence."""
+    return restore.list_snapshots(body.folder)
+
+
+@api.post("/backup/restore")
+def backup_restore(body: RestoreBody, request: Request):
+    ctx = ctx_of(request)
+    if ctx.storage_moving:
+        raise ApiError(409, "STORAGE_MOVING", "Wait for the storage folder move to finish.")
+    if ctx.storage is None:  # a new PC: choose where the files go, then restore into it
+        if not body.storage_path:
+            raise ApiError(400, "STORAGE_NOT_SET", "Choose where WiFiDrop should save the restored files.")
+        restore.find_backup_dir(body.folder)  # check the backup before creating anything
+        conn = ctx.connect()
+        try:
+            _first_storage(ctx, conn, body.storage_path)
+        finally:
+            conn.close()
+    result = restore.restore(ctx, body.folder, body.name)
+    conn = ctx.connect()
+    try:
+        audit.record(conn, "backup.restore", actor=ACTOR, target_name=result["restored"],
+                     details={k: result[k] for k in ("users", "files", "copied", "missing")})
+    finally:
+        conn.close()
+    return result
 
 
 @api.post("/backup/run")
@@ -556,7 +600,7 @@ def admin_download(item_id: str, request: Request, conn=Depends(db)):
 
 
 _OPEN_PATHS = {"/api/lock", "/api/unlock", "/api/show"}
-_POLL_PATHS = {"/api/overview", "/api/sessions", "/api/storage/move", "/api/backup"}
+_POLL_PATHS = {"/api/overview", "/api/sessions", "/api/storage/move", "/api/backup", "/api/changes"}
 
 
 class PinBody(BaseModel):
@@ -625,6 +669,7 @@ def create_console_app(ctx) -> FastAPI:
             if not ctx.admin_lock.is_unlocked(request.cookies.get(adminlock.COOKIE), activity):
                 return JSONResponse({"error": {"code": "LOCKED", "message": "Enter the admin PIN."}}, status_code=401)
         response = await call_next(request)
+        ctx.changes.note_request(request.method, path, response.status_code)
         response.headers["Cache-Control"] = "no-cache"
         return response
 

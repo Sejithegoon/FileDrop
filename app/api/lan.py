@@ -259,6 +259,12 @@ def file_response(ctx, item) -> FileResponse:
                         headers={"X-Content-Type-Options": "nosniff", "Cache-Control": "private, no-store"})
 
 
+@api.get("/changes")
+def changes(request: Request, user=Depends(current_user)):
+    """A number that goes up when anything changes; the page reloads what it shows when it moves."""
+    return {"version": ctx_of(request).changes.version}
+
+
 @api.get("/download/{item_id}")
 def download(item_id: str, request: Request, user=Depends(current_user), conn=Depends(db)):
     ctx = ctx_of(request)
@@ -279,6 +285,7 @@ def create_lan_app(ctx) -> FastAPI:
     @app.middleware("http")
     async def no_cache_html(request: Request, call_next):
         response = await call_next(request)
+        ctx.changes.note_request(request.method, request.url.path, response.status_code)
         if not request.url.path.startswith("/api/"):
             response.headers["Cache-Control"] = "no-cache"
         return response

@@ -74,6 +74,7 @@ class Upkeep:
             try:
                 n = purge_old_trash(conn, ctx.storage)
                 if n:
+                    ctx.changes.bump()
                     log.info("Removed %s item(s) that were in the trash for over %s days", n, TRASH_DAYS)
                 uploads.sweep(conn, ctx.storage)
                 if ctx.caps.scheduled_backups and backups.due(conn):
