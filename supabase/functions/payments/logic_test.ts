@@ -1,7 +1,7 @@
 // Run: deno test supabase/functions/payments
 import type { Keys, LicenceRow, Mailer } from "../licence/logic.ts";
 import { PermanentMailError, readLicence } from "../licence/logic.ts";
-import { type Config, handle, type Paddle, type PaymentStore, signHeader } from "./logic.ts";
+import { type Config, handle, ipAllowed, type Paddle, type PaymentStore, signHeader } from "./logic.ts";
 
 function assert(cond: unknown, msg = "assertion failed"): asserts cond { if (!cond) throw new Error(msg); }
 
@@ -140,6 +140,23 @@ Deno.test("refunding the product line in full revokes, even when the transaction
     data: { action: "refund", status: "approved", type: "partial", transaction_id: "txn_1", items: [{ type: "full" }] } };
   await handle(await webhook(fullLine), s, keys, paddle, null, cfg, NOW);
   assert(s.licences[0].revoked_at !== null);
+});
+
+Deno.test("only Paddle's IP addresses are accepted", async () => {
+  const keys = await testKeys(); const s = new MemoryStore();
+  const withIps = { ...cfg, paddleIps: () => Promise.resolve(["34.237.3.244/32", "52.11.166.252/32"]) };
+  const from = async (ip: string) => {
+    const req = await webhook(paid(`evt_${ip}`, `txn_${ip}`));
+    const headers = new Headers(req.headers); headers.set("x-forwarded-for", `${ip}, 10.0.0.1`);
+    return handle(new Request(req.url, { method: "POST", body: await req.text(), headers }), s, keys, paddle, null, withIps, NOW);
+  };
+  assert((await from("203.0.113.9")).status === 403, "stranger refused");
+  assert((await from("52.11.166.252")).status === 200, "Paddle accepted");
+  assert(ipAllowed("10.1.2.3", ["10.0.0.0/8"]) && !ipAllowed("11.0.0.1", ["10.0.0.0/8"]) && !ipAllowed("nope", ["0.0.0.0/0"]));
+  // If Paddle's list can't be fetched, the signature check still decides.
+  const noList = { ...cfg, paddleIps: () => Promise.resolve(null) };
+  assert((await handle(await webhook(paid("evt_n", "txn_n")), s, keys, paddle, null, noList, NOW)).status === 200);
+  assert((await handle(await webhook(paid("evt_m", "txn_m"), { secret: "forged" }), s, keys, paddle, null, noList, NOW)).status === 401);
 });
 
 Deno.test("a failure returns 500 so Paddle retries, and the retry completes", async () => {

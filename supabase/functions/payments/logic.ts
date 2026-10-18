@@ -25,9 +25,31 @@ export interface Config {
   maxActivations: number;
   toleranceSec: number;
   licence: LicenceConfig;
+  /** Paddle's current webhook IPs as CIDRs, or null if they couldn't be fetched (the signature still protects). */
+  paddleIps?: () => Promise<string[] | null>;
 }
 
 const enc = new TextEncoder();
+
+function ipv4(ip: string): number | null {
+  const m = ip.trim().match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
+  if (!m) return null;
+  const parts = m.slice(1).map(Number);
+  return parts.some((n) => n > 255) ? null : ((parts[0] << 24) | (parts[1] << 16) | (parts[2] << 8) | parts[3]) >>> 0;
+}
+
+/** True if the IPv4 address is inside one of the CIDR ranges (Paddle publishes /32s). */
+export function ipAllowed(ip: string, cidrs: string[]): boolean {
+  const addr = ipv4(ip);
+  if (addr === null) return false;
+  return cidrs.some((c) => {
+    const [base, bits = "32"] = c.split("/");
+    const net = ipv4(base), n = Number(bits);
+    if (net === null || !(n >= 0 && n <= 32)) return false;
+    const mask = n === 0 ? 0 : (0xffffffff << (32 - n)) >>> 0;
+    return ((addr & mask) >>> 0) === ((net & mask) >>> 0);
+  });
+}
 
 async function hmacHex(secret: string, message: string): Promise<string> {
   const key = await crypto.subtle.importKey("raw", enc.encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
@@ -62,6 +84,11 @@ export async function handle(req: Request, store: PaymentStore, keys: Keys, padd
   const reply = (status: number, body: Record<string, unknown>) =>
     new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json", "Cache-Control": "no-store" } });
   if (req.method !== "POST") return reply(405, { ok: false });
+  if (cfg.paddleIps) {
+    const cidrs = await cfg.paddleIps();
+    const ip = (req.headers.get("x-forwarded-for") || "").split(",")[0].trim();
+    if (cidrs && !ipAllowed(ip, cidrs)) return reply(403, { ok: false, error: "not from Paddle" });
+  }
   const raw = await req.text();
   if (!(await verifySignature(req.headers.get("paddle-signature") || "", raw, cfg.webhookSecret, Math.floor(now / 1000), cfg.toleranceSec))) {
     return reply(401, { ok: false, error: "bad signature" });
