@@ -113,10 +113,15 @@ async function process(ev: Event, store: PaymentStore, keys: Keys, paddle: Paddl
   }
   if (ev.event_type === "adjustment.created" || ev.event_type === "adjustment.updated") {
     if (d.status !== "approved" || !d.transaction_id) return `ignored: adjustment ${d.status}`;
-    if (d.action === "chargeback" || (d.action === "refund" && d.type === "full")) {
+    // Paddle marks each refunded line: "full" means that product was refunded completely, even if
+    // the transaction total differs (for example a rounding or tax difference).
+    const lines: string = (d.items || []).map((i: any) => i?.type).filter(Boolean).join(",") || "none";
+    const productRefunded = d.type === "full" || (d.items || []).some((i: any) => i?.type === "full");
+    if (d.action === "chargeback" || (d.action === "refund" && productRefunded)) {
       const n = await store.setRevoked(d.transaction_id, new Date(now).toISOString(), d.action);
-      return `revoked ${n} licence(s): ${d.action}`;
+      return `revoked ${n} licence(s): ${d.action} (${d.type || "?"}; lines ${lines})`;
     }
+    if (d.action === "refund") return `kept licence: partial refund (lines ${lines})`;
     if (d.action === "chargeback_reverse") {
       const n = await store.setRevoked(d.transaction_id, null, "");
       return `restored ${n} licence(s)`;

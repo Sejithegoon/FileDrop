@@ -19,6 +19,7 @@
             <button data-page="activity"><span data-icon="activity"></span> Activity</button>
             <button data-page="backups"><span data-icon="hdd"></span> Backups</button>
             <button data-page="licence"><span data-icon="key"></span> Licence <span class="badge accent" id="navEdition">FREE</span></button>
+            <button data-page="about"><span data-icon="doc"></span> About</button>
         </nav>
         <div class="foot">
             <span class="pill" id="sidePill"><span class="dot"></span><span id="sideState">…</span></span>
@@ -210,6 +211,27 @@
                     <tr><td>Scheduled backups to another drive</td><td>No</td><td>Yes</td></tr>
                 </table></div>
                 <p class="muted small" style="margin-top:8px">Pro works offline. If the licence ever stops (for example after a refund), Pro features become read-only: your files, accounts and Free features keep working.</p>
+            </div>
+        </section>
+
+        <!-- About and open-source licences -->
+        <section data-view="about" hidden>
+            <div class="page-head"><h1>About FileDrop</h1></div>
+            <div class="card">
+                <div class="card-head"><h2>FileDrop <span id="aboutVersion"></span></h2><span class="badge" id="aboutEdition"></span></div>
+                <p class="small" id="aboutBuilt"></p>
+                <p class="muted small">Your own private file-sharing space, hosted on this PC. FileDrop never sends us your files, file names or usage data.</p>
+                <div class="row-actions" style="margin-top:12px">
+                    <a class="btn ghost small" href="/EULA.txt" target="_blank" rel="noopener">Licence agreement</a>
+                    <a class="btn ghost small" id="aboutPrivacy" target="_blank" rel="noopener" hidden>Privacy policy</a>
+                    <a class="btn ghost small" id="aboutWebsite" target="_blank" rel="noopener" hidden><span data-icon="external"></span> Website</a>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-head"><h2>Open-source software</h2>
+                    <a class="btn ghost small" href="/THIRD-PARTY-NOTICES.txt" target="_blank" rel="noopener">Full licence texts</a></div>
+                <p class="muted small">FileDrop is built with these open-source projects, each used under its own licence. Thank you to everyone who makes them.</p>
+                <div class="tbl-wrap"><table class="tbl" id="ossTbl"></table></div>
             </div>
         </section>
     </main>

@@ -8,6 +8,11 @@ $py = Join-Path $root ".venv\Scripts\python.exe"
 & $py -m pytest -q -p no:cacheprovider
 if ($LASTEXITCODE -ne 0) { throw "Tests failed; not building." }
 
+# Open-source notices for exactly the packages being bundled.
+& $py build
+otices.py
+if ($LASTEXITCODE -ne 0) { throw "Could not write the open-source notices." }
+
 $version = (& $py -c "import app; print(app.__version__)").Trim()
 Write-Host "Building FileDrop $version"
 

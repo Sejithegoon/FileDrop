@@ -21,7 +21,7 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-from app import __version__
+from app import BUILD_DATE, __version__
 from app.api.deps import csrf, ctx_of, db
 from app.api.lan import file_response
 from app.core import adminlock
@@ -127,7 +127,7 @@ def overview(request: Request, conn=Depends(db)):
             disk = {"total": 0, "free": 0}
         storage = {"root": str(ctx.storage.root), "disk_total": disk["total"], "disk_free": disk["free"]}
     return {
-        "version": __version__,
+        "version": __version__, "build_date": BUILD_DATE,
         "server": status, "url": url, "qr": _qr_svg(url),
         "uploads_paused": ctx.uploads_paused, "downloads_paused": ctx.downloads_paused,
         "storage": storage, "storage_override": bool(ctx.settings.storage_dir), "move": ctx.mover.status(),

@@ -31,6 +31,8 @@ UninstallDisplayIcon={app}\{#MyAppExe}
 Compression=lzma2
 SolidCompression=yes
 WizardStyle=modern
+; Licence agreement page (the user must accept it to install).
+LicenseFile=..\console\EULA.txt
 ; Close a running FileDrop before installing or uninstalling.
 AppMutex=Local\FileDrop.SingleInstance
 CloseApplications=yes
@@ -45,6 +47,8 @@ Name: "autostart"; Description: "Start FileDrop when I sign in to Windows (runs 
 
 [Files]
 Source: "out\FileDrop\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\console\THIRD-PARTY-NOTICES.txt"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\console\EULA.txt"; DestDir: "{app}"; DestName: "LICENCE AGREEMENT.txt"; Flags: ignoreversion
 
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExe}"

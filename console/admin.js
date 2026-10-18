@@ -18,7 +18,7 @@ const quotaText = (used, quota) => quota == null ? `${FD.fmtSize(used)} · no li
 
 // ---------- navigation
 
-const PAGES = ['dashboard', 'users', 'shared', 'files', 'activity', 'backups', 'licence'];
+const PAGES = ['dashboard', 'users', 'shared', 'files', 'activity', 'backups', 'licence', 'about'];
 
 function go(p) {
     if (!PAGES.includes(p)) p = 'dashboard';
@@ -27,7 +27,7 @@ function go(p) {
     document.querySelectorAll('#nav button').forEach(b => b.toggleAttribute('aria-current', b.dataset.page === p));
     document.querySelectorAll('[data-view]').forEach(v => { v.hidden = v.dataset.view !== p; });
     ({ dashboard: loadDashboard, users: loadUsers, shared: loadSpaces, files: loadBrowser, activity: loadActivity,
-       backups: loadBackups, licence: loadLicence })[p]();
+       backups: loadBackups, licence: loadLicence, about: loadAbout })[p]();
     if (p !== 'dashboard') refreshSide();
 }
 
@@ -681,6 +681,28 @@ $('#licRemove').onclick = async () => {
     if (!await FD.confirmBox('Remove the licence from this PC?', 'FileDrop goes back to Free and frees this PC so you can use the licence on another one. Your files and accounts stay. Keep your licence email to add it again.', 'Remove licence')) return;
     try { const r = await api('/licence/remove', { json: {} }); renderLicence(r); FD.toast('Licence removed'); } catch (e) { fail(e); }
 };
+
+// ---------- about and open-source licences
+
+async function loadAbout() {
+    try {
+        const o = overview || await api('/overview');
+        $('#aboutVersion').textContent = `v${o.version}`;
+        $('#aboutBuilt').textContent = `Released ${o.build_date}.`;
+        $('#aboutEdition').textContent = o.edition && o.edition.pro ? 'PRO' : 'FREE';
+        $('#aboutEdition').className = `badge ${o.edition && o.edition.pro ? 'accent' : ''}`;
+        if (o.website_url) {
+            $('#aboutWebsite').href = o.website_url; $('#aboutWebsite').hidden = false;
+            $('#aboutPrivacy').href = `${o.website_url}/privacy.html`; $('#aboutPrivacy').hidden = false;
+        }
+        if (!$('#ossTbl').rows.length) {
+            const list = await (await fetch('/licences.json')).json();
+            $('#ossTbl').innerHTML = '<tr><th>Component</th><th>Version</th><th>Licence</th></tr>' + list.map(c =>
+                `<tr><td>${c.url ? `<a href="${FD.esc(c.url)}" target="_blank" rel="noopener">${FD.esc(c.name)}</a>` : FD.esc(c.name)}</td>
+                 <td class="muted small">${FD.esc(c.version)}</td><td class="small">${FD.esc(c.license)}</td></tr>`).join('');
+        }
+    } catch (e) { fail(e); }
+}
 
 // ---------- admin PIN
 

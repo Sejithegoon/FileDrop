@@ -129,6 +129,19 @@ Deno.test("a refused email is recorded instead of retried forever", async () => 
   assert(s.events.get("evt_1")!.includes("EMAIL FAILED"));
 });
 
+Deno.test("refunding the product line in full revokes, even when the transaction refund is partial", async () => {
+  const keys = await testKeys(); const s = new MemoryStore();
+  await handle(await webhook(paid()), s, keys, paddle, null, cfg, NOW);
+  const partialAmount = { event_id: "evt_p", event_type: "adjustment.updated",
+    data: { action: "refund", status: "approved", type: "partial", transaction_id: "txn_1", items: [{ type: "partial" }] } };
+  const body = await (await handle(await webhook(partialAmount), s, keys, paddle, null, cfg, NOW)).json();
+  assert(s.licences[0].revoked_at === null && body.result.includes("kept licence"));
+  const fullLine = { event_id: "evt_f", event_type: "adjustment.updated",
+    data: { action: "refund", status: "approved", type: "partial", transaction_id: "txn_1", items: [{ type: "full" }] } };
+  await handle(await webhook(fullLine), s, keys, paddle, null, cfg, NOW);
+  assert(s.licences[0].revoked_at !== null);
+});
+
 Deno.test("a failure returns 500 so Paddle retries, and the retry completes", async () => {
   const keys = await testKeys(); const s = new MemoryStore(); const mail = new Mail();
   s.failInsertOnce = true;
