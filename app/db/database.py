@@ -115,7 +115,7 @@ def backup_database(conn: sqlite3.Connection, backup_dir: Path, label: str, keep
     """Consistent online copy via SQLite's backup API, then prune old copies."""
     backup_dir.mkdir(parents=True, exist_ok=True)
     stamp = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S-%f")
-    final = backup_dir / f"filedrop-{stamp}-{label}.db"
+    final = backup_dir / f"wifidrop-{stamp}-{label}.db"
     tmp = final.with_suffix(".db.partial")
     dest = sqlite3.connect(tmp)
     try:
@@ -123,7 +123,7 @@ def backup_database(conn: sqlite3.Connection, backup_dir: Path, label: str, keep
     finally:
         dest.close()
     tmp.replace(final)
-    for old in sorted(backup_dir.glob("filedrop-*.db"))[:-keep]:
+    for old in sorted(backup_dir.glob("wifidrop-*.db"))[:-keep]:
         old.unlink(missing_ok=True)
     log.info("Database backed up to %s", final)
     return final

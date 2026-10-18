@@ -1,20 +1,19 @@
 // Site settings. Edit these, then run build/publish-site.ps1. Pages show sensible
 // "coming soon" text for anything left empty, so nothing breaks before launch.
 window.SITE = {
-    version: "0.1.1",
+    version: "0.1.2",
     releaseDate: "2026-10-18",
 
     // Link to the installer (for example a GitHub Release asset or an R2 bucket file).
-    downloadUrl: "https://github.com/Sejithegoon/filedrop-website/releases/download/v0.1.0-beta/WiFiDrop-Setup-0.1.1.exe",
+    downloadUrl: "https://github.com/Sejithegoon/filedrop-website/releases/download/v0.1.0-beta/WiFiDrop-Setup-0.1.2.exe",
     // From build/build.ps1 output: "SHA-256: ..."
-    sha256: "2467E58D909319BA47D07BE91685DAC0515C3A495D53D528722E08369623CF83",
+    sha256: "B9A02BBDDB4915543ECC5FAA29588A47F82F00220C1EAC862E8522C69E181EA6",
     downloadSize: "24.6 MB",
 
     // Where people can write to you.
     supportEmail: "filedrop.support@gmail.com",
 
-    // Where the forms are sent. Empty = forms show "opens soon" (GitHub Pages before Phase B).
-    // "/api" when the site is served by feedback_server/; your Supabase functions URL after Phase B.
+    // Where the forms are sent (the Supabase "forms" function). Empty = forms show "opens soon".
     apiBase: "https://chpjqelrwlowdiwxfugl.supabase.co/functions/v1/forms",
 
     // Supabase project URL and publishable key (safe to publish; used only by admin.html to sign in).

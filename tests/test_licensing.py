@@ -9,7 +9,7 @@ from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 
 from app.core import edition
 from app.services import backups, licensing, settings_store, storage_config
-from tests.test_api import admin, ctx, login, make_user, my_space, upload  # noqa: F401 (fixtures)
+from tests.test_api import login, make_user, my_space, upload
 
 KEY = Ed25519PrivateKey.generate()
 PUB = base64.b64encode(KEY.public_key().public_bytes(ser.Encoding.Raw, ser.PublicFormat.Raw)).decode()
@@ -25,13 +25,13 @@ def sign(payload: dict, key=KEY) -> str:
     return f"{b64(raw)}.{b64(key.sign(raw))}"
 
 
-def licence(lid="FDP-TEST-0001", upd="2099-12-31", key=KEY, **extra) -> str:
+def licence(lid="WDP-TEST-0001", upd="2099-12-31", key=KEY, **extra) -> str:
     blob = sign({"v": 1, "typ": "licence", "lid": lid, "ed": "pro", "to": "sam@example.com",
                  "iat": "2026-10-16T00:00:00Z", "upd": upd, "max": 3, **extra}, key)
     return edition.normalise(blob)
 
 
-def status(ctx, st, lid="FDP-TEST-0001", iid=None) -> str:
+def status(ctx, st, lid="WDP-TEST-0001", iid=None) -> str:
     conn = ctx.connect()
     iid = iid or storage_config.install_id(conn)
     conn.close()
@@ -75,7 +75,7 @@ def five_users(admin):
 def test_licence_accepts_messy_paste_and_rejects_tampering():
     text = licence()
     messy = "\n\n  " + text.replace("\n", "\r\n   ") + "  \n"
-    assert edition.parse_licence(messy)["lid"] == "FDP-TEST-0001"
+    assert edition.parse_licence(messy)["lid"] == "WDP-TEST-0001"
     body = text.split("\n")[1]
     tampered = text.replace(body, body[:10] + ("A" if body[10] != "A" else "B") + body[11:])
     with pytest.raises(edition.LicenceError):
@@ -236,5 +236,5 @@ def test_failed_backup_is_recorded_and_retried_sooner(ctx, admin, server, tmp_pa
 
 def test_licences_issued_before_the_rename_still_work():
     old = licence().replace("WIFIDROP LICENCE", "FILEDROP LICENCE")
-    assert "FILEDROP" in old and edition.parse_licence(old)["lid"] == "FDP-TEST-0001"
+    assert "FILEDROP" in old and edition.parse_licence(old)["lid"] == "WDP-TEST-0001"
     assert edition.normalise(old).startswith("-----BEGIN WIFIDROP LICENCE-----")

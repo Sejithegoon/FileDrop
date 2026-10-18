@@ -16,7 +16,7 @@ from app.core.settings import Settings
 from app.db.database import open_database
 from app.services import settings_store, storage_config
 
-H = {"X-FileDrop": "1"}
+H = {"X-WiFiDrop": "1"}
 
 
 @pytest.fixture
@@ -26,7 +26,7 @@ def ctx(tmp_path):
     conn.close()
     c = AppContext(settings=settings)
     c.lan = LanServer(lambda: None, "127.0.0.1", 0)
-    c.lan.block("Choose where FileDrop saves files to finish setup.", key="storage")
+    c.lan.block("Choose where WiFiDrop saves files to finish setup.", key="storage")
     settings.start_server_on_launch = False
     return c
 

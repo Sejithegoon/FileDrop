@@ -17,7 +17,7 @@ from app.services import settings_store
 from app.services.passwords import hash_password, verify_password
 
 KEY = "admin_pin_hash"
-COOKIE = "fd_admin"
+COOKIE = "wd_admin"
 IDLE_SECONDS = 30 * 60
 MIN_LEN, MAX_LEN = 4, 64
 FAIL_LIMIT, FAIL_PAUSE = 5, 60

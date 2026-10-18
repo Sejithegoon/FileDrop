@@ -49,12 +49,13 @@ def restrict_to_owner(path: Path) -> bool:
         return False
 
 
-MARKER = ".filedrop-private"
+MARKER = ".wifidrop-private"
+OLD_MARKER = ".filedrop-private"  # FileDrop beta
 
 
 def ensure_private(path: Path) -> None:
     """Restrict once per folder; a marker file avoids re-walking a large storage tree on every start."""
-    if sys.platform != "win32" or (path / MARKER).exists():
+    if sys.platform != "win32" or (path / MARKER).exists() or (path / OLD_MARKER).exists():
         return
     if restrict_to_owner(path):
         try:

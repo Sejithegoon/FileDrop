@@ -22,7 +22,7 @@ if (git branch --list site-publish) { git branch -D site-publish | Out-Null }
 git subtree split --prefix site -b site-publish 2>&1 | Out-Null
 if ($LASTEXITCODE -ne 0) { throw "Could not split site/ out of the repo." }
 
-$leaked = git ls-tree -r --name-only site-publish | Where-Object { $_ -match '^(app|console|web|tests|build|feedback_server)/' -or $_ -match '\.py$' }
+$leaked = git ls-tree -r --name-only site-publish | Where-Object { $_ -match '^(app|console|web|tests|build|tools|supabase)/' -or $_ -match '\.py$' }
 if ($leaked) { git branch -D site-publish | Out-Null; throw "Refusing to publish: app files found in the website branch: $leaked" }
 
 git push website site-publish:main 2>&1 | ForEach-Object { "$_" }

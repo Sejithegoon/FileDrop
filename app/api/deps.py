@@ -22,9 +22,9 @@ def db(request: Request):
 
 
 def csrf(request: Request) -> None:
-    """State-changing requests must carry X-FileDrop: 1. Browsers won't send a custom
+    """State-changing requests must carry X-WiFiDrop: 1 (the beta's X-FileDrop is also accepted). Browsers won't send a custom
     header cross-site without a CORS preflight, which we never allow."""
-    if request.method not in ("GET", "HEAD", "OPTIONS") and request.headers.get("x-filedrop") != "1":
+    if request.method not in ("GET", "HEAD", "OPTIONS") and "1" not in (request.headers.get("x-wifidrop"), request.headers.get("x-filedrop")):
         raise ApiError(403, "CSRF", "Request blocked.")
 
 

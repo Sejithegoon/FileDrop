@@ -4,8 +4,6 @@ import json
 import re
 from pathlib import Path
 
-from tests.test_api import admin, ctx  # noqa: F401 (fixtures)
-
 ROOT = Path(__file__).resolve().parents[1]
 
 

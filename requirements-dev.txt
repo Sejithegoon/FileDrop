@@ -5,3 +5,5 @@ pyinstaller==6.22.3
 pyflakes==4.0.3
 packaging==26.3  # build/notices.py
 python-multipart==0.0.32
+playwright==1.64.0  # tools/site/check.py and screenshots.py (uses Microsoft Edge)
+pyspellchecker==0.9.1  # tools/site/check.py

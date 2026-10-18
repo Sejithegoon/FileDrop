@@ -52,15 +52,15 @@ Build: `________`  Date: `________`  Host PC / Windows version: `________`
 - [ ] Kill `WiFiDrop.exe` in Task Manager during an upload. Start it again: no half-finished file appears, the phone's upload restarts or resumes.
 - [ ] Unplug the drive holding the storage folder while WiFiDrop runs: phones get a clear error, nothing crashes. Plug it back and restart WiFiDrop: everything is there.
 - [ ] Pull the power (or force shutdown) while idle. On restart the database opens and files are intact.
-- [ ] Check `%ProgramData%\FileDrop\logs\filedrop.log` has no unexpected errors.
+- [ ] Check `%ProgramData%\WiFiDrop\logs\wifidrop.log` has no unexpected errors.
 
 ## Privacy and permissions
 
-- [ ] Sign in to the PC as a **different Windows user**: they can't open `%ProgramData%\FileDrop` or the storage folder.
+- [ ] Sign in to the PC as a **different Windows user**: they can't open `%ProgramData%\WiFiDrop` or the storage folder.
 - [ ] With a network monitor (e.g. Resource Monitor → Network), confirm WiFiDrop makes no outgoing internet connections except the update check (if a feed is configured).
 
 ## Uninstall
 
 - [ ] Uninstall from Settings → Apps. WiFiDrop stops, the Start menu entry and firewall rule are gone.
-- [ ] `%ProgramData%\FileDrop` and the storage folder are **kept** (users' files are never deleted by uninstalling).
+- [ ] `%ProgramData%\WiFiDrop` and the storage folder are **kept** (users' files are never deleted by uninstalling).
 - [ ] Reinstall: accounts and files are all still there.

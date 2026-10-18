@@ -1,5 +1,5 @@
 # PyInstaller spec. Build from the repo root:
-#   .venv/Scripts/pyinstaller build/filedrop.spec --distpath build/out --workpath build/work --noconfirm
+#   .venv/Scripts/pyinstaller build/wifidrop.spec --distpath build/out --workpath build/work --noconfirm
 import glob
 import os
 import sys
@@ -21,5 +21,5 @@ a = Analysis(
 )
 pyz = PYZ(a.pure)
 exe = EXE(pyz, a.scripts, [], exclude_binaries=True, name="WiFiDrop", console=False,
-          icon=os.path.join(SPECPATH, "filedrop.ico"))
+          icon=os.path.join(SPECPATH, "wifidrop.ico"))
 coll = COLLECT(exe, a.binaries, a.datas, name="WiFiDrop")

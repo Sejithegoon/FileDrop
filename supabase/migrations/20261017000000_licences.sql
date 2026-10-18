@@ -1,10 +1,10 @@
--- FileDrop Pro licences and the PCs they are activated on.
+-- WiFiDrop Pro licences and the PCs they are activated on.
 -- The "licence" Edge Function issues and activates licences with the service role.
 -- Admins (public.admins) can read them, revoke or restore them, and free up PCs from the inbox.
 -- We keep only what licensing needs: no names, addresses or payment details.
 
 create table if not exists public.licences (
-    id              text primary key,                    -- e.g. FDP-7K3M-QX2D-9PRT-HV4C
+    id              text primary key,                    -- e.g. WDP-7K3M-QX2D-9PRT-HV4C
     email           text not null,                       -- where the licence was sent
     order_id        text unique,                         -- merchant order (payments, Phase D)
     edition         text not null default 'pro' check (edition in ('pro')),
@@ -21,7 +21,7 @@ create index if not exists licences_email on public.licences (lower(email));
 create table if not exists public.activations (
     id           bigint generated always as identity primary key,
     licence_id   text not null references public.licences (id) on delete cascade,
-    install_id   text not null,                          -- random ID of one FileDrop install, nothing personal
+    install_id   text not null,                          -- random ID of one WiFiDrop install, nothing personal
     app_version  text not null default '',
     activated_at timestamptz not null default now(),
     last_seen_at timestamptz not null default now(),

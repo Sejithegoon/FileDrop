@@ -1,5 +1,5 @@
 {
-  "version": "0.1.1",
+  "version": "0.1.2",
   "url": "https://wifidrop.ca/download.html",
-  "notes": "FileDrop is now WiFiDrop, with a new home at wifidrop.ca. Your files, accounts and licence carry over."
+  "notes": "WiFiDrop 0.1.2 moves its data to a WiFiDrop folder automatically. Your files, accounts and licence carry over."
 }

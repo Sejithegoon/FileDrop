@@ -12,7 +12,7 @@ from app.db.ids import new_id, now_ms
 
 @pytest.fixture
 def paths(tmp_path):
-    return tmp_path / "filedrop.db", tmp_path / "backups"
+    return tmp_path / "wifidrop.db", tmp_path / "backups"
 
 
 def open_db(paths, version="0.1.0"):
@@ -108,7 +108,7 @@ def test_backups_are_pruned(paths):
     conn, _ = open_db(paths)
     for _ in range(5):
         db.backup_database(conn, paths[1], "test", keep=3)
-    assert len(list(paths[1].glob("filedrop-*.db"))) == 3
+    assert len(list(paths[1].glob("wifidrop-*.db"))) == 3
     conn.close()
 
 

@@ -21,16 +21,16 @@ from app.api.helper import create_helper_app
 from app.api.lan import create_lan_app
 from app.core.context import AppContext
 from app.core.listeners import LanServer, Listener
-from app.core.settings import Settings, load_settings
-from app.core import winacl
+from app.core.settings import DB_NAME, Settings, default_data_dir, load_settings
+from app.core import legacy, winacl
 from app.core.storage import Storage
 from app.db.database import DatabaseError, open_database
 from app.services import audit, storage_config, uploads
 from app.services.upkeep import Upkeep
 
-log = logging.getLogger("filedrop")
+log = logging.getLogger("wifidrop")
 
-_MUTEX_NAME = r"Local\FileDrop.SingleInstance"
+_MUTEX_NAME = r"Local\WiFiDrop.SingleInstance"
 _mutex_handle = None  # kept for the life of the process
 
 
@@ -46,7 +46,7 @@ def acquire_single_instance() -> bool:
 
 def ask_running_copy_to_show(settings: Settings) -> None:
     req = urllib.request.Request(settings.console_url + "api/show", method="POST", data=b"",
-                                 headers={"X-FileDrop": "1"})
+                                 headers={"X-WiFiDrop": "1"})
     try:
         urllib.request.urlopen(req, timeout=3).close()
     except OSError as exc:
@@ -57,7 +57,7 @@ def setup_logging(settings: Settings) -> None:
     handlers: list[logging.Handler] = []
     try:
         settings.log_dir.mkdir(parents=True, exist_ok=True)
-        handlers.append(RotatingFileHandler(settings.log_dir / "filedrop.log", maxBytes=2_000_000, backupCount=3,
+        handlers.append(RotatingFileHandler(settings.log_dir / "wifidrop.log", maxBytes=2_000_000, backupCount=3,
                                             encoding="utf-8"))
     except OSError:
         pass
@@ -164,6 +164,8 @@ def main(argv: list[str] | None = None) -> int:
     settings = load_settings()
     if args.data_dir:
         settings.data_dir = Path(args.data_dir).resolve()
+    legacy.migrate_data_dir(settings, default_data_dir())  # FileDrop beta -> WiFiDrop
+    legacy.migrate_database(settings.data_dir, DB_NAME)
     setup_logging(settings)
 
     if not acquire_single_instance():

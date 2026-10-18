@@ -424,7 +424,7 @@ function sendChunk(job, index, blob, base) {
         const x = new XMLHttpRequest();
         job.xhr = x;
         x.open('PUT', `${API}/uploads/${job.uploadId}/chunks/${index}`);
-        x.setRequestHeader('X-FileDrop', '1');
+        x.setRequestHeader('X-WiFiDrop', '1');
         x.setRequestHeader('Content-Type', 'application/octet-stream');
         x.upload.onprogress = e => { job.loaded = base + e.loaded; job.error = ''; paintSoon(); };
         x.onload = () => {

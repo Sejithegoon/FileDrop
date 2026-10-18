@@ -1,7 +1,7 @@
 """Admin API and page for the desktop window. Served on 127.0.0.1 only.
 
 Only the WiFiDrop window on this PC talks to it. Requests must carry
-X-FileDrop: 1 (blocks other websites) and a localhost Host header (blocks DNS
+X-WiFiDrop: 1 (blocks other websites) and a localhost Host header (blocks DNS
 rebinding).
 """
 
@@ -208,7 +208,7 @@ def setup_storage(body: PathBody, request: Request, conn=Depends(db)):
 def move_storage(body: PathBody, request: Request, conn=Depends(db)):
     ctx = ctx_of(request)
     if ctx.settings.storage_dir:
-        raise ApiError(409, "STORAGE_OVERRIDDEN", "The storage folder is fixed by FILEDROP_STORAGE_DIR.")
+        raise ApiError(409, "STORAGE_OVERRIDDEN", "The storage folder is fixed by WIFIDROP_STORAGE_DIR.")
     if ctx.storage is None:
         raise ApiError(409, "STORAGE_NOT_SET", "Choose a storage folder first.")
     path = storage_config.resolve_choice(body.path, ctx.settings)
@@ -227,7 +227,7 @@ def set_https(body: HttpsBody, request: Request, conn=Depends(db)):
     """Turn the self-signed HTTPS on or off. Restarts the web server if it's running."""
     ctx = ctx_of(request)
     if ctx.settings.https is not None:
-        raise ApiError(409, "HTTPS_FORCED", "HTTPS is fixed by FILEDROP_HTTPS for this run.")
+        raise ApiError(409, "HTTPS_FORCED", "HTTPS is fixed by WIFIDROP_HTTPS for this run.")
     settings_store.set_value(conn, "https_enabled", body.enabled)
     ctx.lan.tls_dir = ctx.settings.tls_dir if body.enabled else None
     audit.record(conn, "server.https_on" if body.enabled else "server.https_off", actor=ACTOR)

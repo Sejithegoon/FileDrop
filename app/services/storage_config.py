@@ -1,6 +1,6 @@
 """Where file contents are stored: chosen at first run, changeable later.
 
-The choice is saved in the settings table. FILEDROP_STORAGE_DIR overrides it
+The choice is saved in the settings table. WIFIDROP_STORAGE_DIR overrides it
 (development and tests). Moving to a new folder copies every blob, switches
 over, then removes the old copies, so a failed move changes nothing.
 """
@@ -15,7 +15,7 @@ import sqlite3
 import threading
 from pathlib import Path
 
-from app.core import winacl
+from app.core import legacy, winacl
 from app.core.errors import ApiError
 from app.core.storage import Storage
 from app.db.ids import now_ms
@@ -24,12 +24,12 @@ from app.services import settings_store
 log = logging.getLogger(__name__)
 
 KEY = "storage_root"
-MARKER = "filedrop-storage.json"
+MARKER = "wifidrop-storage.json"
 SUBFOLDER = "WiFiDrop Files"
 
 
 def is_store(path: Path) -> bool:
-    return (path / MARKER).is_file() or (path / "blobs").is_dir()
+    return (path / MARKER).is_file() or (path / legacy.OLD_STORAGE_MARKER).is_file() or (path / "blobs").is_dir()
 
 
 def _has_files(path: Path) -> bool:
@@ -100,7 +100,7 @@ def prepare(path: Path, install_id: str) -> Storage:
     try:
         storage = Storage(path)
         storage.ensure()
-        probe = path / ".filedrop-write-test"
+        probe = path / ".wifidrop-write-test"
         probe.write_bytes(b"ok")
         probe.unlink()
         if not (path / MARKER).exists():

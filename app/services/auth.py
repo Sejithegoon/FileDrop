@@ -14,7 +14,7 @@ from app.db.ids import new_id, now_ms
 from app.services import audit, users
 from app.services.passwords import verify_password
 
-COOKIE = "fd_session"
+COOKIE = "wd_session"
 SESSION_MAX_MS = 30 * 24 * 3600 * 1000
 SESSION_IDLE_MS = 3 * 24 * 3600 * 1000
 LOCK_AFTER = 5

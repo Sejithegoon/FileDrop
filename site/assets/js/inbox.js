@@ -293,7 +293,7 @@
             };
             const csv = [cols.join(","), ...rows.map(r => cols.map(c => cell(r[c])).join(","))].join("\r\n");
             const url = URL.createObjectURL(new Blob(["﻿" + csv], { type: "text/csv" }));
-            const a = Object.assign(document.createElement("a"), { href: url, download: `filedrop-${kind}-${new Date().toISOString().slice(0, 10)}.csv` });
+            const a = Object.assign(document.createElement("a"), { href: url, download: `wifidrop-${kind}-${new Date().toISOString().slice(0, 10)}.csv` });
             document.body.appendChild(a); a.click(); a.remove();
             setTimeout(() => URL.revokeObjectURL(url), 10000);
         } catch (err) { fail(err); }

@@ -69,7 +69,7 @@ Deno.test("only admins can issue; licence verifies and has a year of updates", a
   const denied = await handle(post("issue", { email: "a@b.co" }, { authorization: "Bearer someone" }), s, keys, cfg);
   assert(denied.status === 401);
   const lic = await issue(s, keys, { note: "test" });
-  assert(/^FDP-[0-9A-Z]{4}-[0-9A-Z]{4}-[0-9A-Z]{4}-[0-9A-Z]{4}$/.test(lic.id), lic.id);
+  assert(/^WDP-[0-9A-Z]{4}-[0-9A-Z]{4}-[0-9A-Z]{4}-[0-9A-Z]{4}$/.test(lic.id), lic.id);
   const payload = await readLicence(keys, lic.licence);
   assert(payload && payload.lid === lic.id && payload.to === "sam@example.com" && payload.upd === "2027-10-16" && payload.max === 3);
   assert(s.licences.get(lic.id)!.note === "test");

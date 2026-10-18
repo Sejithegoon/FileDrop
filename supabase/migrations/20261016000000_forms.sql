@@ -1,4 +1,4 @@
--- FileDrop website forms: feedback, contact, beta sign-ups, Pro waitlist.
+-- WiFiDrop website forms: feedback, contact, beta sign-ups, Pro waitlist.
 -- Visitors never touch these tables directly: the "forms" Edge Function writes with the
 -- service role. Row Level Security lets only accounts listed in public.admins read or change them.
 

@@ -6,7 +6,7 @@ import { type Config, handle, type Paddle, type PaymentStore, signHeader } from 
 function assert(cond: unknown, msg = "assertion failed"): asserts cond { if (!cond) throw new Error(msg); }
 
 const SECRET = "pdl_ntfset_test_secret";
-const PRICE = "pri_filedrop_pro";
+const PRICE = "pri_wifidrop_pro";
 
 async function testKeys(): Promise<Keys> {
   const pair = await crypto.subtle.generateKey({ name: "Ed25519" }, true, ["sign", "verify"]) as CryptoKeyPair;

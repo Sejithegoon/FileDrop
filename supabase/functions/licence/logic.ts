@@ -111,7 +111,7 @@ export async function readLicence(keys: Keys, text: string): Promise<Record<stri
 export function newLicenceId(): string {
   const bytes = crypto.getRandomValues(new Uint8Array(16));
   const chars = [...bytes].map((b) => ALPHABET[b % 32]).join("");
-  return `FDP-${chars.slice(0, 4)}-${chars.slice(4, 8)}-${chars.slice(8, 12)}-${chars.slice(12, 16)}`;
+  return `WDP-${chars.slice(0, 4)}-${chars.slice(4, 8)}-${chars.slice(8, 12)}-${chars.slice(12, 16)}`;
 }
 
 async function sha256(input: string): Promise<string> {

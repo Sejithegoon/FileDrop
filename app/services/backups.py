@@ -3,7 +3,7 @@
 Layout of the backup folder (for example on an external drive):
 
     WiFiDrop backup/
-        database/filedrop-<time>-scheduled.db   one per run; the newest `keep` are kept
+        database/wifidrop-<time>-scheduled.db   one per run; the newest `keep` are kept
         files/ab/cd/<blob id>                    each stored file, copied once
         READ ME.txt                              how to restore
 
@@ -41,7 +41,7 @@ files\\     The stored files, under ID names. The database knows which ID is whi
 
 To restore on this PC or a new one:
 1. Install WiFiDrop, then quit it from the tray icon.
-2. Copy the newest file from database\\ to C:\\ProgramData\\FileDrop\\filedrop.db (replace the old one).
+2. Copy the newest file from database\\ to C:\\ProgramData\\WiFiDrop\\wifidrop.db (replace the old one).
 3. Copy everything inside files\\ into the "blobs" folder of your WiFiDrop storage folder.
 4. Start WiFiDrop. If it asks where to save files, choose that storage folder.
 """
@@ -124,7 +124,7 @@ def run(conn, storage, folder: str, keep: int) -> dict:
             copied_bytes += target.stat().st_size
         # Keep every file that any kept database copy still refers to.
         keep_ids = set()
-        for db_file in (dest / "database").glob("filedrop-*.db"):
+        for db_file in [*(dest / "database").glob("wifidrop-*.db"), *(dest / "database").glob("filedrop-*.db")]:
             with closing(sqlite3.connect(f"file:{db_file.as_posix()}?mode=ro", uri=True)) as old:
                 keep_ids |= _blob_ids(old)
         removed = 0

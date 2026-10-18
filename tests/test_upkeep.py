@@ -6,10 +6,8 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 
 from app.db.ids import now_ms
 from app.services import upkeep
-from tests import test_api as api
 from tests.test_api import login, make_user, my_space, upload
 
-ctx, admin = api.ctx, api.admin  # reuse the API test fixtures
 
 
 def test_old_trash_is_purged_recent_trash_kept(ctx, admin):

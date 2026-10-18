@@ -15,14 +15,14 @@ if ($LASTEXITCODE -ne 0) { throw "Could not write the open-source notices." }
 $version = (& $py -c "import app; print(app.__version__)").Trim()
 Write-Host "Building WiFiDrop $version"
 
-& (Join-Path $root ".venv\Scripts\pyinstaller.exe") build\filedrop.spec --distpath build\out --workpath build\work --noconfirm
+& (Join-Path $root ".venv\Scripts\pyinstaller.exe") build\wifidrop.spec --distpath build\out --workpath build\work --noconfirm
 if ($LASTEXITCODE -ne 0) { throw "PyInstaller failed." }
 Remove-Item -Recurse -Force build\work -ErrorAction SilentlyContinue
 
 # Smoke test the frozen EXE: catches missing DLLs/modules that the source tests can't see.
 if (Get-Process WiFiDrop -ErrorAction SilentlyContinue) { throw "Quit the running WiFiDrop first; the smoke test needs to start its own copy." }
-$smokeDir = Join-Path $env:TEMP "filedrop-smoke-$(Get-Random)"
-$env:FILEDROP_CONSOLE_PORT = "8452"
+$smokeDir = Join-Path $env:TEMP "wifidrop-smoke-$(Get-Random)"
+$env:WIFIDROP_CONSOLE_PORT = "8452"
 $proc = Start-Process build\out\WiFiDrop\WiFiDrop.exe -ArgumentList "--headless", "--no-server", "--data-dir", "`"$smokeDir`"" -PassThru
 $ok = $false
 foreach ($i in 1..30) {
@@ -30,12 +30,12 @@ foreach ($i in 1..30) {
     if ($proc.HasExited) { break }
     try { Invoke-RestMethod http://127.0.0.1:8452/api/lock -TimeoutSec 2 | Out-Null; $ok = $true; break } catch { }
 }
-try { Invoke-RestMethod -Method Post http://127.0.0.1:8452/api/quit -Headers @{ "X-FileDrop" = "1" } -TimeoutSec 2 | Out-Null } catch { }
+try { Invoke-RestMethod -Method Post http://127.0.0.1:8452/api/quit -Headers @{ "X-WiFiDrop" = "1" } -TimeoutSec 2 | Out-Null } catch { }
 Start-Sleep -Seconds 2
 if (-not $proc.HasExited) { Stop-Process -Id $proc.Id -Force }
-Remove-Item Env:FILEDROP_CONSOLE_PORT
+Remove-Item Env:WIFIDROP_CONSOLE_PORT
 if (-not $ok) {
-    Get-Content (Join-Path $smokeDir "logs\filedrop.log") -ErrorAction SilentlyContinue | Select-Object -Last 20
+    Get-Content (Join-Path $smokeDir "logs\wifidrop.log") -ErrorAction SilentlyContinue | Select-Object -Last 20
     throw "The built EXE did not start. See the log above."
 }
 Remove-Item -Recurse -Force $smokeDir -ErrorAction SilentlyContinue

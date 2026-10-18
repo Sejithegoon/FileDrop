@@ -26,7 +26,7 @@ ArchitecturesInstallIn64BitMode=x64compatible
 MinVersion=10.0.17763
 OutputDir=out
 OutputBaseFilename=WiFiDrop-Setup-{#MyAppVersion}
-SetupIconFile=filedrop.ico
+SetupIconFile=wifidrop.ico
 UninstallDisplayIcon={app}\{#MyAppExe}
 Compression=lzma2
 SolidCompression=yes
@@ -34,7 +34,7 @@ WizardStyle=modern
 ; Licence agreement page (the user must accept it to install).
 LicenseFile=..\console\EULA.txt
 ; Close a running WiFiDrop before installing or uninstalling.
-AppMutex=Local\FileDrop.SingleInstance
+AppMutex=Local\WiFiDrop.SingleInstance,Local\FileDrop.SingleInstance
 CloseApplications=yes
 ; Code signing: once you have a certificate, configure a SignTool named "signtool" in
 ; the Inno Setup IDE (Tools > Configure Sign Tools) and uncomment:
