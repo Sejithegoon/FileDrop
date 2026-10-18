@@ -490,3 +490,9 @@ input[type=file]::file-selector-button { margin-right: 12px; padding: 7px 12px; 
 
 .seg-legend { font-size: 14px; font-weight: 600; color: var(--muted); margin-bottom: 8px; }
 fieldset.field { border: 0; }
+
+/* Plain-language summary at the top of the legal pages */
+.doc .callout.summary { border-color: color-mix(in srgb, var(--accent) 45%, var(--border)); padding: 20px 22px; margin: 4px 0 28px; }
+.doc .callout.summary h2 { margin: 0 0 4px; font-size: 20px; }
+.doc .callout.summary .checks { margin-top: 12px; }
+.doc .callout.summary p { margin: 14px 0 0; }
