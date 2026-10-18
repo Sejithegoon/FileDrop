@@ -230,6 +230,19 @@ export async function handle(req: Request, store: LicenceStore, keys: Keys, cfg:
     }
 
     // ---- admins (the website inbox) ---------------------------------------------------
+    if (route === "send") {
+      // Email one licence to the address it was issued to (the same branded email as a purchase).
+      if (!(await store.isAdmin(req.headers.get("authorization") || ""))) {
+        throw new HttpError(401, "NOT_ADMIN", "Sign in to the inbox as an admin.");
+      }
+      const row = await store.getLicence(str("id", 40));
+      if (!row) throw new HttpError(404, "NOT_FOUND", "That licence doesn't exist.");
+      if (row.revoked_at) throw new HttpError(409, "REVOKED", "This licence is revoked. Restore it before sending it.");
+      if (!opts.mailer) throw new HttpError(503, "NO_EMAIL", "Email sending isn't set up on the server.");
+      await sendLicences(opts.mailer, cfg.websiteUrl, row.email, [row]);
+      return json({ ok: true, message: `Licence emailed to ${row.email}.` });
+    }
+
     if (route === "issue") {
       if (!(await store.isAdmin(req.headers.get("authorization") || ""))) {
         throw new HttpError(401, "NOT_ADMIN", "Sign in to the inbox as an admin.");

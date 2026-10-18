@@ -171,10 +171,11 @@
             <div class="actions">
                 <select id="setStatus">${["new", "in_progress", "closed"].map(v => `<option value="${v}"${v === s.status ? " selected" : ""}>${LABELS[v]}</option>`).join("")}</select>
                 <button class="btn primary" id="save" type="button">Save</button>
-                ${reply ? `<a class="btn" href="${reply}">Reply by email</a>` : ""}
+                ${reply ? `<a class="btn" href="${reply}">Reply by email</a><button class="btn" id="copyEmail" type="button">Copy email address</button>` : ""}
                 <button class="btn danger" id="del" type="button">Delete for good</button>
             </div>`;
         document.querySelectorAll("[data-file]").forEach(b => b.onclick = () => download(s.attachments[Number(b.dataset.file)]).catch(fail));
+        if ($("#copyEmail")) $("#copyEmail").onclick = () => navigator.clipboard.writeText(s.email).then(() => toast(`Copied ${s.email}`), fail);
         $("#save").onclick = async () => {
             try {
                 await rest(`submissions?id=eq.${id}`, { method: "PATCH", headers: { Prefer: "return=minimal" },
@@ -229,11 +230,21 @@
             <div><label for="lnote">Private note</label><textarea id="lnote">${esc(l.note)}</textarea></div>
             <div class="actions">
                 <button class="btn primary" id="lcopy" type="button">Copy licence</button>
-                <a class="btn" href="mailto:${encodeURIComponent(l.email)}?subject=${encodeURIComponent("Your WiFiDrop Pro licence")}&body=${encodeURIComponent("Open WiFiDrop, go to Licence, and paste this:\n\n" + l.licence_text)}">Email it</a>
+                ${l.revoked_at ? "" : '<button class="btn" id="lsend" type="button">Email licence to customer</button>'}
                 <button class="btn" id="lsave" type="button">Save note</button>
                 <button class="btn danger" id="lrevoke" type="button">${l.revoked_at ? "Restore licence" : "Revoke licence"}</button>
             </div>`;
         $("#lcopy").onclick = () => navigator.clipboard.writeText(l.licence_text).then(() => toast("Copied"), fail);
+        if ($("#lsend")) $("#lsend").onclick = async () => {
+            if (!confirm(`Email this licence to ${l.email}? It's the same email a customer gets after buying.`)) return;
+            $("#lsend").disabled = true;
+            try {
+                const r = await functionCall("send", { id: l.id });
+                if (!r.ok) throw new Error(r.message);
+                toast(r.message);
+            } catch (err) { fail(err); }
+            $("#lsend").disabled = false;
+        };
         const patch = async (fields, msg) => {
             try {
                 await rest(`licences?id=eq.${encodeURIComponent(l.id)}`, { method: "PATCH", headers: { Prefer: "return=minimal" }, json: fields });

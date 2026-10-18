@@ -75,6 +75,19 @@ Deno.test("only admins can issue; licence verifies and has a year of updates", a
   assert(s.licences.get(lic.id)!.note === "test");
 });
 
+Deno.test("admins can email a licence; others can't, and revoked ones aren't sent", async () => {
+  const { keys } = await testKeys();
+  const s = new MemoryStore();
+  const mail = new MemoryMailer();
+  const lic = await issue(s, keys);
+  const send = (auth: string) => handle(post("send", { id: lic.id }, { authorization: auth }), s, keys, cfg, { mailer: mail });
+  assert((await send("Bearer someone")).status === 401 && mail.sent.length === 0);
+  assert((await send("Bearer admin-token")).status === 200);
+  assert((mail.sent.length as number) === 1 && mail.sent[0].to === "sam@example.com" && mail.sent[0].text.includes(lic.licence));
+  s.licences.get(lic.id)!.revoked_at = new Date().toISOString();
+  assert((await send("Bearer admin-token")).status === 409 && (mail.sent.length as number) === 1);
+});
+
 Deno.test("activate up to 3 PCs, then limit; same PC again is fine", async () => {
   const { keys } = await testKeys();
   const s = new MemoryStore();
