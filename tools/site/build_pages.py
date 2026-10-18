@@ -385,7 +385,7 @@ page("pricing.html", "Pricing",
         <a class="btn primary" href="download.html">{DL}Download free</a>
       </div>
       <div class="plan pro reveal d1">
-        <h3>WiFiDrop Pro <span class="soon">Coming soon</span></h3>
+        <h3>WiFiDrop Pro <span class="soon">Available now</span></h3>
         <div class="price">$29.99 <small>CAD, one-time</small></div>
         <p class="muted">For bigger families, classrooms, clubs and small offices.</p>
         <ul class="checks">{li(CHECK_PRO)}</ul>
