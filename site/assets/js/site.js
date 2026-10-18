@@ -271,11 +271,11 @@
     // While payments are in test mode the button shows only with ?buytest=1, so visitors can't make test purchases.
     const buy = $("[data-buy]");
     const pay = S.paddle || {};
-    if (buy && pay.token && pay.priceId && (pay.env === "production" || params.has("buytest"))) {
+    if (buy && pay.token && pay.priceId && ((pay.env === "production" && pay.open !== false) || params.has("buytest"))) {
         buy.hidden = false;
         $$('form[data-api=waitlist], [data-waitlist-note]').forEach(el => { el.hidden = true; });
         const soon = $(".plan.pro .soon");
-        if (soon) soon.textContent = pay.env === "production" ? "Available now" : "Test mode";
+        if (soon) soon.textContent = pay.env === "production" && pay.open !== false ? "Available now" : "Test mode";
         if (pay.price) { const price = $(".plan.pro .price"); if (price) price.innerHTML = `${pay.price} <small>CAD, one-time</small>`; }
         const note = $("[data-buy-note]");
         if (pay.env !== "production" && note) note.textContent = "Test mode: use a Paddle test card. No real money is taken.";

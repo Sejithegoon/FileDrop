@@ -27,5 +27,6 @@ window.SITE = {
         token: "live_bcdab359084678e2a31e33e7653",  // Paddle (live) > My account > Settings > Authentication > Client-side tokens
         priceId: "pri_01m572yyf9zm0vznbej6ahh9xs",  // "WiFiDrop Pro" $29.99 CAD (live). Sandbox: pri_01m55sj9bqk0j030ysrazcxwta / test_4aa1cd7b4dad71cdabc78bcf640
         price: "$29.99", // shown on the Pro card when checkout is on
+        open: false,       // true = everyone sees the Buy button; false = only with ?buytest=1
     },
 };
