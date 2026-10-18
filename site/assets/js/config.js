@@ -23,9 +23,9 @@ window.SITE = {
     // Licence service (re-send page) and Paddle checkout. The client-side token is public by design.
     licenceApi: "https://chpjqelrwlowdiwxfugl.supabase.co/functions/v1/licence",
     paddle: {
-        env: "sandbox",   // "production" at launch; until then the Buy button shows only with ?buytest=1
-        token: "test_4aa1cd7b4dad71cdabc78bcf640",  // Paddle > My account > Settings > Authentication > Client-side tokens
-        priceId: "pri_01m55sj9bqk0j030ysrazcxwta",  // "WiFiDrop Pro" (sandbox)
+        env: "production",  // "sandbox" shows the Buy button only with ?buytest=1 (test mode)
+        token: "live_bcdab359084678e2a31e33e7653",  // Paddle (live) > My account > Settings > Authentication > Client-side tokens
+        priceId: "pri_01m572yyf9zm0vznbej6ahh9xs",  // "WiFiDrop Pro" $29.99 CAD (live). Sandbox: pri_01m55sj9bqk0j030ysrazcxwta / test_4aa1cd7b4dad71cdabc78bcf640
         price: "$29.99", // shown on the Pro card when checkout is on
     },
 };

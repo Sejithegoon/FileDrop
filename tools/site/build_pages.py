@@ -385,7 +385,7 @@ page("pricing.html", "Pricing",
         <a class="btn primary" href="download.html">{DL}Download free</a>
       </div>
       <div class="plan pro reveal d1">
-        <h3>WiFiDrop Pro <span class="soon">Coming soon</span></h3>
+        <h3>WiFiDrop Pro <span class="soon">Available now</span></h3>
         <div class="price">$29.99 <small>CAD, one-time</small></div>
         <p class="muted">For bigger families, classrooms, clubs and small offices.</p>
         <ul class="checks">{li(CHECK_PRO)}</ul>
@@ -411,7 +411,7 @@ page("pricing.html", "Pricing",
 
 <section class="alt">
   <div class="wrap">
-    <div class="section-head reveal"><h2>Compare plans</h2><p>Pro is $29.99 CAD, one-time, and goes on sale soon. Features marked "planned" aren't available yet.</p></div>
+    <div class="section-head reveal"><h2>Compare plans</h2><p>Pro is $29.99 CAD, one-time. Features marked "planned" aren't available yet.</p></div>
     <div class="table-wrap reveal"><table class="compare">
       <thead><tr><th scope="col">Feature</th><th scope="col">Free</th><th scope="col">Pro</th></tr></thead>
       <tbody>
@@ -565,7 +565,7 @@ faqs = [
     ("Is there a file size limit?", "There's no built-in limit. You can set storage limits for each person and each shared folder. Uploads are sent in pieces and resume if the connection drops, so large videos work."),
     ("What file types can people upload?", "Any type. Files are always downloaded as attachments, so nothing uploaded can run inside the page."),
     ("Does it work on Mac or Linux?", "The host app is Windows-only for now. People connecting can use any device with a modern browser."),
-    ("What will Pro cost?", "$29.99 CAD, once. No subscription. That includes a year of feature updates, and Pro keeps working after that. Sales tax is added at checkout. Pro goes on sale soon; join the waitlist on the pricing page to hear first. Free stays free."),
+    ("How much is Pro?", "$29.99 CAD, once. No subscription. That includes a year of feature updates, and Pro keeps working after that. Sales tax is added at checkout. Buy it on the pricing page and your licence arrives by email within a minute. Free stays free."),
     ("What data do you collect?", "The app sends us nothing about your files or how you use it. Our website and any forms you fill in receive limited information. The privacy policy explains exactly what."),
     ("Is WiFiDrop available outside Canada?", "Yes. WiFiDrop is made in Canada and anyone can download it. Our privacy policy covers visitors from Canada, the EU, the UK, the US and elsewhere."),
     ("How do I report a bug or suggest a feature?", "Use the feedback page. You can attach a screenshot, and the form asks for the details that help us fix problems quickly."),
