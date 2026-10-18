@@ -11,7 +11,7 @@ window.SITE = {
     downloadSize: "24.6 MB",
 
     // Where people can write to you.
-    supportEmail: "filedrop.support@gmail.com",
+    supportEmail: "support@wifidrop.ca",
 
     // Where the forms are sent (the Supabase "forms" function). Empty = forms show "opens soon".
     apiBase: "https://chpjqelrwlowdiwxfugl.supabase.co/functions/v1/forms",

@@ -732,11 +732,11 @@ page("privacy.html", "Privacy policy", "How WiFiDrop handles personal informatio
       <li><b>No tracking.</b> No analytics, no ads, no usage data, in the app or on this website.</li>
       <li><b>Only two small checks go online:</b> a daily check for new versions, and with Pro, a weekly licence check. Both are explained below, in full.</li>
       <li><b>We keep very little:</b> what you send us through our forms, and for Pro buyers, the email and order needed for the licence.</li>
-      <li><b>You're in control:</b> email <a href="mailto:filedrop.support@gmail.com">filedrop.support@gmail.com</a> and we'll show, fix or delete what we hold about you, within 30 days.</li>
+      <li><b>You're in control:</b> email <a href="mailto:support@wifidrop.ca">support@wifidrop.ca</a> and we'll show, fix or delete what we hold about you, within 30 days.</li>
     </ul>
   </div>
   <dl class="legal-meta"><dt>Who we are</dt><dd>WiFiDrop, Winnipeg, Manitoba, Canada</dd>
-    <dt>Privacy contact</dt><dd>Privacy Officer, <a href="mailto:filedrop.support@gmail.com">filedrop.support@gmail.com</a></dd></dl>
+    <dt>Privacy contact</dt><dd>Privacy Officer, <a href="mailto:support@wifidrop.ca">support@wifidrop.ca</a></dd></dl>
 
   <h2 id="summary">Summary</h2>
   <p>WiFiDrop runs on your own Windows computer. Your files, user accounts and settings are stored on that computer, not with us. The app does not send us your files, file names or usage data. We collect only the limited information needed to run this website, answer you and, once Pro launches, sell and support licences.</p>
@@ -792,7 +792,7 @@ page("privacy.html", "Privacy policy", "How WiFiDrop handles personal informatio
   <p>If we change this policy, we'll update the date at the top. For important changes, we'll also post a notice on this website.</p>
 
   <h2 id="contact">Contact</h2>
-  <p>Questions or requests: email our Privacy Officer at <a href="mailto:filedrop.support@gmail.com">filedrop.support@gmail.com</a>. We answer within 30 days.</p>
+  <p>Questions or requests: email our Privacy Officer at <a href="mailto:support@wifidrop.ca">support@wifidrop.ca</a>. We answer within 30 days.</p>
 </div></section>""")
 
 # =================================================================== terms
@@ -810,7 +810,7 @@ page("terms.html", "Terms of use", "Terms for using the WiFiDrop website and the
       <li><b>30-day money-back guarantee</b> on Pro, no questions asked. See the <a href="refunds.html">refund policy</a>.</li>
       <li><b>Please be fair:</b> don't resell WiFiDrop, share your Pro licence publicly, or use it for anything illegal.</li>
     </ul>
-    <p>The full terms below are what legally applies. If anything is unclear, email <a href="mailto:filedrop.support@gmail.com">filedrop.support@gmail.com</a>.</p>
+    <p>The full terms below are what legally applies. If anything is unclear, email <a href="mailto:support@wifidrop.ca">support@wifidrop.ca</a>.</p>
   </div>
 
   <h2 id="agreement">1. Agreement</h2>
@@ -871,7 +871,7 @@ page("refunds.html", "Refund policy", "Refunds for WiFiDrop Pro.",
     <h2>The short version</h2>
     <ul class="checks">
       <li><b>Full refund within 30 days</b> of buying WiFiDrop Pro. No reason needed, no forms, no hassle.</li>
-      <li><b>Just email <a href="mailto:filedrop.support@gmail.com">filedrop.support@gmail.com</a></b> from the address you bought with.</li>
+      <li><b>Just email <a href="mailto:support@wifidrop.ca">support@wifidrop.ca</a></b> from the address you bought with.</li>
       <li><b>Nothing of yours is lost:</b> your files, accounts and every Free feature keep working.</li>
     </ul>
   </div>
@@ -881,7 +881,7 @@ page("refunds.html", "Refund policy", "Refunds for WiFiDrop Pro.",
 
   <h2 id="how">How to get your money back</h2>
   <ol>
-    <li>Email <a href="mailto:filedrop.support@gmail.com">filedrop.support@gmail.com</a> from the address you used to buy Pro. Your order number (it starts with <code>txn_</code> and is on your receipt) helps, but your email address is enough.</li>
+    <li>Email <a href="mailto:support@wifidrop.ca">support@wifidrop.ca</a> from the address you used to buy Pro. Your order number (it starts with <code>txn_</code> and is on your receipt) helps, but your email address is enough.</li>
     <li>We process refund requests within 2 business days. Our reseller Paddle sends the money back to your original payment method; banks usually take 5 to 10 business days to show it.</li>
   </ol>
   <p>You can also ask Paddle directly through the link in your purchase receipt, or at <a href="https://paddle.net" rel="noopener">paddle.net</a>.</p>
@@ -896,7 +896,7 @@ page("refunds.html", "Refund policy", "Refunds for WiFiDrop Pro.",
 
 # =================================================================== French legal pages (drafts for review)
 UPDATED_FR = "17 octobre 2026"
-EMAIL_LINK = '<a href="mailto:filedrop.support@gmail.com">filedrop.support@gmail.com</a>'
+EMAIL_LINK = '<a href="mailto:support@wifidrop.ca">support@wifidrop.ca</a>'
 
 page("confidentialite.html", "Politique de confidentialité",
      "Comment WiFiDrop traite les renseignements personnels dans l'application, sur ce site Web et pour les achats et licences.",
