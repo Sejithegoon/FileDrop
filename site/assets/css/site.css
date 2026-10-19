@@ -496,3 +496,5 @@ fieldset.field { border: 0; }
 .doc .callout.summary h2 { margin: 0 0 4px; font-size: 20px; }
 .doc .callout.summary .checks { margin-top: 12px; }
 .doc .callout.summary p { margin: 14px 0 0; }
+
+.center-note { text-align: center; margin-top: 18px; }

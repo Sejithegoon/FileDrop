@@ -1075,6 +1075,25 @@ page("remboursements.html", "Politique de remboursement", "Remboursements de WiF
   <p>Cette politique s'ajoute aux droits que vous confèrent les lois sur la protection du consommateur du lieu où vous habitez.</p>
 </div></section>""", lang="fr-CA")
 
+# =================================================================== thank you (after checkout)
+page("thanks.html", "Thank you", "Your WiFiDrop Pro licence is on its way.",
+     f"""<div class="wrap page-hero center"><h1>Thank you for buying WiFiDrop Pro!</h1>
+  <p>Your licence is on its way to your email. Here's how to turn on Pro.</p></div>
+<section>
+  <div class="wrap">
+    <div class="steps">
+      <div class="card"><h3>Check your email</h3><p>Look for <b>"Your WiFiDrop Pro licence"</b> from <b>licences@wifidrop.ca</b>. It usually arrives within a minute. Check spam too.</p></div>
+      <div class="card"><h3>Open WiFiDrop</h3><p>Double-click the WiFiDrop icon in the system tray, then go to <b>Licence</b>.</p></div>
+      <div class="card"><h3>Paste and activate</h3><p>Paste the whole licence, including the BEGIN and END lines, and press <b>Activate Pro</b>. Done.</p></div>
+    </div>
+    <div class="cta">
+      <a class="btn primary" href="download.html">{DL}Don't have WiFiDrop yet? Download it</a>
+      <a class="btn" href="licence.html">Didn't get the email?</a>
+    </div>
+    <p class="muted center-note">Your receipt comes separately from our reseller, Paddle. Questions or a refund within 30 days: <a href="mailto:support@wifidrop.ca">support@wifidrop.ca</a>.</p>
+  </div>
+</section>""")
+
 # =================================================================== licence help
 page("licence.html", "Your licence", "Re-send your WiFiDrop Pro licence, add it to WiFiDrop, or move it to another PC.",
      f"""<div class="wrap page-hero"><h1>Your WiFiDrop Pro licence</h1><p>Get your licence again, add it to WiFiDrop, or move it to a new PC.</p></div>

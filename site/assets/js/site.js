@@ -301,7 +301,20 @@
         $("[data-buy-btn]").addEventListener("click", async () => {
             try {
                 const paddle = await load();
-                paddle.Checkout.open({ items: [{ priceId: pay.priceId, quantity: 1 }], settings: { displayMode: "overlay", theme: "dark" } });
+                // Match the site's light/dark theme: the visitor's choice, else their device setting.
+                const saved = document.documentElement.getAttribute("data-theme");
+                const dark = saved ? saved === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+                paddle.Checkout.open({
+                    items: [{ priceId: pay.priceId, quantity: 1 }],
+                    settings: {
+                        displayMode: "overlay",
+                        variant: "one-page",          // email, country and card on one screen
+                        theme: dark ? "dark" : "light",
+                        locale: document.documentElement.lang.startsWith("fr") ? "fr" : "en",
+                        showAddDiscounts: false,      // no discount codes
+                        successUrl: new URL("thanks.html", location.href).href,
+                    },
+                });
             } catch {
                 if (note) note.textContent = "The checkout couldn't load. Check your connection or ad blocker, then try again.";
             }
