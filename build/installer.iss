@@ -18,6 +18,9 @@ AppName={#MyAppName}
 AppVersion={#MyAppVersion}
 AppPublisher=WiFiDrop
 DefaultDirName={autopf}\{#MyAppName}
+; The folder page is shown on first install, and on upgrades only when the old folder can't be
+; used (its drive is unplugged, or it's a USB stick). See [Code] below.
+DisableDirPage=no
 DefaultGroupName={#MyAppName}
 DisableProgramGroupPage=yes
 PrivilegesRequired=admin
@@ -76,3 +79,73 @@ Filename: "{app}\{#MyAppExe}"; Description: "Start WiFiDrop now"; Flags: nowait 
 [UninstallRun]
 Filename: "{sys}\taskkill.exe"; Parameters: "/IM {#MyAppExe} /F"; Flags: runhidden; RunOnceId: "StopWiFiDrop"
 Filename: "{sys}\netsh.exe"; Parameters: "advfirewall firewall delete rule name=""WiFiDrop"""; Flags: runhidden; RunOnceId: "RemoveFirewallRule"
+
+[Code]
+// The app must live on a drive that's always there. A USB stick (or an unplugged drive) would stop
+// WiFiDrop and its updates whenever it's removed. Files can still be stored on such a drive.
+const
+  DRIVE_REMOVABLE = 2;
+
+function GetDriveType(lpRootPathName: String): Cardinal;
+  external 'GetDriveTypeW@kernel32.dll stdcall';
+
+function DriveRoot(Path: String): String;
+begin
+  Result := ExtractFileDrive(Path);
+  if Result <> '' then
+    Result := AddBackslash(Result);
+end;
+
+function FolderUsable(Path: String): Boolean;
+var
+  Root: String;
+begin
+  Root := DriveRoot(Path);
+  Result := (Root <> '') and DirExists(Root) and (GetDriveType(Root) <> DRIVE_REMOVABLE);
+end;
+
+procedure UseDefaultIfUnusable();
+begin
+  if not FolderUsable(WizardForm.DirEdit.Text) then
+    WizardForm.DirEdit.Text := ExpandConstant('{autopf}\{#MyAppName}');
+end;
+
+procedure InitializeWizard();
+begin
+  UseDefaultIfUnusable();
+end;
+
+function ShouldSkipPage(PageID: Integer): Boolean;
+begin
+  Result := False;
+  if PageID = wpSelectDir then
+  begin
+    // Upgrading where the old folder still works: keep it, no questions.
+    Result := (WizardForm.PrevAppDir <> '') and FolderUsable(WizardForm.PrevAppDir);
+    if not Result then
+      UseDefaultIfUnusable();
+  end;
+end;
+
+function NextButtonClick(CurPageID: Integer): Boolean;
+var
+  Root: String;
+begin
+  Result := True;
+  if CurPageID = wpSelectDir then
+  begin
+    Root := DriveRoot(WizardDirValue());
+    if (Root = '') or not DirExists(Root) then
+    begin
+      MsgBox('That drive isn''t available. Choose a folder on a drive that''s connected, such as C:.', mbError, MB_OK);
+      Result := False;
+    end
+    else if GetDriveType(Root) = DRIVE_REMOVABLE then
+    begin
+      MsgBox('Install WiFiDrop on a drive that''s always connected, such as C:.' + #13#10#13#10 +
+        'A USB stick can be unplugged, and WiFiDrop would stop working. You can still keep your shared files on a USB or external drive: choose that inside WiFiDrop after installing.',
+        mbInformation, MB_OK);
+      Result := False;
+    end;
+  end;
+end;
