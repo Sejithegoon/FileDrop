@@ -38,7 +38,7 @@ class MemoryMailer implements Mailer {
 }
 
 const cfg: Config = {
-  allowedOrigins: ["https://sejithegoon.github.io"], ipSalt: "salt", rateLimit: 30, resendLimit: 3,
+  allowedOrigins: ["https://wifidrop.ca"], ipSalt: "salt", rateLimit: 30, resendLimit: 3,
   rateWindowMs: 600000, defaultUpdatesMonths: 12, websiteUrl: "https://example.test",
 };
 

@@ -22,10 +22,10 @@ class MemoryStore implements Store {
 }
 
 const cfg: Config = {
-  allowedOrigins: ["https://sejithegoon.github.io"], ipSalt: "salt", turnstileSecret: "", maxAttachmentBytes: 1024 * 1024,
+  allowedOrigins: ["https://wifidrop.ca"], ipSalt: "salt", turnstileSecret: "", maxAttachmentBytes: 1024 * 1024,
   rateLimit: 5, rateWindowMs: 600000, minFillMs: 2000, retentionDays: 730, purgeChance: 0,
 };
-const ORIGIN = "https://sejithegoon.github.io";
+const ORIGIN = "https://wifidrop.ca";
 
 function assert(cond: unknown, msg = "assertion failed"): asserts cond { if (!cond) throw new Error(msg); }
 
