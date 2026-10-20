@@ -1,13 +1,13 @@
 // Site settings. Edit these, then run build/publish-site.ps1. Pages show sensible
 // "coming soon" text for anything left empty, so nothing breaks before launch.
 window.SITE = {
-    version: "0.1.4",
-    releaseDate: "2026-10-18",
+    version: "0.1.5",
+    releaseDate: "2026-10-19",
 
     // Link to the installer (for example a GitHub Release asset or an R2 bucket file).
-    downloadUrl: "https://github.com/Sejithegoon/filedrop-website/releases/download/v0.1.0-beta/WiFiDrop-Setup-0.1.4.exe",
+    downloadUrl: "https://github.com/Sejithegoon/filedrop-website/releases/download/v0.1.0-beta/WiFiDrop-Setup-0.1.5.exe",
     // From build/build.ps1 output: "SHA-256: ..."
-    sha256: "C26496321B48A201EF38A278D61604D95A61B5F747E7A7C19BCA928000ACBE93",
+    sha256: "7B9406C4560696A6BDE735DE64C99863245D0B1C985BACC3ECF8AAC71BD248AC",
     downloadSize: "24.6 MB",
 
     // Where people can write to you.

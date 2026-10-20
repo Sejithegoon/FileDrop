@@ -1,5 +1,5 @@
 {
-  "version": "0.1.4",
+  "version": "0.1.5",
   "url": "https://wifidrop.ca/download.html",
-  "notes": "Small update: the licence agreement now lists support@wifidrop.ca."
+  "notes": "Safer installer: WiFiDrop always installs on a drive that's always connected."
 }
