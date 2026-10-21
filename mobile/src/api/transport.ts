@@ -1,12 +1,17 @@
 // How requests reach a PC: the real one through the pinned native module, or the built-in demo PC.
 import { WifidropNet } from '@modules/wifidrop-net';
 
-import { ApiError } from './types';
+import { ApiError, errorFrom } from './types';
+
+export { errorFrom };
 
 export type Reply = { status: number; body: string };
 
+/** Part of a file on the phone, sent as a request body straight from disk (upload chunks). */
+export type FileSlice = { uri: string; offset: number; length: number };
+
 export interface Transport {
-  send(method: string, path: string, headers: Record<string, string>, body?: string): Promise<Reply>;
+  send(method: string, path: string, headers: Record<string, string>, body?: string | FileSlice): Promise<Reply>;
   download(id: string, path: string, headers: Record<string, string>, destination: string): Promise<{ uri: string; bytes: number }>;
 }
 
@@ -28,10 +33,13 @@ export class PinnedTransport implements Transport {
     private readonly pin: string,
   ) {}
 
-  async send(method: string, path: string, headers: Record<string, string>, body?: string): Promise<Reply> {
+  async send(method: string, path: string, headers: Record<string, string>, body?: string | FileSlice): Promise<Reply> {
     if (!WifidropNet) throw new ApiError(0, 'NO_NATIVE', 'This build of the app can only run the demo.');
+    const payload = typeof body === 'object'
+      ? { bodyFile: body.uri, bodyOffset: body.offset, bodyLength: body.length, timeoutMs: 180_000 }
+      : { body };
     try {
-      const r = await WifidropNet.request({ url: this.base + path, method, headers, body, pin: this.pin });
+      const r = await WifidropNet.request({ url: this.base + path, method, headers, pin: this.pin, ...payload });
       return { status: r.status, body: r.body };
     } catch (e) {
       throw networkError(e);
@@ -51,12 +59,3 @@ export class PinnedTransport implements Transport {
   }
 }
 
-export function errorFrom(r: Reply): ApiError {
-  try {
-    const e = JSON.parse(r.body).error;
-    if (e?.code) return new ApiError(r.status, e.code, e.message ?? 'Something went wrong.');
-  } catch {
-    // not JSON
-  }
-  return new ApiError(r.status, 'HTTP_' + r.status, `Your PC answered with an error (${r.status}).`);
-}

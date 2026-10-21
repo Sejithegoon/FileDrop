@@ -3,7 +3,7 @@ import { File, Paths } from 'expo-file-system';
 import { Redirect, router, Stack, useLocalSearchParams } from 'expo-router';
 import * as Sharing from 'expo-sharing';
 import { useCallback, useState } from 'react';
-import { ActivityIndicator, FlatList, Platform, RefreshControl, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, FlatList, Platform, Pressable, RefreshControl, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import type { Item, Listing } from '@/api/types';
@@ -12,17 +12,20 @@ import { useErrorHandler, useLiveUpdates } from '@/state/hooks';
 import { useSession } from '@/state/session';
 import { Body, type IconName, Loading, Notice, Row, Separator } from '@/ui/kit';
 import { useColors } from '@/ui/theme';
+import { pickFiles, pickPhotos, sendToPc } from '@/uploads';
+import { UploadSheet, UploadStrip } from '@/uploads/ui';
 
 /** One folder: its subfolders and files. Tapping a file brings it to the phone and opens the share sheet. */
 export default function Folder() {
   const c = useColors();
-  const { client, signedIn } = useSession();
+  const { client, signedIn, pc } = useSession();
   const handle = useErrorHandler();
   const { space, folder = 'root', title } = useLocalSearchParams<{ space: string; folder?: string; title?: string }>();
   const [listing, setListing] = useState<Listing | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [sheet, setSheet] = useState(false);
 
   const load = useCallback(async () => {
     if (!client) return;
@@ -67,12 +70,47 @@ export default function Folder() {
     }
   }
 
+  // "My files › Photos": where the files will land, shown in the sheet and the uploads list.
+  const label = listing
+    ? [listing.space.kind === 'private' ? 'My files' : listing.space.name, ...listing.crumbs.slice(1).map((x) => x.name)].join(' › ')
+    : '';
+
+  async function pick(what: 'photos' | 'files') {
+    setSheet(false);
+    if (!listing || !pc) return;
+    try {
+      const picked = what === 'photos' ? await pickPhotos() : await pickFiles();
+      if (picked === 'denied') {
+        Alert.alert('Photos access is off', 'To send photos and videos, allow WiFiDrop to access your photos in Settings.');
+        return;
+      }
+      if (picked.length) {
+        await sendToPc(picked, { serverId: pc.serverId, spaceId: listing.space.id, parentId: listing.folder_id, label });
+      }
+    } catch {
+      setError("Couldn't open your photos or files. Try again.");
+    }
+  }
+
   if (!client || !signedIn) return <Redirect href="/" />;
   const heading = folder === 'root' ? title ?? listing?.space.name : listing?.crumbs.at(-1)?.name ?? title;
 
   return (
     <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: c.bg }}>
-      <Stack.Screen options={{ title: heading ?? '' }} />
+      <Stack.Screen
+        options={{
+          title: heading ?? '',
+          headerRight: () =>
+            listing?.can_upload ? (
+              <Pressable accessibilityRole="button" accessibilityLabel="Upload to this folder" hitSlop={12} onPress={() => setSheet(true)}
+                style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                <Ionicons name="cloud-upload-outline" size={24} color={c.accent} />
+                <Text style={{ color: c.accent, fontSize: 16, fontWeight: '600' }}>Upload</Text>
+              </Pressable>
+            ) : null,
+        }}
+      />
+      <UploadSheet visible={sheet} folder={label} onClose={() => setSheet(false)} onPick={pick} />
       {listing === null && !error ? (
         <Loading />
       ) : (
@@ -92,7 +130,7 @@ export default function Folder() {
             listing ? (
               <View style={{ alignItems: 'center', padding: 40, gap: 12 }}>
                 <Ionicons name="folder-open-outline" size={48} color={c.muted} />
-                <Body muted center>This folder is empty.</Body>
+                <Body muted center>{listing.can_upload ? 'This folder is empty. Tap Upload to add photos or files.' : 'This folder is empty.'}</Body>
               </View>
             ) : undefined
           }
@@ -119,6 +157,7 @@ export default function Folder() {
       {listing && listing.items.length > 0 && (
         <Text style={{ color: c.muted, textAlign: 'center', paddingBottom: 8, fontSize: 13 }}>Tap a file to save or share it</Text>
       )}
+      <UploadStrip />
     </SafeAreaView>
   );
 }

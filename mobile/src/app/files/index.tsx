@@ -10,6 +10,7 @@ import { useErrorHandler, useLiveUpdates } from '@/state/hooks';
 import { useSession } from '@/state/session';
 import { Button, Card, Loading, Notice, Row, Separator } from '@/ui/kit';
 import { useColors } from '@/ui/theme';
+import { UploadStrip } from '@/uploads/ui';
 
 /** The places this person can open: their own files and the shared folders they're in. */
 export default function Home() {
@@ -94,6 +95,7 @@ export default function Home() {
           )}
         </ScrollView>
       )}
+      <UploadStrip />
     </SafeAreaView>
   );
 }

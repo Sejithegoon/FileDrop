@@ -134,3 +134,16 @@ const styles = StyleSheet.create({
   rowSub: { fontSize: 13, marginTop: 2 },
   notice: { flexDirection: 'row', gap: 10, borderWidth: 1, borderRadius: radius, padding: 12, alignItems: 'flex-start' },
 });
+
+export function ProgressBar({ value, color }: { value: number; color?: string }) {
+  const c = useColors();
+  const pct = Math.max(0, Math.min(1, value)) * 100;
+  return (
+    <View
+      accessibilityRole="progressbar"
+      accessibilityValue={{ min: 0, max: 100, now: Math.round(pct) }}
+      style={{ height: 6, borderRadius: 3, backgroundColor: c.surface2, overflow: 'hidden' }}>
+      <View style={{ width: `${pct}%`, height: '100%', backgroundColor: color ?? c.accent }} />
+    </View>
+  );
+}

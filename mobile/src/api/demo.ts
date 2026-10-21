@@ -1,6 +1,6 @@
 // A pretend WiFiDrop PC inside the app. Lets people (and App Store reviewers, who have no WiFiDrop PC)
 // try the app, and lets the screens run in a web browser. Nothing leaves the phone.
-import type { Reply, Transport } from './transport';
+import type { FileSlice, Reply, Transport } from './transport';
 import type { Item, Me, Space } from './types';
 import { ApiError } from './types';
 
@@ -77,10 +77,21 @@ function crumbs(folderId: string) {
   return out;
 }
 
+const CHUNK = 8 * 1024 * 1024;
+type DemoUpload = { id: string; space: string; parent: string; name: string; size: number; received: number; done: boolean };
+
 export class DemoTransport implements Transport {
   private signedIn = false;
+  private uploads = new Map<string, DemoUpload>();
+  private version = 1;
 
-  async send(method: string, path: string, headers: Record<string, string>, body?: string): Promise<Reply> {
+  private uploadJson(u: DemoUpload) {
+    return { id: u.id, name: u.name, size: u.size, received: u.received, chunk_size: CHUNK,
+             status: u.done ? 'completed' : 'in_progress', item_id: null };
+  }
+
+  async send(method: string, path: string, headers: Record<string, string>, raw?: string | FileSlice): Promise<Reply> {
+    const body = typeof raw === 'string' ? raw : undefined;
     await new Promise((r) => setTimeout(r, 150)); // feel like a network
     const route = `${method} ${path.split('?')[0]}`;
     const query = new URLSearchParams(path.split('?')[1] ?? '');
@@ -102,7 +113,7 @@ export class DemoTransport implements Transport {
       return json(200, { ok: true });
     }
     if (route === 'GET /api/v1/me') return json(200, ME);
-    if (route === 'GET /api/v1/changes') return json(200, { version: 1 });
+    if (route === 'GET /api/v1/changes') return json(200, { version: this.version });
     if (route === 'POST /api/v1/me/password') return fail(400, 'DEMO', "The demo's password can't be changed.");
     if (route === 'GET /api/v1/spaces') {
       return json(200, {
@@ -124,6 +135,43 @@ export class DemoTransport implements Transport {
         space: { id: space.id, name: space.name, kind: space.kind, level: space.level, quota_bytes: null, used_bytes: 0 },
         folder_id: folder, crumbs: crumbs(folder), items, can_upload: space.level !== 'view',
       });
+    }
+    if (route === 'POST /api/v1/uploads') {
+      const { space_id, parent_id, name, size } = JSON.parse(body ?? '{}');
+      const space = SPACES.find((s) => s.id === space_id);
+      if (!space || space.level === 'view') return fail(403, 'FORBIDDEN', "You can't upload to this folder.");
+      const u = { id: `up-${Date.now()}-${this.uploads.size}`, space: space_id, parent: parent_id === 'root' ? space.root_id : parent_id,
+                  name, size, received: 0, done: false };
+      this.uploads.set(u.id, u);
+      return json(200, this.uploadJson(u));
+    }
+    const up = /^(GET|PUT|POST|DELETE) \/api\/v1\/uploads\/([^/]+)(\/chunks\/(\d+)|\/complete)?$/.exec(route);
+    const u = up ? this.uploads.get(decodeURIComponent(up[2])) : undefined;
+    if (up && !u) return fail(404, 'NOT_FOUND', 'Upload not found.');
+    if (up && u) {
+      if (up[1] === 'GET') return json(200, this.uploadJson(u));
+      if (up[1] === 'DELETE') {
+        this.uploads.delete(u.id);
+        return json(200, { ok: true });
+      }
+      if (up[1] === 'PUT' && up[4] !== undefined) {
+        const offset = Number(up[4]) * CHUNK;
+        const length = typeof raw === 'object' ? raw.length : 0;
+        if (offset + length <= u.received) return json(200, this.uploadJson(u));
+        if (offset !== u.received) return fail(409, 'OUT_OF_ORDER', 'Chunks must be sent in order.');
+        await new Promise((r) => setTimeout(r, 300)); // a pretend Wi-Fi speed, so progress shows
+        u.received = offset + length;
+        return json(200, this.uploadJson(u));
+      }
+      if (up[1] === 'POST' && up[3] === '/complete') {
+        if (u.received !== u.size) return fail(400, 'INCOMPLETE_UPLOAD', 'Not all of the file has arrived yet.');
+        u.done = true;
+        const n = node(`i-${u.id}`, u.space, u.parent, 'file', u.name, u.size, 0);
+        NODES.push(n);
+        this.version++;
+        const { parent, space: _s, ...item } = n;
+        return json(200, item);
+      }
     }
     return fail(404, 'NOT_FOUND', 'Not available in the demo.');
   }

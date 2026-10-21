@@ -7,6 +7,7 @@ import { DEMO_SERVER_ID, DemoTransport } from '@/api/demo';
 import { PinnedTransport } from '@/api/transport';
 import type { Me } from '@/api/types';
 import { baseUrl } from '@/lib/pairing';
+import { configureUploads } from '@/uploads';
 
 import * as store from './store';
 import type { SavedPc } from './store';
@@ -62,6 +63,19 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const client = useMemo(() => (pc ? clientFor(pc, token) : null), [pc, token]);
+
+  // Uploads go to the current PC while someone is signed in to it.
+  useEffect(() => {
+    configureUploads({
+      clientFor: (serverId) => (client && token && pc?.serverId === serverId ? client : null),
+      onSignedOut: async (serverId) => {
+        if (pc?.serverId !== serverId) return;
+        await store.deleteToken(serverId);
+        setToken(null);
+        setMe(null);
+      },
+    });
+  }, [client, token, pc]);
 
   const pair = useCallback(async (next: SavedPc) => {
     const others = pcs.filter((p) => p.serverId !== next.serverId);

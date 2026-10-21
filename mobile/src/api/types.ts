@@ -43,13 +43,35 @@ export type Listing = {
   can_upload: boolean;
 };
 
+export type Upload = {
+  id: string;
+  name: string;
+  size: number;
+  received: number;
+  chunk_size: number;
+  status: 'queued' | 'in_progress' | 'interrupted' | 'finalising' | 'completed' | 'cancelled' | 'failed';
+  item_id: string | null;
+};
+
 /** What the app shows when something goes wrong; code is the PC's error code or one of the app's own. */
 export class ApiError extends Error {
-  constructor(
-    public readonly status: number,
-    public readonly code: string,
-    message: string,
-  ) {
+  readonly status: number;
+  readonly code: string;
+
+  constructor(status: number, code: string, message: string) {
     super(message);
+    this.status = status;
+    this.code = code;
   }
+}
+
+/** The PC's error reply ({"error": {"code", "message"}}) as an ApiError. */
+export function errorFrom(r: { status: number; body: string }): ApiError {
+  try {
+    const e = JSON.parse(r.body).error;
+    if (e?.code) return new ApiError(r.status, e.code, e.message ?? 'Something went wrong.');
+  } catch {
+    // not JSON
+  }
+  return new ApiError(r.status, 'HTTP_' + r.status, `Your PC answered with an error (${r.status}).`);
 }
