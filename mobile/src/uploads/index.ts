@@ -129,7 +129,7 @@ export async function sendToPc(picked: Picked[], target: { serverId: string; spa
         dir.create({ intermediates: true, idempotent: true });
         const file = new File(p.uri);
         const dest = new File(dir, p.name.replace(/[/\\]/g, '_'));
-        file.move(dest);
+        file.moveSync(dest);
         uri = file.uri;
       } catch {
         uri = p.uri; // send from where the picker left it

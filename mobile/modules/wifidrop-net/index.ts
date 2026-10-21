@@ -1,5 +1,7 @@
 // Pinned HTTPS and network discovery, implemented in Swift (ios/) and Kotlin (android/).
-import { type EventSubscription, requireOptionalNativeModule } from 'expo';
+import { requireOptionalNativeModule } from 'expo';
+
+type EventSubscription = { remove(): void };
 
 export type NetRequest = {
   url: string;

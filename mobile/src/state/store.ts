@@ -10,6 +10,7 @@ export type SavedPc = {
   pin: string;
   username?: string;
   demo?: boolean;
+  insecure?: boolean; // Expo Go test mode: plain HTTP, no pinned key
 };
 
 // Readable after the first unlock, so auto-upload (later) can run while the phone is locked.

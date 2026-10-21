@@ -41,3 +41,11 @@ test('spots the plain web link of an older WiFiDrop', () => {
   assert.ok(isPlainWiFiDropLink('https://10.0.0.99:8443/'));
   assert.ok(!isPlainWiFiDropLink('https://example.com/page'));
 });
+
+test('reads the plain web link for Expo Go test mode', async () => {
+  const { parsePlainLink } = await import('../src/lib/pairing.ts');
+  assert.deepEqual(parsePlainLink('http://10.0.0.99:8443/'), { host: '10.0.0.99', port: 8443, secure: false });
+  assert.deepEqual(parsePlainLink('https://10.0.0.99:8443/?wd=1&pin=x'), { host: '10.0.0.99', port: 8443, secure: true });
+  assert.equal(parsePlainLink('http://10.0.0.99/'), null);
+  assert.equal(parsePlainLink('hello'), null);
+});

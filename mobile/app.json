@@ -68,7 +68,11 @@
           "photosPermission": "WiFiDrop opens your photos and videos only when you choose to send them to your PC, so it can send the originals.",
           "microphonePermission": false
         }
-      ]
+      ],
+      "expo-font",
+      "expo-image",
+      "expo-status-bar",
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true,

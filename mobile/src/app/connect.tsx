@@ -1,9 +1,13 @@
 import { router } from 'expo-router';
-import { ActivityIndicator, Text, View } from 'react-native';
+import { useState } from 'react';
+import { ActivityIndicator, Platform, Text, View } from 'react-native';
 
+import { ApiError } from '@/api/types';
+import { parsePlainLink } from '@/lib/pairing';
 import { useDiscovery } from '@/state/discovery';
 import { DEMO_PC, useSession } from '@/state/session';
-import { Body, Button, Card, Notice, Row, Screen, Separator, Title } from '@/ui/kit';
+import { HTTPS_OFF_HINT, testModePc } from '@/state/testmode';
+import { Body, Button, Card, Field, Notice, Row, Screen, Separator, Title } from '@/ui/kit';
 import { useColors } from '@/ui/theme';
 
 export default function Connect() {
@@ -11,6 +15,32 @@ export default function Connect() {
   const { pcs, pair, choose, signedIn, pc } = useSession();
   const { found, available, error } = useDiscovery();
   const paired = new Set(pcs.map((p) => p.serverId));
+  const [address, setAddress] = useState('');
+  const [testError, setTestError] = useState<string | null>(null);
+  const [testBusy, setTestBusy] = useState(false);
+
+  async function connectByAddress() {
+    const text = address.trim();
+    const link = parsePlainLink(/^https?:\/\//.test(text) ? text : `http://${text.includes(':') ? text : `${text}:8443`}`);
+    if (!link) {
+      setTestError("Type the address shown on WiFiDrop's Dashboard, for example 192.168.1.20:8443.");
+      return;
+    }
+    if (link.secure) {
+      setTestError(HTTPS_OFF_HINT);
+      return;
+    }
+    setTestBusy(true);
+    setTestError(null);
+    try {
+      await pair(await testModePc(link.host, link.port));
+      router.replace('/sign-in');
+    } catch (e) {
+      setTestError(e instanceof ApiError ? `${e.message} ${e.code === 'NETWORK' || e.code === 'TIMEOUT' ? HTTPS_OFF_HINT : ''}` : 'Something went wrong.');
+    } finally {
+      setTestBusy(false);
+    }
+  }
 
   async function openSaved(serverId: string) {
     await choose(serverId);
@@ -30,8 +60,17 @@ export default function Connect() {
       </Body>
       {available ? (
         <Button title="Scan QR code" icon="qr-code" onPress={() => router.push('/scan')} />
-      ) : (
+      ) : Platform.OS === 'web' ? (
         <Notice kind="warn" text="This preview can't reach a PC. Install WiFiDrop from the App Store or Google Play, or try the demo." />
+      ) : (
+        <View style={{ gap: 12 }}>
+          <Notice kind="warn" text={`Expo Go test mode. ${HTTPS_OFF_HINT} Plain HTTP isn't encrypted, so only test on your own Wi-Fi.`} />
+          <Button title="Scan QR code" icon="qr-code" onPress={() => router.push('/scan')} />
+          <Field label="Or type the PC's address" value={address} onChangeText={setAddress} placeholder="192.168.1.20:8443"
+            keyboardType="url" returnKeyType="go" onSubmitEditing={connectByAddress} />
+          <Notice text={testError} />
+          <Button title="Connect" kind="secondary" onPress={connectByAddress} busy={testBusy} />
+        </View>
       )}
 
       {available && (

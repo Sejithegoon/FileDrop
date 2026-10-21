@@ -4,6 +4,7 @@ import { createContext, type ReactNode, useCallback, useContext, useEffect, useM
 
 import { Client } from '@/api/client';
 import { DEMO_SERVER_ID, DemoTransport } from '@/api/demo';
+import { HttpTransport } from '@/api/http';
 import { PinnedTransport } from '@/api/transport';
 import type { Me } from '@/api/types';
 import { baseUrl } from '@/lib/pairing';
@@ -33,7 +34,7 @@ type Session = {
 const SessionContext = createContext<Session | null>(null);
 
 function clientFor(pc: SavedPc, token: string | null) {
-  const transport = pc.demo ? demoTransport : new PinnedTransport(baseUrl(pc), pc.pin);
+  const transport = pc.demo ? demoTransport : pc.insecure ? new HttpTransport(baseUrl(pc)) : new PinnedTransport(baseUrl(pc), pc.pin);
   return new Client(transport, token);
 }
 

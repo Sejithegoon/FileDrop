@@ -7,8 +7,9 @@ import { StyleSheet, View } from 'react-native';
 import { Client } from '@/api/client';
 import { PinnedTransport } from '@/api/transport';
 import { ApiError } from '@/api/types';
-import { baseUrl, isPlainWiFiDropLink, parsePairingQr } from '@/lib/pairing';
+import { baseUrl, isPlainWiFiDropLink, parsePairingQr, parsePlainLink } from '@/lib/pairing';
 import { useSession } from '@/state/session';
+import { HTTPS_OFF_HINT, testModeOnly, testModePc } from '@/state/testmode';
 import { Body, Button, Loading, Notice, Screen, Title } from '@/ui/kit';
 import { radius, useColors } from '@/ui/theme';
 
@@ -23,6 +24,7 @@ export default function Scan() {
   async function onScanned(text: string) {
     if (checking || text === lastText.current) return;
     lastText.current = text;
+    if (testModeOnly) return onScannedTestMode(text);
     const pairing = parsePairingQr(text);
     if (!pairing) {
       setMessage(isPlainWiFiDropLink(text)
@@ -42,6 +44,31 @@ export default function Scan() {
     } catch (e) {
       setMessage(e instanceof ApiError ? e.message : 'Something went wrong. Try again.');
       lastText.current = ''; // allow scanning the same code again
+    } finally {
+      setChecking(false);
+    }
+  }
+
+  async function onScannedTestMode(text: string) {
+    const link = parsePlainLink(text);
+    if (!link) {
+      setMessage("That isn't a WiFiDrop code. Scan the QR code on the Dashboard of WiFiDrop on your PC.");
+      return;
+    }
+    if (link.secure) {
+      setMessage(HTTPS_OFF_HINT);
+      lastText.current = '';
+      return;
+    }
+    setChecking(true);
+    setMessage(null);
+    try {
+      await pair(await testModePc(link.host, link.port));
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      router.dismissTo('/sign-in');
+    } catch (e) {
+      setMessage(e instanceof ApiError ? e.message : 'Something went wrong. Try again.');
+      lastText.current = '';
     } finally {
       setChecking(false);
     }

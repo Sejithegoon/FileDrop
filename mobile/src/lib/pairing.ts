@@ -42,8 +42,16 @@ export function pinCode(pin: string): string {
   return `${code.slice(0, 4)}-${code.slice(4)}`;
 }
 
-export function baseUrl(p: { host: string; port: number }): string {
-  return `https://${p.host}:${p.port}`;
+export function baseUrl(p: { host: string; port: number; insecure?: boolean }): string {
+  return `${p.insecure ? 'http' : 'https'}://${p.host}:${p.port}`;
+}
+
+/** host and port from a plain web link such as http://10.0.0.99:8443/ (Expo Go test mode). */
+export function parsePlainLink(text: string): { host: string; port: number; secure: boolean } | null {
+  const m = /^(https?):\/\/([A-Za-z0-9.-]+):(\d{1,5})(\/|\/?\?.*)?$/.exec(text.trim());
+  if (!m) return null;
+  const port = Number(m[3]);
+  return port > 0 && port < 65536 ? { host: m[2], port, secure: m[1] === 'https' } : null;
 }
 
 // ---- small helpers -----------------------------------------------------------------------
