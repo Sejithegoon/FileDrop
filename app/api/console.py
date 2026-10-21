@@ -23,7 +23,7 @@ from pydantic import BaseModel
 
 from app import BUILD_DATE, __version__
 from app.api.deps import csrf, ctx_of, db
-from app.api.lan import file_response
+from app.api.lan import file_response, server_id
 from app.core import adminlock
 from app.core.errors import ApiError, install_error_handlers
 from app.core.network import primary_ipv4
@@ -118,6 +118,14 @@ def _qr_svg(text: str) -> str:
     return buf.getvalue().decode()
 
 
+def pairing_url(url: str, status: dict, conn) -> str:
+    """What the QR code holds: the web link, plus what the phone app needs to trust this PC with no warning.
+    Phone cameras just open the link (the page ignores the query); the WiFiDrop app reads pin and id."""
+    if not status.get("pin"):
+        return url
+    return f"{url}?{urllib.parse.urlencode({'wd': 1, 'pin': status['pin'], 'id': server_id(conn)})}"
+
+
 # ---- overview and server controls ----------------------------------------------
 
 @api.get("/changes")
@@ -139,7 +147,7 @@ def overview(request: Request, conn=Depends(db)):
         storage = {"root": str(ctx.storage.root), "disk_total": disk["total"], "disk_free": disk["free"]}
     return {
         "version": __version__, "build_date": BUILD_DATE,
-        "server": status, "url": url, "qr": _qr_svg(url),
+        "server": status, "url": url, "qr": _qr_svg(pairing_url(url, status, conn)),
         "uploads_paused": ctx.uploads_paused, "downloads_paused": ctx.downloads_paused,
         "storage": storage, "storage_override": bool(ctx.settings.storage_dir), "move": ctx.mover.status(),
         "update": ctx.update_available, "https_forced": ctx.settings.https is not None,

@@ -7,6 +7,7 @@ LanServer     the user-facing web server that Start/Stop controls.
 from __future__ import annotations
 
 import logging
+import socket
 import threading
 import time
 from pathlib import Path
@@ -15,7 +16,7 @@ from typing import Callable
 import uvicorn
 
 from .network import resolve_lan_host
-from .tls import ensure_certificate
+from .tls import ensure_certificate, pin_code
 
 log = logging.getLogger(__name__)
 
@@ -72,7 +73,8 @@ class LanServer:
     HELPER_PORTS = (80, 8080)  # plain-HTTP help page; first free one wins
 
     def __init__(self, app_factory: Callable[[], object], host: str, port: int, tls_dir: Path | None = None,
-                 helper_factory: Callable[[str], object] | None = None):
+                 helper_factory: Callable[[str], object] | None = None, announcer=None,
+                 announce_txt: Callable[[], dict[str, str]] | None = None):
         self._app_factory = app_factory
         self._helper_factory = helper_factory
         self._helper: Listener | None = None
@@ -81,12 +83,15 @@ class LanServer:
         self.port = port
         self.tls_dir = tls_dir  # HTTPS when set
         self.fingerprint: str | None = None
+        self.pin: str | None = None  # public key pin for the phone app (see tls.public_key_pin)
         self.state = "stopped"
         self.address: str | None = None
         self.last_error: str | None = None
         self._blockers: dict[str, str] = {}
         self._listener: Listener | None = None
         self._lock = threading.Lock()
+        self._announcer = announcer  # discovery.Announcer: lets the phone app find this PC
+        self._announce_txt = announce_txt or (lambda: {})
 
     @property
     def scheme(self) -> str:
@@ -111,6 +116,7 @@ class LanServer:
             "state": self.state,
             "url": f"{self.scheme}://{self.address}:{self.port}/" if self.state == "running" else None,
             "https": self.tls_dir is not None, "fingerprint": self.fingerprint,
+            "pin": self.pin, "pin_code": pin_code(self.pin) if self.pin else None,
             "helper_url": self.helper_url if self.state == "running" else None,
             "error": self.last_error,
         }
@@ -127,15 +133,26 @@ class LanServer:
                 self.address = resolve_lan_host(self._configured_host)
                 cert = ensure_certificate(self.tls_dir, self.address) if self.tls_dir else None
                 self.fingerprint = cert.fingerprint if cert else None
+                self.pin = cert.pin if cert else None
                 self._listener = Listener(self._app_factory(), self.address, self.port, "lan", cert)
                 self._listener.start()
                 self.state = "running"
                 if cert and self._helper_factory:
                     self._start_helper()
+                self._announce()
             except Exception as exc:
                 log.error("LAN server failed to start: %s", exc)
                 self.state, self.last_error, self._listener = "stopped", str(exc), None
             return self.status()
+
+    def _announce(self) -> None:
+        if not self._announcer:
+            return
+        try:
+            txt = {"api": "1", "https": "1" if self.tls_dir else "0", "ip": self.address, **self._announce_txt()}
+            self._announcer.start(self.address, self.port, socket.gethostname() or "PC", txt)
+        except Exception as exc:  # discovery is a convenience; the server runs without it
+            log.info("Network announcement skipped: %s", exc)
 
     def _start_helper(self) -> None:
         """Best effort: if ports 80 and 8080 are both taken, HTTPS still works without the help page."""
@@ -153,6 +170,8 @@ class LanServer:
 
     def stop(self) -> dict:
         with self._lock:
+            if self._announcer:
+                self._announcer.stop()
             if self._helper:
                 self._helper.stop()
                 self._helper, self.helper_url = None, None

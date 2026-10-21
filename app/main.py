@@ -18,7 +18,8 @@ from pathlib import Path
 from app import __version__
 from app.api.console import create_console_app
 from app.api.helper import create_helper_app
-from app.api.lan import create_lan_app
+from app.api.lan import create_lan_app, server_id
+from app.core.discovery import Announcer
 from app.core.context import AppContext
 from app.core.listeners import LanServer, Listener
 from app.core.settings import DB_NAME, Settings, default_data_dir, load_settings
@@ -152,6 +153,14 @@ def run_window(ctx: AppContext, start_hidden: bool) -> None:
     webview.start()
 
 
+def _server_id(ctx) -> str:
+    conn = ctx.connect()
+    try:
+        return server_id(conn)
+    finally:
+        conn.close()
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="WiFiDrop")
     parser.add_argument("--headless", action="store_true", help="no window or tray; Ctrl+C quits (development)")
@@ -177,7 +186,8 @@ def main(argv: list[str] | None = None) -> int:
     winacl.ensure_private(settings.data_dir)
     ctx = AppContext(settings=settings)
     ctx.lan = LanServer(lambda: create_lan_app(ctx), settings.lan_host, settings.lan_port,
-                        helper_factory=create_helper_app)
+                        helper_factory=create_helper_app, announcer=Announcer(),
+                        announce_txt=lambda: {"id": _server_id(ctx)})
     prepare_database(ctx)
     ctx.lan.tls_dir = settings.tls_dir if ctx.https_enabled() else None
     if args.reset_admin_pin and ctx.admin_lock.enabled:

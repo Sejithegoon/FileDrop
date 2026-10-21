@@ -2,23 +2,42 @@
 
 from __future__ import annotations
 
+import hashlib
+import socket
+
 from fastapi import APIRouter, Depends, FastAPI, Request, Response
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
+from typing import Literal
 
 from app import __version__
-from app.api.deps import client_ip, csrf, ctx_of, current_user, db, session_and_user
+from app.api.deps import client_ip, csrf, ctx_of, current_user, db, session_and_user, session_token
 from app.core.errors import ApiError, install_error_handlers
 from app.core.settings import resource_path
-from app.services import audit, auth, files, spaces, uploads, users
+from app.services import audit, auth, files, spaces, storage_config, uploads, users
 
 api = APIRouter(prefix="/api/v1", dependencies=[Depends(csrf)])
+
+API_VERSION = 1  # bump when the phone app needs something new from this API
+MIN_APP_API = 1  # oldest app API this server still serves; older apps ask the user to update
+
+
+def pc_name() -> str:
+    return socket.gethostname() or "WiFiDrop PC"
+
+
+def server_id(conn) -> str:
+    """A stable public id for this PC so the app recognises it after its address changes.
+    Derived from the install id, which itself stays private (the licence server uses it)."""
+    return hashlib.sha256(f"wifidrop-server:{storage_config.install_id(conn)}".encode()).hexdigest()[:20]
 
 
 class LoginBody(BaseModel):
     username: str
     password: str
+    client: Literal["web", "app"] = "web"  # "app": the phone app gets the token in the reply instead of a cookie
+    device: str = ""  # the phone app's name for the phone, e.g. "Sam's iPhone"; shown in the admin window
 
 
 class PasswordBody(BaseModel):
@@ -53,6 +72,7 @@ def _me(user, ctx) -> dict:
                  "role": user["role"], "must_change_password": bool(user["must_change_password"])},
         "status": {"uploads_paused": ctx.uploads_blocked, "downloads_paused": ctx.downloads_paused},
         "version": __version__,
+        "edition": ctx.caps.edition, "features": {"auto_upload": ctx.caps.pro},
     }
 
 
@@ -86,10 +106,21 @@ def health():
     return {"ok": True, "version": __version__}
 
 
+@api.get("/info")
+def info(request: Request, conn=Depends(db)):
+    """Who this is, before signing in: lets the phone app check it found a WiFiDrop PC it can talk to."""
+    return {"app": "wifidrop", "api": API_VERSION, "min_app_api": MIN_APP_API, "version": __version__,
+            "name": pc_name(), "server_id": server_id(conn)}
+
+
 @api.post("/auth/login")
 def login(body: LoginBody, request: Request, response: Response, conn=Depends(db)):
-    token, user = auth.login(conn, body.username, body.password, client_ip(request),
-                             request.headers.get("user-agent", ""))
+    agent = request.headers.get("user-agent", "")
+    if body.client == "app":
+        agent = f"WiFiDrop app on {body.device.strip()[:80] or 'a phone'} ({agent[:150]})"
+    token, user = auth.login(conn, body.username, body.password, client_ip(request), agent, body.client)
+    if body.client == "app":
+        return {**_me(user, ctx_of(request)), "token": token}
     response.set_cookie(auth.COOKIE, token, max_age=auth.SESSION_MAX_MS // 1000, httponly=True, samesite="strict",
                         secure=request.url.scheme == "https",
                         path="/")
@@ -98,7 +129,7 @@ def login(body: LoginBody, request: Request, response: Response, conn=Depends(db
 
 @api.post("/auth/logout")
 def logout(request: Request, response: Response, conn=Depends(db)):
-    found = auth.resolve(conn, request.cookies.get(auth.COOKIE))
+    found = auth.resolve(conn, session_token(request))
     if found:
         auth.logout(conn, found[0]["id"])
     response.delete_cookie(auth.COOKIE, path="/")

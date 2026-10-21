@@ -17,6 +17,9 @@ from app.services.passwords import verify_password
 COOKIE = "wd_session"
 SESSION_MAX_MS = 30 * 24 * 3600 * 1000
 SESSION_IDLE_MS = 3 * 24 * 3600 * 1000
+# The phone app keeps its token in the phone's secure storage and may only wake now and then to auto-upload.
+APP_SESSION_MAX_MS = 365 * 24 * 3600 * 1000
+APP_SESSION_IDLE_MS = 90 * 24 * 3600 * 1000
 LOCK_AFTER = 5
 LOCK_MS = 15 * 60 * 1000
 _TOUCH_EVERY_MS = 60 * 1000
@@ -56,7 +59,11 @@ def _hash(token: str) -> str:
     return hashlib.sha256(token.encode()).hexdigest()
 
 
-def login(conn: sqlite3.Connection, username: str, password: str, ip: str, user_agent: str):
+def _idle_ms(session) -> int:
+    return APP_SESSION_IDLE_MS if session["client"] == "app" else SESSION_IDLE_MS
+
+
+def login(conn: sqlite3.Connection, username: str, password: str, ip: str, user_agent: str, client: str = "web"):
     now = now_ms()
     if ip_limiter.blocked(ip, now):
         raise ApiError(429, "RATE_LIMITED", "Too many failed sign-ins from this device. Try again in a few minutes.")
@@ -82,14 +89,15 @@ def login(conn: sqlite3.Connection, username: str, password: str, ip: str, user_
         raise ApiError(403, "ACCOUNT_SUSPENDED", "This account is suspended. Contact your administrator.")
 
     token = secrets.token_urlsafe(32)
+    lifetime = APP_SESSION_MAX_MS if client == "app" else SESSION_MAX_MS
     with transaction(conn):
         conn.execute("UPDATE users SET failed_logins = 0, locked_until = NULL WHERE id = ?", (user["id"],))
         conn.execute(
-            "INSERT INTO sessions (id, token_hash, user_id, created_at, last_seen_at, expires_at, ip, user_agent)"
-            " VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-            (new_id(), _hash(token), user["id"], now, now, now + SESSION_MAX_MS, ip, (user_agent or "")[:300]),
+            "INSERT INTO sessions (id, token_hash, user_id, created_at, last_seen_at, expires_at, ip, user_agent, client)"
+            " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            (new_id(), _hash(token), user["id"], now, now, now + lifetime, ip, (user_agent or "")[:300], client),
         )
-        audit.record(conn, "login", actor=user, ip=ip)
+        audit.record(conn, "login", actor=user, ip=ip, details={"client": client} if client != "web" else None)
     return token, users.get(conn, user["id"])
 
 
@@ -104,7 +112,7 @@ def resolve(conn: sqlite3.Connection, token: str | None, ip: str | None = None):
     ).fetchone()
     if not session:
         return None
-    if session["last_seen_at"] < now - SESSION_IDLE_MS:
+    if session["last_seen_at"] < now - _idle_ms(session):
         conn.execute("UPDATE sessions SET revoked_at = ?, revoke_reason = 'idle' WHERE id = ?", (now, session["id"]))
         return None
     user = users.get(conn, session["user_id"])
@@ -129,9 +137,10 @@ def revoke(conn: sqlite3.Connection, session_id: str, reason: str = "revoked by 
 def active_sessions(conn: sqlite3.Connection) -> list[dict]:
     now = now_ms()
     rows = conn.execute(
-        "SELECT s.id, s.user_id, u.username, u.display_name, s.ip, s.user_agent, s.created_at, s.last_seen_at"
+        "SELECT s.id, s.user_id, u.username, u.display_name, s.ip, s.user_agent, s.created_at, s.last_seen_at, s.client"
         " FROM sessions s JOIN users u ON u.id = s.user_id"
-        " WHERE s.revoked_at IS NULL AND s.expires_at > ? AND s.last_seen_at > ? ORDER BY s.last_seen_at DESC",
-        (now, now - SESSION_IDLE_MS),
+        " WHERE s.revoked_at IS NULL AND s.expires_at > ?"
+        " AND s.last_seen_at > ? - (CASE s.client WHEN 'app' THEN ? ELSE ? END) ORDER BY s.last_seen_at DESC",
+        (now, now, APP_SESSION_IDLE_MS, SESSION_IDLE_MS),
     ).fetchall()
     return [dict(r) for r in rows]

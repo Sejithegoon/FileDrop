@@ -7,7 +7,9 @@ nears expiry or the PC's LAN address changes, so phones only show the
 
 from __future__ import annotations
 
+import base64
 import datetime as dt
+import hashlib
 import ipaddress
 import logging
 import socket
@@ -30,6 +32,19 @@ class CertInfo:
     cert_path: Path
     key_path: Path
     fingerprint: str  # SHA-256, "AB:CD:..."
+    pin: str = ""  # SHA-256 of the public key, base64url: the phone app trusts this key, so it survives certificate renewals
+
+
+def public_key_pin(key) -> str:
+    spki = key.public_key().public_bytes(serialization.Encoding.DER, serialization.PublicFormat.SubjectPublicKeyInfo)
+    return base64.urlsafe_b64encode(hashlib.sha256(spki).digest()).rstrip(b"=").decode()
+
+
+def pin_code(pin: str) -> str:
+    """Short code shown in the admin window, for checking a PC the app found on the network without the QR code."""
+    digest = hashlib.sha256(pin.encode()).digest()
+    code = base64.b32encode(digest).decode()[:8]
+    return f"{code[:4]}-{code[4:]}"
 
 
 def _load_or_create_key(path: Path) -> ec.EllipticCurvePrivateKey:
@@ -62,7 +77,7 @@ def ensure_certificate(directory: Path, ip: str) -> CertInfo:
     if cert_path.exists():
         cert = x509.load_pem_x509_certificate(cert_path.read_bytes())
         if _still_good(cert, ip):
-            return CertInfo(cert_path, key_path, _fingerprint(cert))
+            return CertInfo(cert_path, key_path, _fingerprint(cert), public_key_pin(key))
 
     host = socket.gethostname()
     name = x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, f"WiFiDrop on {host}"),
@@ -81,4 +96,4 @@ def ensure_certificate(directory: Path, ip: str) -> CertInfo:
             .sign(key, hashes.SHA256()))
     cert_path.write_bytes(cert.public_bytes(serialization.Encoding.PEM))
     log.info("Created HTTPS certificate for %s (SHA-256 %s)", ip, _fingerprint(cert))
-    return CertInfo(cert_path, key_path, _fingerprint(cert))
+    return CertInfo(cert_path, key_path, _fingerprint(cert), public_key_pin(key))

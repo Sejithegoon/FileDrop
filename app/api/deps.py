@@ -32,8 +32,16 @@ def client_ip(request: Request) -> str:
     return request.client.host if request.client else ""
 
 
+def session_token(request: Request) -> str | None:
+    """The web page's cookie, or the phone app's "Authorization: Bearer <token>"."""
+    scheme, _, token = request.headers.get("authorization", "").partition(" ")
+    if scheme.lower() == "bearer" and token.strip():
+        return token.strip()
+    return request.cookies.get(auth.COOKIE)
+
+
 def session_and_user(request: Request, conn=Depends(db)):
-    found = auth.resolve(conn, request.cookies.get(auth.COOKIE), client_ip(request))
+    found = auth.resolve(conn, session_token(request), client_ip(request))
     if not found:
         raise ApiError(401, "UNAUTHENTICATED", "Please sign in.")
     return found

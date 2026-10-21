@@ -46,32 +46,34 @@ def test_upgrade_backs_up_then_migrates(paths, monkeypatch):
     conn.execute("INSERT INTO settings (key, value_json, updated_at) VALUES ('keep_me', '1', 0)")
     conn.close()
 
-    extra = mig.Migration(2, "add_column", "ALTER TABLE settings ADD COLUMN note TEXT;")
+    last = mig.MIGRATIONS[-1].version
+    extra = mig.Migration(last + 1, "add_column", "ALTER TABLE settings ADD COLUMN note TEXT;")
     monkeypatch.setattr(db, "MIGRATIONS", mig.MIGRATIONS + [extra])
-    monkeypatch.setattr(db, "LATEST_SCHEMA", 2)
+    monkeypatch.setattr(db, "LATEST_SCHEMA", last + 1)
 
     conn, report = open_db(paths, "0.2.0")
-    assert (report.from_version, report.to_version) == (1, 2)
+    assert (report.from_version, report.to_version) == (last, last + 1)
     assert report.backup and report.backup.exists()
     assert conn.execute("SELECT value_json FROM settings WHERE key = 'keep_me'").fetchone()[0] == "1"
     backup = sqlite3.connect(report.backup)
-    assert backup.execute("PRAGMA user_version").fetchone()[0] == 1
+    assert backup.execute("PRAGMA user_version").fetchone()[0] == last
     backup.close()
     conn.close()
 
 
 def test_failed_migration_changes_nothing(paths, monkeypatch):
     open_db(paths)[0].close()
-    bad = mig.Migration(2, "broken", "CREATE TABLE half_done (x INTEGER);\nTHIS IS NOT SQL;")
+    last = mig.MIGRATIONS[-1].version
+    bad = mig.Migration(last + 1, "broken", "CREATE TABLE half_done (x INTEGER);\nTHIS IS NOT SQL;")
     monkeypatch.setattr(db, "MIGRATIONS", mig.MIGRATIONS + [bad])
-    monkeypatch.setattr(db, "LATEST_SCHEMA", 2)
+    monkeypatch.setattr(db, "LATEST_SCHEMA", last + 1)
 
     with pytest.raises(db.MigrationFailedError) as err:
         open_db(paths, "0.2.0")
     assert err.value.backup and err.value.backup.exists()
 
     check = sqlite3.connect(paths[0])
-    assert check.execute("PRAGMA user_version").fetchone()[0] == 1
+    assert check.execute("PRAGMA user_version").fetchone()[0] == last
     assert check.execute("SELECT count(*) FROM sqlite_master WHERE name = 'half_done'").fetchone()[0] == 0
     check.close()
 
@@ -91,7 +93,7 @@ def test_newer_database_is_refused_untouched(paths):
 def test_edited_migration_is_detected(paths, monkeypatch):
     open_db(paths)[0].close()
     edited = mig.Migration(1, "initial", mig.MIGRATIONS[0].sql + "\n-- edited\n")
-    monkeypatch.setattr(db, "MIGRATIONS", [edited])
+    monkeypatch.setattr(db, "MIGRATIONS", [edited] + mig.MIGRATIONS[1:])
     with pytest.raises(db.MigrationChecksumError):
         open_db(paths)
 

@@ -9,6 +9,9 @@ let cur = { spaceId: null, folderId: 'root' };
 let view = null;      // last folder listing
 let trashOpen = false;
 
+// The QR code also carries details for the WiFiDrop phone app (?wd=1&pin=…); the page doesn't need them.
+if (new URLSearchParams(location.search).has('wd')) history.replaceState(null, '', location.pathname + location.hash);
+
 // ---------- screens
 
 function show(which) {

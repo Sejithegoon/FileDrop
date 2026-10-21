@@ -71,6 +71,7 @@ async function loadDashboard() {
         $('#tlsNote').innerHTML = `${FD.icon('lock')} <b>Secure connection (HTTPS).</b> The first time, phones warn the connection isn't private because WiFiDrop made its own certificate. ` +
             `iPhone: tap <b>Show Details → visit this website</b>. Android: <b>Advanced → Proceed</b>.` +
             (fp ? `<br><span class="muted">Certificate fingerprint: <code title="${fp}">${fp.slice(0, 23)}…</code></span>` : '') +
+            (o.server.pin_code ? `<br><span class="muted">WiFiDrop phone app code: <code>${FD.esc(o.server.pin_code)}</code></span>` : '') +
             (o.server.helper_url ? `<br><span class="muted">Typing just <code>${FD.esc(o.server.helper_url)}</code> opens a help page with a button to the secure link.</span>` : '');
     }
     $('#plainNote').hidden = o.server.https;

@@ -222,6 +222,13 @@ BEGIN
 END;
 """
 
+_0002_APP_SESSIONS = """
+-- 'web' sessions live in a browser cookie. 'app' sessions belong to the WiFiDrop phone app, which keeps
+-- its token in the phone's secure storage and may only run now and then (auto-upload), so they last longer.
+ALTER TABLE sessions ADD COLUMN client TEXT NOT NULL DEFAULT 'web' CHECK (client IN ('web', 'app'));
+"""
+
 MIGRATIONS: list[Migration] = [
     Migration(1, "initial", _0001_INITIAL),
+    Migration(2, "app_sessions", _0002_APP_SESSIONS),
 ]
