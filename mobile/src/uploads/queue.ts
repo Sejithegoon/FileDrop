@@ -46,7 +46,8 @@ export type QueueDeps = {
   setTimer?: (fn: () => void, ms: number) => unknown;
   clearTimer?: (t: unknown) => void;
   onSignedOut?(serverId: string): void;
-  onFinished?(job: Job): void;
+  /** Runs before the phone copy is removed, e.g. to make and send a preview. Errors are ignored. */
+  onUploaded?(job: Job, item: Item): Promise<void>;
 };
 
 export const MAX_PARALLEL = 3;
@@ -206,11 +207,11 @@ export class UploadQueue {
           this.update(id, { sent: received, attempts: 0 });
         }
         if (this.find(id)?.status !== 'sending') return;
-        await client.completeUpload(job.uploadId!);
+        const item = await client.completeUpload(job.uploadId!);
+        await this.deps.onUploaded?.(job, item).catch(() => undefined);
       }
       this.update(id, { status: 'done', sent: job.size, error: null }, true);
       this.deps.removeFile(job.uri);
-      this.deps.onFinished?.(this.find(id)!);
     } catch (e) {
       if (this.find(id)?.status !== 'sending') return;
       this.failed(id, e);

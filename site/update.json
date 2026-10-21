@@ -1,5 +1,5 @@
 {
-  "version": "0.1.5",
+  "version": "0.2.0",
   "url": "https://wifidrop.ca/download.html",
-  "notes": "Safer installer: WiFiDrop always installs on a drive that's always connected."
+  "notes": "Picture previews, search, and a full-screen viewer for photos and videos."
 }

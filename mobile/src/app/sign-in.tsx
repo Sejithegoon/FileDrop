@@ -1,10 +1,10 @@
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Text } from 'react-native';
+import { Text, View } from 'react-native';
 
 import { ApiError } from '@/api/types';
 import { useSession } from '@/state/session';
-import { Body, Button, Field, Notice, Screen, Title } from '@/ui/kit';
+import { Body, Button, Field, Logo, Notice, Screen, Title } from '@/ui/kit';
 import { useColors } from '@/ui/theme';
 
 export default function SignIn() {
@@ -46,6 +46,9 @@ export default function SignIn() {
   if (!pc) return null;
   return (
     <Screen>
+      <View style={{ alignItems: 'center', paddingTop: 8 }}>
+        <Logo size={64} />
+      </View>
       <Title>Sign in</Title>
       <Body muted>
         To <Text style={{ color: c.text, fontWeight: '600' }}>{pc.name}</Text>, with the account the PC's owner made for you.

@@ -7,7 +7,7 @@ import { parsePlainLink } from '@/lib/pairing';
 import { useDiscovery } from '@/state/discovery';
 import { DEMO_PC, useSession } from '@/state/session';
 import { HTTPS_OFF_HINT, testModePc } from '@/state/testmode';
-import { Body, Button, Card, Field, Notice, Row, Screen, Separator, Title } from '@/ui/kit';
+import { Body, Button, Card, Field, Logo, Notice, Row, Screen, Separator, Title } from '@/ui/kit';
 import { useColors } from '@/ui/theme';
 
 export default function Connect() {
@@ -54,6 +54,9 @@ export default function Connect() {
 
   return (
     <Screen>
+      <View style={{ alignItems: 'center', gap: 10, paddingTop: 8 }}>
+        <Logo size={64} />
+      </View>
       <Title>Connect to your PC</Title>
       <Body muted>
         On your PC, open WiFiDrop and make sure the web server is running. Then scan the QR code on its Dashboard.

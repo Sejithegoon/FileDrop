@@ -7,6 +7,7 @@ import socket
 
 from fastapi import APIRouter, Depends, FastAPI, Request, Response
 from fastapi.responses import FileResponse
+from starlette.concurrency import run_in_threadpool
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from typing import Literal
@@ -15,7 +16,8 @@ from app import __version__
 from app.api.deps import client_ip, csrf, ctx_of, current_user, db, session_and_user, session_token
 from app.core.errors import ApiError, install_error_handlers
 from app.core.settings import resource_path
-from app.services import audit, auth, files, spaces, storage_config, uploads, users
+from app.core.names import name_key
+from app.services import audit, auth, files, spaces, storage_config, thumbs, uploads, users
 
 api = APIRouter(prefix="/api/v1", dependencies=[Depends(csrf)])
 
@@ -281,13 +283,26 @@ def cancel_upload(upload_id: str, request: Request, user=Depends(current_user), 
     return {"ok": True}
 
 
-def file_response(ctx, item) -> FileResponse:
+def file_response(ctx, item, inline: bool = False) -> FileResponse:
+    """The file itself. inline=True shows pictures, videos and audio inside the page (previews); every
+    other type, and anything that could run code (SVG, HTML), is always a download."""
     path = ctx.require_storage().blob_path(item["blob_id"])
     if not path.exists():
         raise ApiError(404, "MISSING", "This file is missing on the server.")
-    return FileResponse(path, filename=item["name"], media_type=item["content_type"] or "application/octet-stream",
-                        content_disposition_type="attachment",
-                        headers={"X-Content-Type-Options": "nosniff", "Cache-Control": "private, no-store"})
+    media_type = item["content_type"] or "application/octet-stream"
+    show = inline and media_type in thumbs.INLINE_TYPES
+    return FileResponse(path, filename=item["name"], media_type=media_type,
+                        content_disposition_type="inline" if show else "attachment",
+                        headers={"X-Content-Type-Options": "nosniff", "Cache-Control": "private, no-store",
+                                 "Content-Security-Policy": "sandbox; default-src 'none'"})
+
+
+def thumb_response(ctx, item) -> FileResponse:
+    path = thumbs.get(ctx.require_storage(), item)
+    if not path:
+        raise ApiError(404, "NO_PREVIEW", "This file has no preview.")
+    return FileResponse(path, media_type="image/jpeg",
+                        headers={"X-Content-Type-Options": "nosniff", "Cache-Control": "private, max-age=604800"})
 
 
 @api.get("/changes")
@@ -297,14 +312,66 @@ def changes(request: Request, user=Depends(current_user)):
 
 
 @api.get("/download/{item_id}")
-def download(item_id: str, request: Request, user=Depends(current_user), conn=Depends(db)):
+def download(item_id: str, request: Request, inline: bool = False, user=Depends(current_user), conn=Depends(db)):
     ctx = ctx_of(request)
     if ctx.downloads_paused:
         raise ApiError(503, "DOWNLOADS_PAUSED", "Downloads are paused by the administrator.")
     item, space, level = _item_access(conn, user, item_id)
     if item["kind"] != "file":
         raise ApiError(400, "NOT_A_FILE", "Only files can be downloaded.")
-    return file_response(ctx, item)
+    return file_response(ctx, item, inline)
+
+
+@api.get("/thumb/{item_id}")
+async def thumb(item_id: str, request: Request, user=Depends(current_user), conn=Depends(db)):
+    """A small JPEG preview for the file lists (404 NO_PREVIEW when there isn't one)."""
+    item, space, level = _item_access(conn, user, item_id)
+    return await run_in_threadpool(thumb_response, ctx_of(request), item)
+
+
+@api.put("/items/{item_id}/thumb")
+async def put_thumb(item_id: str, request: Request, user=Depends(current_user), conn=Depends(db)):
+    """The phone app sends a preview it made for an iPhone photo (HEIC) or a video it just uploaded."""
+    item, space, level = _item_access(conn, user, item_id)
+    if not (item["created_by"] == user["id"] or spaces.can_modify(level, item, user)):
+        raise ApiError(403, "FORBIDDEN", "You can only add previews to files you added.")
+    data = bytearray()
+    async for part in request.stream():
+        data += part
+        if len(data) > thumbs.MAX_UPLOADED_BYTES:
+            raise ApiError(413, "PREVIEW_TOO_LARGE", "The preview is too large.")
+    await run_in_threadpool(thumbs.save_from_phone, ctx_of(request).require_storage(), item, bytes(data))
+    return {"ok": True}
+
+
+@api.get("/search")
+def search(q: str = "", limit: int = 50, user=Depends(current_user), conn=Depends(db)):
+    """Files and folders whose name contains q, in every folder this person can open."""
+    needle = name_key(q.strip())
+    if not needle:
+        return {"results": []}
+    reachable = {s["id"]: s for s in spaces.accessible(conn, user)}
+    if not reachable:
+        return {"results": []}
+    pattern = "%" + needle.replace("!", "!!").replace("%", "!%").replace("_", "!_") + "%"
+    marks = ",".join("?" * len(reachable))
+    rows = conn.execute(
+        "SELECT i.*, (SELECT count(*) FROM items c WHERE c.parent_id = i.id AND c.trashed_at IS NULL) AS child_count"
+        f" FROM items i WHERE i.space_id IN ({marks}) AND i.parent_id IS NOT NULL AND i.trashed_at IS NULL"
+        " AND i.name_key LIKE ? ESCAPE '!' ORDER BY i.kind = 'file', i.modified_at DESC LIMIT ?",
+        (*reachable, pattern, max(1, min(limit, 200)) * 2)).fetchall()
+    results = []
+    for row in rows:
+        if not files.is_visible(conn, row["id"]):
+            continue
+        space = reachable[row["space_id"]]
+        path = [c["name"] for c in files.crumbs(conn, row["parent_id"])][1:]
+        results.append({**files.to_json(row, user, spaces.can_modify(space["level"], row, user)),
+                        "space": {"id": space["id"], "name": space["name"], "kind": space["kind"]},
+                        "parent_id": row["parent_id"], "path": path})
+        if len(results) >= limit:
+            break
+    return {"results": results}
 
 
 def create_lan_app(ctx) -> FastAPI:

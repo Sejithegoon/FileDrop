@@ -58,6 +58,7 @@
                 <button class="btn ghost small" id="userBtn" type="button"><span data-icon="user"></span> <span id="userName"></span></button>
                 <div class="menu" id="userMenu" hidden>
                     <div class="who"><b id="menuName"></b><div class="muted small" id="menuUser"></div></div>
+                    <button type="button" id="previewsBtn"><span data-icon="image"></span> <span id="previewsText">Previews: on</span></button>
                     <button type="button" id="changePwBtn"><span data-icon="key"></span> Change password</button>
                     <button type="button" id="logoutBtn"><span data-icon="logout"></span> Sign out</button>
                 </div>
@@ -90,7 +91,11 @@
                 <p class="muted small tip">Keep this page open and your screen on until uploads finish.</p>
             </section>
 
-            <section class="card">
+            <section class="card" id="filesCard">
+                <div class="search">
+                    <span data-icon="search"></span>
+                    <input class="input" id="searchBox" type="search" placeholder="Search all your files" aria-label="Search all your files" autocomplete="off">
+                </div>
                 <div class="card-head">
                     <nav class="crumbs" id="crumbs" aria-label="Folder"></nav>
                     <div class="row-actions">

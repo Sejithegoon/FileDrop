@@ -1,7 +1,8 @@
 // Upload pieces shared by screens: the "what do you want to send" sheet and the progress strip.
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { Modal, Pressable, Text, View } from 'react-native';
+import { useRef } from 'react';
+import { Modal, Platform, Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Button, ProgressBar, Row, Separator } from '@/ui/kit';
@@ -9,22 +10,41 @@ import { radius, useColors } from '@/ui/theme';
 
 import { summarize, useUploads } from '.';
 
+/**
+ * iOS can't show the photo or file picker while this sheet is still sliding away, so the choice is
+ * remembered and the picker opens once the sheet has gone.
+ */
 export function UploadSheet({ visible, folder, onClose, onPick }: {
   visible: boolean; folder: string; onClose: () => void; onPick: (what: 'photos' | 'files') => void;
 }) {
   const c = useColors();
   const insets = useSafeAreaInsets();
+  const pending = useRef<'photos' | 'files' | null>(null);
+
+  const launch = () => {
+    const what = pending.current;
+    pending.current = null;
+    if (what) onPick(what);
+  };
+
+  const choose = (what: 'photos' | 'files') => {
+    pending.current = what;
+    onClose();
+    // onDismiss only exists on iOS; elsewhere wait for the slide-out animation.
+    setTimeout(launch, Platform.OS === 'ios' ? 900 : 350);
+  };
+
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose} onDismiss={launch}>
       <Pressable accessibilityLabel="Close" style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)' }} onPress={onClose} />
       <View style={{ backgroundColor: c.surface, borderTopLeftRadius: radius * 1.5, borderTopRightRadius: radius * 1.5,
                      padding: 16, paddingBottom: 16 + insets.bottom, gap: 12 }}>
         <Text style={{ color: c.muted, textAlign: 'center' }} numberOfLines={1}>Send to {folder}</Text>
         <View style={{ borderRadius: radius, overflow: 'hidden', backgroundColor: c.surface2 }}>
           <Row icon="images" iconColor={c.image} title="Photos & videos" subtitle="Originals, full quality"
-            onPress={() => onPick('photos')} />
+            onPress={() => choose('photos')} />
           <Separator />
-          <Row icon="document" iconColor={c.doc} title="Files" subtitle="From the Files app" onPress={() => onPick('files')} />
+          <Row icon="document" iconColor={c.doc} title="Files" subtitle="From the Files app" onPress={() => choose('files')} />
         </View>
         <Button title="Cancel" kind="secondary" onPress={onClose} />
       </View>

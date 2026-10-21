@@ -37,6 +37,9 @@ const FD = (() => {
         ban: '<circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>',
         move: '<path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/><polyline points="12 10 15 13 12 16"/><line x1="8" y1="13" x2="15" y2="13"/>',
         more: '<circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/>',
+        search: '<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>',
+        eye: '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>',
+        play: '<polygon points="6 4 20 12 6 20 6 4"/>',
         external: '<path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>',
     };
 
@@ -185,5 +188,65 @@ const FD = (() => {
     const confirmBox = (title, body, ok = 'Delete', danger = true) =>
         dialog({ title, body, ok, danger }).then(v => v !== null);
 
-    return { icon, hydrate, api, ApiError, fmtSize, fmtDate, fmtAgo, fmtTime, esc, kindOf, toast, dialog, confirmBox, sheet };
+    // ---------- previews: thumbnails in lists and a viewer for pictures, videos and audio
+
+    const PREVIEW_KEY = 'wd_previews';
+    function previewsOn() {
+        try { return localStorage.getItem(PREVIEW_KEY) !== 'off'; } catch { return true; }
+    }
+    function setPreviews(on) {
+        try { localStorage.setItem(PREVIEW_KEY, on ? 'on' : 'off'); } catch { /* private mode: just this visit */ }
+    }
+
+    // What the browser can show inside the page (the PC only serves these types inline).
+    const VIEWABLE = { image: 'jpg jpeg png gif webp bmp', video: 'mp4 m4v mov webm', audio: 'mp3 m4a wav' };
+    function viewable(name) {
+        const ext = name.includes('.') ? name.split('.').pop().toLowerCase() : '';
+        for (const [k, list] of Object.entries(VIEWABLE)) if (list.split(' ').includes(ext)) return k;
+        return null;
+    }
+    // Pictures and videos may have a thumbnail (the PC makes them for pictures; the phone app for HEIC and videos).
+    const hasThumb = name => ['image', 'video'].includes(kindOf(name));
+
+    /** The file-type icon, swapped for a thumbnail once (and if) one loads. */
+    function thumb(kindIcon, src) {
+        const img = src ? `<img class="thumb" src="${src}" alt="" loading="lazy" decoding="async">` : '';
+        return `<span class="thumb-wrap">${kindIcon}${img}</span>`;
+    }
+    function wireThumbs(root) {
+        root.querySelectorAll('img.thumb').forEach(img => {
+            const done = () => img.closest('.thumb-wrap')?.classList.add('loaded');
+            if (img.complete && img.naturalWidth) done();
+            else {
+                img.addEventListener('load', done, { once: true });
+                img.addEventListener('error', () => img.remove(), { once: true });
+            }
+        });
+    }
+
+    /** Full-screen viewer with a download button. kind: image, video or audio. */
+    function viewer({ name, src, kind, download }) {
+        const d = document.createElement('dialog');
+        d.className = 'viewer';
+        const media = kind === 'image' ? `<img src="${src}" alt="${esc(name)}">`
+            : kind === 'video' ? `<video src="${src}" controls autoplay playsinline></video>`
+            : `<audio src="${src}" controls autoplay></audio>`;
+        d.innerHTML = `<div class="viewer-bar"><b>${esc(name)}</b>
+            <a class="btn ghost small" href="${download}" download>${icon('download')} Download</a>
+            <button class="btn ghost small icon-only" type="button" aria-label="Close">${icon('x')}</button></div>
+            <div class="viewer-body">${media}</div>`;
+        document.body.appendChild(d);
+        const close = () => { d.querySelectorAll('video, audio').forEach(m => m.pause()); d.close(); d.remove(); };
+        d.querySelector('button').onclick = close;
+        d.addEventListener('cancel', e => { e.preventDefault(); close(); });
+        d.querySelector('.viewer-body').addEventListener('click', e => { if (e.target.classList.contains('viewer-body')) close(); });
+        const m = d.querySelector('.viewer-body > *');
+        m.addEventListener('error', () => {
+            d.querySelector('.viewer-body').innerHTML = `<p class="muted">This file can't be shown here. Download it to open it.</p>`;
+        }, { once: true });
+        d.showModal();
+    }
+
+    return { icon, hydrate, api, ApiError, fmtSize, fmtDate, fmtAgo, fmtTime, esc, kindOf, toast, dialog, confirmBox, sheet,
+             previewsOn, setPreviews, viewable, hasThumb, thumb, wireThumbs, viewer };
 })();

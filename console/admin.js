@@ -543,6 +543,22 @@ async function loadBrowser() {
 }
 
 $('#spacePick').onchange = () => openBrowse($('#spacePick').value, 'root');
+
+// Thumbnails on or off, remembered in this window (shared with the phone page's setting on this PC).
+function renderAdminPreviews() {
+    $('#adminPreviewsText').textContent = `Previews: ${FD.previewsOn() ? 'on' : 'off'}`;
+    $('#adminPreviews').setAttribute('aria-pressed', String(FD.previewsOn()));
+}
+renderAdminPreviews();
+$('#adminPreviews').onclick = () => {
+    FD.setPreviews(!FD.previewsOn());
+    renderAdminPreviews();
+    if (browse.spaceId) openBrowse(browse.spaceId, browse.folderId);
+};
+
+function adminViewer(it) {
+    FD.viewer({ name: it.name, kind: FD.viewable(it.name), src: `/api/download/${it.id}?inline=1`, download: `/api/download/${it.id}` });
+}
 $('#adminRefresh').onclick = () => openBrowse(browse.spaceId, browse.folderId);
 
 async function openBrowse(spaceId, folderId) {
@@ -559,8 +575,13 @@ async function openBrowse(spaceId, folderId) {
     $('#fileList').innerHTML = d.items.map(it => {
         const isFolder = it.kind === 'folder', kind = isFolder ? 'folder' : FD.kindOf(it.name);
         const sub = isFolder ? `${it.child_count} items · ${FD.esc(it.created_by_name)}` : `${FD.fmtSize(it.size)} · ${FD.fmtDate(it.created_at)} · ${FD.esc(it.created_by_name)}`;
-        return `<li class="item ${isFolder ? 'folder' : ''}" data-id="${it.id}">${FD.icon(kind, `kind ${kind}`)}
-            <div class="meta"><span class="name">${FD.esc(it.name)}</span><span class="sub">${sub}</span></div>
+        const kindIcon = FD.icon(kind, `kind ${kind}`);
+        const lead = FD.thumb(kindIcon, !isFolder && FD.previewsOn() && FD.hasThumb(it.name) ? `/api/thumb/${it.id}` : null);
+        const name = !isFolder && FD.viewable(it.name)
+            ? `<a class="name" href="/api/download/${it.id}?inline=1" data-act="view">${FD.esc(it.name)}</a>`
+            : `<span class="name">${FD.esc(it.name)}</span>`;
+        return `<li class="item ${isFolder ? 'folder' : ''}" data-id="${it.id}">${lead}
+            <div class="meta">${name}<span class="sub">${sub}</span></div>
             <div class="row-actions">
                 ${isFolder ? '' : `<a class="btn ghost small icon-only" href="/api/download/${it.id}" download title="Download">${FD.icon('download')}</a>`}
                 <button class="btn ghost small icon-only" data-act="rename" title="Rename">${FD.icon('edit')}</button>
@@ -568,9 +589,15 @@ async function openBrowse(spaceId, folderId) {
                 ${isFolder ? FD.icon('chevron', 'go') : ''}
             </div></li>`;
     }).join('');
+    FD.wireThumbs($('#fileList'));
     $('#fileList').querySelectorAll('.item').forEach(li => {
         const it = d.items.find(x => x.id === li.dataset.id);
-        li.onclick = e => { if (!e.target.closest('a, button') && it.kind === 'folder') openBrowse(spaceId, it.id); };
+        li.onclick = e => {
+            if (e.target.closest('a, button')) return;
+            if (it.kind === 'folder') openBrowse(spaceId, it.id);
+            else if (FD.viewable(it.name)) adminViewer(it);
+        };
+        li.querySelector('[data-act=view]')?.addEventListener('click', e => { e.preventDefault(); adminViewer(it); });
         li.querySelector('[data-act=rename]').onclick = async () => {
             const v = await FD.dialog({ title: 'Rename', ok: 'Rename', fields: [{ name: 'name', label: 'New name', value: it.name }] });
             if (!v || !v.name.trim()) return;

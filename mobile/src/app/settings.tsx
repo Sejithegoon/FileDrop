@@ -3,13 +3,15 @@ import { Redirect, router } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
 import { Alert, Platform, Text, View } from 'react-native';
 
+import { setPref, usePrefs } from '@/state/prefs';
 import { useSession } from '@/state/session';
-import { Body, Button, Card, Row, Screen, Separator } from '@/ui/kit';
+import { Body, Button, Card, Row, Screen, Separator, SwitchRow } from '@/ui/kit';
 import { useColors } from '@/ui/theme';
 
 export default function Settings() {
   const c = useColors();
   const { pc, me, signOut, forget } = useSession();
+  const prefs = usePrefs();
 
   async function doSignOut() {
     await signOut();
@@ -47,6 +49,16 @@ export default function Settings() {
             subtitle={pro ? 'Pro features are on' : 'Pro on the PC unlocks auto-upload'} />
           <Separator />
           <Row icon="swap-horizontal" title="Switch or add a PC" onPress={() => router.push('/connect')} />
+        </Card>
+      </View>
+      <View style={{ gap: 8 }}>
+        <Text style={{ color: c.muted, fontWeight: '600' }}>THIS PHONE</Text>
+        <Card>
+          <SwitchRow icon="images-outline" title="Show previews" subtitle="Small pictures of photos and videos in the lists"
+            value={prefs.previews} onValueChange={(v) => setPref('previews', v)} />
+          <Separator />
+          <SwitchRow icon="grid-outline" title="Folders as a grid" subtitle="Big tiles instead of a list"
+            value={prefs.folderView === 'grid'} onValueChange={(v) => setPref('folderView', v ? 'grid' : 'list')} />
         </Card>
       </View>
       <Button title="Sign out" kind="secondary" icon="log-out-outline" onPress={doSignOut} />

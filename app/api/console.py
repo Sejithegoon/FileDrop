@@ -23,7 +23,9 @@ from pydantic import BaseModel
 
 from app import BUILD_DATE, __version__
 from app.api.deps import csrf, ctx_of, db
-from app.api.lan import file_response, server_id
+from starlette.concurrency import run_in_threadpool
+
+from app.api.lan import file_response, server_id, thumb_response
 from app.core import adminlock
 from app.core.errors import ApiError, install_error_handlers
 from app.core.network import primary_ipv4
@@ -600,11 +602,16 @@ def admin_delete(item_id: str, request: Request, conn=Depends(db)):
 
 
 @api.get("/download/{item_id}")
-def admin_download(item_id: str, request: Request, conn=Depends(db)):
+def admin_download(item_id: str, request: Request, inline: bool = False, conn=Depends(db)):
     item = _admin_item(conn, item_id)
     if item["kind"] != "file":
         raise ApiError(400, "NOT_A_FILE", "Only files can be downloaded.")
-    return file_response(ctx_of(request), item)
+    return file_response(ctx_of(request), item, inline)
+
+
+@api.get("/thumb/{item_id}")
+async def admin_thumb(item_id: str, request: Request, conn=Depends(db)):
+    return await run_in_threadpool(thumb_response, ctx_of(request), _admin_item(conn, item_id))
 
 
 _OPEN_PATHS = {"/api/lock", "/api/unlock", "/api/show"}

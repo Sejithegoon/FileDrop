@@ -278,3 +278,25 @@ test('progress adds up across files', () => {
   assert.equal(s.done, 1);
   assert.equal(s.progress, 5 / 40);
 });
+
+test('after an upload, the preview hook gets the new item while the phone copy still exists', async () => {
+  const pc = new FakePc();
+  const files = new Set(['a']);
+  const seen: string[] = [];
+  const queue = new UploadQueue({
+    load: async () => [],
+    save: async () => undefined,
+    clientFor: () => pc,
+    fileExists: (uri) => files.has(uri),
+    removeFile: (uri) => void files.delete(uri),
+    onUploaded: async (j, item) => {
+      seen.push(`${item.name}:${files.has(j.uri)}`);
+      throw new Error('preview failed'); // never fails the upload
+    },
+  });
+  await queue.add([job('a', 6)]);
+  await settle();
+  assert.deepEqual(seen, ['a.HEIC:true']);
+  assert.equal(queue.getSnapshot()[0].status, 'done');
+  assert.ok(!files.has('a'));
+});

@@ -43,6 +43,12 @@ export type Listing = {
   can_upload: boolean;
 };
 
+export type SearchResult = Item & {
+  space: { id: string; name: string; kind: Space['kind'] };
+  parent_id: string;
+  path: string[]; // folders between the space's top and the item
+};
+
 export type Upload = {
   id: string;
   name: string;

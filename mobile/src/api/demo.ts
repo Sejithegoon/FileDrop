@@ -136,6 +136,17 @@ export class DemoTransport implements Transport {
         folder_id: folder, crumbs: crumbs(folder), items, can_upload: space.level !== 'view',
       });
     }
+    if (route === 'GET /api/v1/search') {
+      const q = (query.get('q') ?? '').trim().toLowerCase();
+      const results = q ? NODES.filter((n) => n.name.toLowerCase().includes(q)).map(({ parent, space: sid, ...item }) => {
+        const space = SPACES.find((s) => s.id === sid)!;
+        return { ...item, child_count: item.kind === 'folder' ? NODES.filter((c) => c.parent === item.id).length : null,
+                 space: { id: space.id, name: space.name, kind: space.kind }, parent_id: parent,
+                 path: crumbs(parent).slice(1).map((c) => c.name) };
+      }) : [];
+      return json(200, { results });
+    }
+    if (/^PUT \/api\/v1\/items\/[^/]+\/thumb$/.test(route)) return json(200, { ok: true });
     if (route === 'POST /api/v1/uploads') {
       const { space_id, parent_id, name, size } = JSON.parse(body ?? '{}');
       const space = SPACES.find((s) => s.id === space_id);
@@ -177,6 +188,7 @@ export class DemoTransport implements Transport {
   }
 
   async download(id: string, _path: string, _headers: Record<string, string>, destination: string) {
+    if (id.startsWith('thumb-')) throw new ApiError(404, 'NO_PREVIEW', 'The demo has no previews.');
     const item = NODES.find((n) => n.id === id);
     if (!item) throw new ApiError(404, 'NOT_FOUND', 'That item no longer exists.');
     // A tiny stand-in file: the demo has no real photos to hand out.

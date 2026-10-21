@@ -101,6 +101,18 @@ $('#logoutBtn').onclick = async () => {
     try { await FD.api(API + '/auth/logout', { json: {} }); } catch { /* signed out anyway */ }
     signedOut();
 };
+// Thumbnails can be turned off (slow Wi-Fi, privacy on a shared screen); remembered on this device.
+function renderPreviewsBtn() {
+    $('#previewsText').textContent = `Previews: ${FD.previewsOn() ? 'on' : 'off'}`;
+}
+renderPreviewsBtn();
+$('#previewsBtn').onclick = () => {
+    FD.setPreviews(!FD.previewsOn());
+    renderPreviewsBtn();
+    if (searchQuery) runSearch();
+    else if (view) renderList();
+};
+
 $('#changePwBtn').onclick = async () => {
     const v = await FD.dialog({
         title: 'Change password', ok: 'Save',
@@ -213,7 +225,7 @@ window.addEventListener('popstate', () => {
     if (sid && me) openFolder(sid, fid || 'root', false);
 });
 
-const refresh = () => cur.spaceId && openFolder(cur.spaceId, cur.folderId, false);
+const refresh = () => searchQuery ? runSearch() : cur.spaceId && openFolder(cur.spaceId, cur.folderId, false);
 $('#refreshBtn').onclick = refresh;
 
 function spaceLabel() {
@@ -250,19 +262,25 @@ function renderDrop() {
     }
 }
 
-function itemRow(it) {
+function itemRow(it, opts = {}) {
     const isFolder = it.kind === 'folder';
     const kind = isFolder ? 'folder' : FD.kindOf(it.name);
-    const by = view.space.kind === 'shared' ? ` · ${FD.esc(it.created_by_name)}` : '';
+    const shared = opts.shared ?? view.space.kind === 'shared';
+    const by = shared ? ` · ${FD.esc(it.created_by_name)}` : '';
+    const where = opts.path != null ? `<span class="search-path">${FD.esc(opts.path)}</span> · ` : '';
     const sub = isFolder
-        ? `${it.child_count} item${it.child_count === 1 ? '' : 's'} · ${FD.fmtDate(it.created_at)}${by}`
-        : `${FD.fmtSize(it.size)} · ${FD.fmtDate(it.created_at)}${by}`;
+        ? `${where}${it.child_count} item${it.child_count === 1 ? '' : 's'} · ${FD.fmtDate(it.created_at)}${by}`
+        : `${where}${FD.fmtSize(it.size)} · ${FD.fmtDate(it.created_at)}${by}`;
     const dl = `${API}/download/${it.id}`;
+    const show = !isFolder && FD.viewable(it.name);
     const nameEl = isFolder
         ? `<span class="name">${FD.esc(it.name)}</span>`
+        : show ? `<a class="name" href="${dl}?inline=1" data-act="view">${FD.esc(it.name)}</a>`
         : `<a class="name" href="${dl}" download>${FD.esc(it.name)}</a>`;
+    const kindIcon = FD.icon(kind, `kind ${kind}`);
+    const lead = FD.thumb(kindIcon, !isFolder && FD.previewsOn() && FD.hasThumb(it.name) ? `${API}/thumb/${it.id}` : null);
     return `<li class="item ${isFolder ? 'folder' : ''}" data-id="${it.id}">
-        ${FD.icon(kind, `kind ${kind}`)}
+        ${lead}
         <div class="meta">${nameEl}<span class="sub">${sub}</span></div>
         <div class="row-actions">
             ${!isFolder ? `<a class="btn ghost small icon-only" href="${dl}" download aria-label="Download" title="Download">${FD.icon('download')}</a>` : ''}
@@ -271,19 +289,67 @@ function itemRow(it) {
         </div></li>`;
 }
 
+function openViewer(it) {
+    FD.viewer({ name: it.name, kind: FD.viewable(it.name), src: `${API}/download/${it.id}?inline=1`,
+                download: `${API}/download/${it.id}` });
+}
+
+function wireRows(items, onFolder) {
+    FD.wireThumbs($('#list'));
+    $('#list').querySelectorAll('.item').forEach(li => {
+        const it = items.find(x => x.id === li.dataset.id);
+        li.onclick = e => {
+            if (e.target.closest('a, button')) return;
+            if (it.kind === 'folder') onFolder(it);
+            else if (FD.viewable(it.name)) openViewer(it);
+        };
+        li.querySelector('[data-act=view]')?.addEventListener('click', e => { e.preventDefault(); openViewer(it); });
+        li.querySelector('[data-act=more]')?.addEventListener('click', () => itemMenu(it));
+    });
+}
+
 function renderList() {
-    $('#list').innerHTML = view.items.map(itemRow).join('');
+    if (searchQuery) return;
+    renderCrumbs();
+    $('#list').innerHTML = view.items.map(it => itemRow(it)).join('');
     $('#empty').hidden = view.items.length > 0;
     $('#empty').textContent = view.can_upload
         ? (view.crumbs.length > 1 ? 'This folder is empty. Upload files into it.' : 'Nothing here yet. Upload files, or make folders like "Pics" and "School".')
         : 'Nothing here yet.';
-    $('#list').querySelectorAll('.item').forEach(li => {
-        const it = view.items.find(x => x.id === li.dataset.id);
-        li.onclick = e => {
-            if (e.target.closest('a, button')) return;
-            if (it.kind === 'folder') openFolder(cur.spaceId, it.id);
-        };
-        li.querySelector('[data-act=more]')?.addEventListener('click', () => itemMenu(it));
+    wireRows(view.items, it => openFolder(cur.spaceId, it.id));
+}
+
+// ---------- search: every folder this person can open
+
+let searchQuery = '';
+let searchTimer = null;
+
+$('#searchBox').addEventListener('input', () => {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => {
+        searchQuery = $('#searchBox').value.trim();
+        if (searchQuery) runSearch();
+        else if (view) renderList();
+    }, 250);
+});
+
+async function runSearch() {
+    const q = searchQuery;
+    let results;
+    try { results = (await call(`/search?q=${encodeURIComponent(q)}`)).results; }
+    catch (e) { return FD.toast(e.message, 'err'); }
+    if (q !== searchQuery) return; // typed more meanwhile
+    $('#crumbs').innerHTML = `<span class="muted">${results.length ? `Results for "${FD.esc(q)}"` : ''}</span>`;
+    $('#list').innerHTML = results.map(r => {
+        const top = r.space.kind === 'private' ? 'My files' : r.space.name;
+        return itemRow(r, { shared: r.space.kind === 'shared', path: [top, ...r.path].join(' / ') });
+    }).join('');
+    $('#empty').hidden = results.length > 0;
+    $('#empty').textContent = `Nothing called "${q}".`;
+    wireRows(results, r => {
+        $('#searchBox').value = '';
+        searchQuery = '';
+        openFolder(r.space.id, r.id);
     });
 }
 

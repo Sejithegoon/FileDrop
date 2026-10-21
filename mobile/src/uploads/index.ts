@@ -1,9 +1,15 @@
 // Phone side of the upload queue: pickers, the outbox folder, saving the queue, and the shared instance.
 import { Directory, File, Paths } from 'expo-file-system';
 import * as DocumentPicker from 'expo-document-picker';
+import { ImageManipulator, SaveFormat } from 'expo-image-manipulator';
 import * as ImagePicker from 'expo-image-picker';
+import * as VideoThumbnails from 'expo-video-thumbnails';
 import { useSyncExternalStore } from 'react';
 import { Platform } from 'react-native';
+
+import type { Client } from '@/api/client';
+import type { Item } from '@/api/types';
+import { retryThumbs } from '@/state/thumbcache';
 
 import { type Job, type UploadClient, UploadQueue } from './queue';
 
@@ -63,7 +69,29 @@ export const queue = new UploadQueue({
     }
   },
   onSignedOut: (id) => signedOut(id),
+  onUploaded: (job, item) => sendPreview(job, item),
 });
+
+// The PC can't read iPhone photos (HEIC) or videos, so the phone makes their previews while it still has the file.
+const PHONE_PREVIEWS = /\.(heic|heif|dng|mov|mp4|m4v|3gp)$/i;
+const VIDEO = /\.(mov|mp4|m4v|3gp)$/i;
+
+async function sendPreview(job: Job, item: Item) {
+  if (web || !PHONE_PREVIEWS.test(job.name)) return;
+  const client = clientFor(job.serverId) as Client | null;
+  if (!client?.putThumb) return;
+  let source = job.uri;
+  if (VIDEO.test(job.name)) source = (await VideoThumbnails.getThumbnailAsync(job.uri, { time: 1000, quality: 0.8 })).uri;
+  const image = await ImageManipulator.manipulate(source).resize({ width: 400 }).renderAsync();
+  const saved = await image.saveAsync({ format: SaveFormat.JPEG, compress: 0.75 });
+  const file = new File(saved.uri);
+  try {
+    await client.putThumb(item.id, { uri: file.uri, offset: 0, length: file.size });
+    retryThumbs();
+  } finally {
+    file.delete();
+  }
+}
 
 export function useUploads(): readonly Job[] {
   return useSyncExternalStore(queue.subscribe, queue.getSnapshot, queue.getSnapshot);

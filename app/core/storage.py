@@ -1,4 +1,4 @@
-"""ID-based file store: blobs/ab/cd/<blob id>, uploads staged in staging/."""
+"""ID-based file store: blobs/ab/cd/<blob id>, uploads staged in staging/, preview thumbnails in thumbs/."""
 
 from __future__ import annotations
 
@@ -15,6 +15,7 @@ class Storage:
         self.root = root
         self.blobs = root / "blobs"
         self.staging = root / "staging"
+        self.thumbs = root / "thumbs"  # small JPEGs; can always be made again (not backed up)
 
     def ensure(self) -> None:
         self.blobs.mkdir(parents=True, exist_ok=True)
@@ -27,6 +28,9 @@ class Storage:
     def blob_path(self, blob_id: str) -> Path:
         return self.blobs / blob_id[:2] / blob_id[2:4] / blob_id
 
+    def thumb_path(self, blob_id: str) -> Path:
+        return self.thumbs / blob_id[:2] / f"{blob_id}.jpg"
+
     def staging_path(self, upload_id: str) -> Path:
         return self.staging / f"{upload_id}.part"
 
@@ -34,6 +38,8 @@ class Storage:
         for bid in blob_ids:
             try:
                 self.blob_path(bid).unlink(missing_ok=True)
+                self.thumb_path(bid).unlink(missing_ok=True)
+                self.thumb_path(bid).with_suffix(".none").unlink(missing_ok=True)
             except OSError as exc:  # file in use; the nightly check will retry
                 log.warning("Could not delete blob %s: %s", bid, exc)
 

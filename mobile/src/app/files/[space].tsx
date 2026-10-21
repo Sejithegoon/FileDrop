@@ -1,31 +1,37 @@
 import { Ionicons } from '@expo/vector-icons';
-import { File, Paths } from 'expo-file-system';
-import { Redirect, router, Stack, useLocalSearchParams } from 'expo-router';
-import * as Sharing from 'expo-sharing';
+import { Redirect, Stack, useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { ActivityIndicator, Alert, FlatList, Platform, Pressable, RefreshControl, Text, View } from 'react-native';
+import { ActivityIndicator, FlatList, Pressable, RefreshControl, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import type { Item, Listing } from '@/api/types';
-import { fileKind, formatBytes, formatWhen, KIND_ICONS } from '@/lib/format';
+import { formatBytes, formatWhen } from '@/lib/format';
 import { useErrorHandler, useLiveUpdates } from '@/state/hooks';
+import { fetchToPhone, openItem, shareFile } from '@/state/open';
+import { setPref, usePrefs } from '@/state/prefs';
 import { useSession } from '@/state/session';
-import { Body, type IconName, Loading, Notice, Row, Separator } from '@/ui/kit';
-import { useColors } from '@/ui/theme';
-import { pickFiles, pickPhotos, sendToPc } from '@/uploads';
+import { Body, Fab, Loading, Notice, Row, Separator } from '@/ui/kit';
+import { radius, useColors } from '@/ui/theme';
+import { Thumb } from '@/ui/thumb';
+import { useSendTo } from '@/uploads/pick';
+import { summarize, useUploads } from '@/uploads';
 import { UploadSheet, UploadStrip } from '@/uploads/ui';
 
-/** One folder: its subfolders and files. Tapping a file brings it to the phone and opens the share sheet. */
+/** One folder. Photos and videos open in the viewer; other files go to the share sheet. */
 export default function Folder() {
   const c = useColors();
   const { client, signedIn, pc } = useSession();
+  const { folderView } = usePrefs();
   const handle = useErrorHandler();
+  const sendTo = useSendTo();
+  const { width } = useWindowDimensions();
   const { space, folder = 'root', title } = useLocalSearchParams<{ space: string; folder?: string; title?: string }>();
   const [listing, setListing] = useState<Listing | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [sheet, setSheet] = useState(false);
+  const uploads = summarize(useUploads());
 
   const load = useCallback(async () => {
     if (!client) return;
@@ -45,24 +51,12 @@ export default function Folder() {
     setRefreshing(false);
   }
 
-  function open(item: Item) {
-    if (item.kind === 'folder') {
-      router.push({ pathname: '/files/[space]', params: { space, folder: item.id, title: item.name } });
-    } else {
-      share(item);
-    }
-  }
-
   async function share(item: Item) {
     if (!client || busyId) return;
     setBusyId(item.id);
     setError(null);
     try {
-      const destination = new File(Paths.cache, 'downloads', item.id, item.name).uri;
-      const { uri } = await client.download(item, destination);
-      if (Platform.OS !== 'web' && (await Sharing.isAvailableAsync())) {
-        await Sharing.shareAsync(uri, { dialogTitle: item.name });
-      }
+      await shareFile(await fetchToPhone(client, item), item.name);
     } catch (e) {
       setError(await handle(e));
     } finally {
@@ -70,44 +64,38 @@ export default function Folder() {
     }
   }
 
-  // "My files › Photos": where the files will land, shown in the sheet and the uploads list.
+  // "My files › Photos": where uploads land, shown in the sheet and the uploads list.
   const label = listing
     ? [listing.space.kind === 'private' ? 'My files' : listing.space.name, ...listing.crumbs.slice(1).map((x) => x.name)].join(' › ')
     : '';
 
   async function pick(what: 'photos' | 'files') {
-    setSheet(false);
     if (!listing || !pc) return;
     try {
-      const picked = what === 'photos' ? await pickPhotos() : await pickFiles();
-      if (picked === 'denied') {
-        Alert.alert('Photos access is off', 'To send photos and videos, allow WiFiDrop to access your photos in Settings.');
-        return;
-      }
-      if (picked.length) {
-        await sendToPc(picked, { serverId: pc.serverId, spaceId: listing.space.id, parentId: listing.folder_id, label });
-      }
-    } catch {
-      setError("Couldn't open your photos or files. Try again.");
+      await sendTo(what, { spaceId: listing.space.id, parentId: listing.folder_id, label });
+    } catch (e) {
+      setError(`Couldn't open your ${what === 'photos' ? 'photos' : 'files'}. ${(e as Error)?.message ?? ''}`.trim());
     }
   }
 
   if (!client || !signedIn) return <Redirect href="/" />;
   const heading = folder === 'root' ? title ?? listing?.space.name : listing?.crumbs.at(-1)?.name ?? title;
+  const grid = folderView === 'grid';
+  const columns = Math.max(3, Math.floor(Math.min(width, 900) / 130));
+  const tile = (Math.min(width, 900) - 16 * 2 - 10 * (columns - 1)) / columns;
+  const canUpload = !!listing?.can_upload;
 
   return (
     <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: c.bg }}>
       <Stack.Screen
         options={{
           title: heading ?? '',
-          headerRight: () =>
-            listing?.can_upload ? (
-              <Pressable accessibilityRole="button" accessibilityLabel="Upload to this folder" hitSlop={12} onPress={() => setSheet(true)}
-                style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                <Ionicons name="cloud-upload-outline" size={24} color={c.accent} />
-                <Text style={{ color: c.accent, fontSize: 16, fontWeight: '600' }}>Upload</Text>
-              </Pressable>
-            ) : null,
+          headerRight: () => (
+            <Pressable accessibilityRole="button" accessibilityLabel={grid ? 'Show as list' : 'Show as grid'} hitSlop={12}
+              onPress={() => setPref('folderView', grid ? 'list' : 'grid')}>
+              <Ionicons name={grid ? 'list' : 'grid-outline'} size={22} color={c.accent} />
+            </Pressable>
+          ),
         }}
       />
       <UploadSheet visible={sheet} folder={label} onClose={() => setSheet(false)} onPick={pick} />
@@ -115,49 +103,78 @@ export default function Folder() {
         <Loading />
       ) : (
         <FlatList
+          key={grid ? `grid-${columns}` : 'list'}
           data={listing?.items ?? []}
           keyExtractor={(i) => i.id}
-          contentContainerStyle={{ paddingBottom: 24, maxWidth: 720, width: '100%', alignSelf: 'center' }}
+          numColumns={grid ? columns : 1}
+          columnWrapperStyle={grid ? { gap: 10, paddingHorizontal: 16 } : undefined}
+          contentContainerStyle={{ paddingBottom: canUpload ? 110 : 24, gap: grid ? 14 : 0, maxWidth: 900, width: '100%', alignSelf: 'center' }}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} tintColor={c.accent} />}
-          ItemSeparatorComponent={Separator}
+          ItemSeparatorComponent={grid ? undefined : Separator}
           ListHeaderComponent={
-            <View style={{ padding: error || listing?.space.level === 'view' ? 16 : 0, gap: 12 }}>
-              <Notice text={error} />
-              {listing?.space.level === 'view' && <Notice kind="warn" text="You can view and download here, but not add or change things." />}
-            </View>
+            error || listing?.space.level === 'view' ? (
+              <View style={{ padding: 16, gap: 12 }}>
+                <Notice text={error} />
+                {listing?.space.level === 'view' && <Notice kind="warn" text="You can view and download here, but not add or change things." />}
+              </View>
+            ) : <View style={{ height: grid ? 6 : 0 }} />
           }
           ListEmptyComponent={
             listing ? (
-              <View style={{ alignItems: 'center', padding: 40, gap: 12 }}>
-                <Ionicons name="folder-open-outline" size={48} color={c.muted} />
-                <Body muted center>{listing.can_upload ? 'This folder is empty. Tap Upload to add photos or files.' : 'This folder is empty.'}</Body>
+              <View style={styles.empty}>
+                <View style={[styles.emptyIcon, { backgroundColor: c.surface }]}>
+                  <Ionicons name="folder-open-outline" size={40} color={c.folder} />
+                </View>
+                <Text style={{ color: c.text, fontSize: 18, fontWeight: '700' }}>Nothing here yet</Text>
+                <Body muted center>{canUpload ? 'Tap Upload to send photos, videos or files to this folder.' : 'Files added on the PC show up here.'}</Body>
               </View>
-            ) : undefined
+            ) : null
           }
-          renderItem={({ item }) => {
-            const kind = fileKind(item.name, item.kind === 'folder');
-            const subtitle = item.kind === 'folder'
-              ? `${item.child_count ?? 0} item${item.child_count === 1 ? '' : 's'}`
-              : `${formatBytes(item.size)} · ${formatWhen(item.modified_at)}${item.mine ? '' : ` · ${item.created_by_name}`}`;
-            return (
+          renderItem={({ item }) => grid
+            ? <GridTile item={item} size={tile} busy={busyId === item.id} onPress={() => openItem(item, space, share)} onLongPress={() => item.kind === 'file' && share(item)} />
+            : (
               <Row
-                icon={KIND_ICONS[kind] as IconName}
-                iconColor={c[kind === 'file' ? 'doc' : kind]}
+                lead={<Thumb item={item} size={48} />}
                 title={item.name}
-                subtitle={subtitle}
-                onPress={() => open(item)}
-                accessibilityHint={item.kind === 'folder' ? 'Opens the folder' : 'Downloads the file and opens the share sheet'}
-                right={busyId === item.id ? <ActivityIndicator color={c.accent} /> : item.kind === 'file'
-                  ? <Ionicons name="share-outline" size={20} color={c.muted} /> : undefined}
+                subtitle={item.kind === 'folder'
+                  ? `${item.child_count ?? 0} item${item.child_count === 1 ? '' : 's'}`
+                  : `${formatBytes(item.size)} · ${formatWhen(item.modified_at)}${item.mine ? '' : ` · ${item.created_by_name}`}`}
+                onPress={() => openItem(item, space, share)}
+                onLongPress={() => item.kind === 'file' && share(item)}
+                accessibilityHint={item.kind === 'folder' ? 'Opens the folder' : 'Opens the file. Long press to share it.'}
+                right={busyId === item.id ? <ActivityIndicator color={c.accent} /> : item.kind === 'file' ? (
+                  <Pressable accessibilityRole="button" accessibilityLabel={`Share ${item.name}`} hitSlop={10} onPress={() => share(item)}>
+                    <Ionicons name="share-outline" size={20} color={c.muted} />
+                  </Pressable>
+                ) : undefined}
               />
-            );
-          }}
+            )}
         />
       )}
-      {listing && listing.items.length > 0 && (
-        <Text style={{ color: c.muted, textAlign: 'center', paddingBottom: 8, fontSize: 13 }}>Tap a file to save or share it</Text>
-      )}
+      {canUpload && <Fab icon="cloud-upload" label="Upload" onPress={() => setSheet(true)} bottom={uploads.active || uploads.failed ? 96 : 24} />}
       <UploadStrip />
     </SafeAreaView>
   );
 }
+
+function GridTile({ item, size, busy, onPress, onLongPress }: {
+  item: Item; size: number; busy: boolean; onPress: () => void; onLongPress: () => void;
+}) {
+  const c = useColors();
+  return (
+    <Pressable accessibilityRole="button" accessibilityLabel={item.name} onPress={onPress} onLongPress={onLongPress}
+      style={({ pressed }) => ({ width: size, opacity: pressed ? 0.8 : 1, gap: 6 })}>
+      <View>
+        <Thumb item={item} size={size} radius={radius} style={{ backgroundColor: c.surface }} />
+        {busy && <View style={[StyleSheet.absoluteFill, styles.busy]}><ActivityIndicator color="#fff" /></View>}
+      </View>
+      <Text numberOfLines={1} style={{ color: c.text, fontSize: 13, fontWeight: '500' }}>{item.name}</Text>
+    </Pressable>
+  );
+}
+
+const styles = StyleSheet.create({
+  empty: { alignItems: 'center', padding: 40, gap: 10 },
+  emptyIcon: { width: 80, height: 80, borderRadius: 24, alignItems: 'center', justifyContent: 'center', marginBottom: 6 },
+  busy: { alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.45)', borderRadius: radius },
+});

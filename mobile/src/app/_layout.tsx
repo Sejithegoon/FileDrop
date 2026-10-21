@@ -27,6 +27,7 @@ export default function RootLayout() {
           <Stack.Screen name="files/[space]" options={{ title: '' }} />
           <Stack.Screen name="settings" options={{ title: 'Settings' }} />
           <Stack.Screen name="uploads" options={{ title: 'Uploads' }} />
+          <Stack.Screen name="view" options={{ title: '' }} />
         </Stack>
       </SessionProvider>
     </ThemeProvider>

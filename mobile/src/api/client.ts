@@ -1,7 +1,7 @@
 // The WiFiDrop PC's /api/v1, as the app uses it.
 // Only type imports from transport, so Node can load this file for the live tests.
 import type { FileSlice, Transport } from './transport';
-import type { Info, Item, Listing, Me, Space, Upload } from './types.ts';
+import type { Info, Item, Listing, Me, SearchResult, Space, Upload } from './types.ts';
 import { ApiError, errorFrom } from './types.ts';
 
 /** The newest PC API this app understands, and the oldest it still works with. */
@@ -73,6 +73,21 @@ export class Client {
     this.call<Listing>('GET', `/spaces/${encodeURIComponent(spaceId)}/items?folder=${encodeURIComponent(folderId)}`);
 
   changes = async () => (await this.call<{ version: number }>('GET', '/changes')).version;
+
+  search = async (q: string) =>
+    (await this.call<{ results: SearchResult[] }>('GET', `/search?q=${encodeURIComponent(q)}&limit=60`)).results;
+
+  /** The small preview JPEG, saved to destination (ApiError 404 NO_PREVIEW when the file has none). */
+  thumb(itemId: string, destination: string) {
+    return this.transport.download(`thumb-${itemId}`, `/api/v1/thumb/${encodeURIComponent(itemId)}`, this.headers(false), destination);
+  }
+
+  /** A preview the phone made for an iPhone photo or a video it uploaded. */
+  async putThumb(itemId: string, slice: FileSlice): Promise<void> {
+    const headers = { ...this.headers(false), 'Content-Type': 'image/jpeg' };
+    const r = await this.transport.send('PUT', `/api/v1/items/${encodeURIComponent(itemId)}/thumb`, headers, slice);
+    this.parse(r);
+  }
 
   // ---- uploads: create, send 8 MB chunks in order (resending one is harmless), complete ----
 
