@@ -1,0 +1,9 @@
+{
+  "platforms": ["apple", "android"],
+  "apple": {
+    "modules": ["WifidropNetModule"]
+  },
+  "android": {
+    "modules": ["ca.wifidrop.net.WifidropNetModule"]
+  }
+}

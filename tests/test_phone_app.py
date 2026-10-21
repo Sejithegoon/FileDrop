@@ -159,7 +159,7 @@ def test_running_server_is_announced_and_withdrawn(tmp_path):
                     announce_txt=lambda: {"id": "abc"})
     assert lan.start()["state"] == "running"
     try:
-        assert fake.started == [("127.0.0.1", port, {"api": "1", "https": "1", "ip": "127.0.0.1", "id": "abc"})]
+        assert fake.started == [("127.0.0.1", port, {"api": "1", "https": "1", "ip": "127.0.0.1", "port": str(port), "id": "abc"})]
     finally:
         lan.stop()
     assert fake.stopped >= 1

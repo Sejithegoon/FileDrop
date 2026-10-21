@@ -149,7 +149,8 @@ class LanServer:
         if not self._announcer:
             return
         try:
-            txt = {"api": "1", "https": "1" if self.tls_dir else "0", "ip": self.address, **self._announce_txt()}
+            txt = {"api": "1", "https": "1" if self.tls_dir else "0", "ip": self.address, "port": str(self.port),
+                   **self._announce_txt()}
             self._announcer.start(self.address, self.port, socket.gethostname() or "PC", txt)
         except Exception as exc:  # discovery is a convenience; the server runs without it
             log.info("Network announcement skipped: %s", exc)

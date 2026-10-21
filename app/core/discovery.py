@@ -5,7 +5,7 @@ so there's no extra listener and no firewall prompt. The announcement carries no
 checks the PC's key against the QR code (or the code shown in the admin window) before trusting it.
 
 Service type: _wifidrop._tcp. TXT: api (LAN API version), id (public server id), https (1/0),
-ip (the one address the server listens on; the PC's name may also resolve to others).
+ip and port (where the server listens; the PC's name may also resolve to other addresses).
 """
 
 from __future__ import annotations
