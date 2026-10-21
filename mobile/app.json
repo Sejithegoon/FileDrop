@@ -13,8 +13,12 @@
       "supportsTablet": true,
       "infoPlist": {
         "NSLocalNetworkUsageDescription": "WiFiDrop finds and connects to the WiFiDrop app on your PC over your Wi-Fi, to send and receive your files.",
-        "NSBonjourServices": ["_wifidrop._tcp"],
-        "NSAppTransportSecurity": { "NSAllowsLocalNetworking": true },
+        "NSBonjourServices": [
+          "_wifidrop._tcp"
+        ],
+        "NSAppTransportSecurity": {
+          "NSAllowsLocalNetworking": true
+        },
         "ITSAppUsesNonExemptEncryption": false
       }
     },
@@ -26,8 +30,13 @@
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
-      "blockedPermissions": ["android.permission.RECORD_AUDIO"],
-      "predictiveBackGestureEnabled": false
+      "blockedPermissions": [
+        "android.permission.RECORD_AUDIO"
+      ],
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "android.permission.CAMERA"
+      ]
     },
     "web": {
       "output": "single",
@@ -57,6 +66,17 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {
+        "asyncRoutes": {
+          "web": true
+        }
+      },
+      "eas": {
+        "projectId": "b00b4d80-c0a0-4137-b90c-4744c780e7c1"
+      }
+    },
+    "owner": "sejithegoon"
   }
 }
