@@ -1,5 +1,9 @@
 # WiFiDrop phone app
 
+> **On hold (October 2026).** Parked to focus on the PC app. Status when paused: everything below works in the
+> web preview and in Expo Go test mode; the Android native module compiles; the iPhone (Swift) side has never been
+> built. To resume: `npm install`, then the "Building for phones" steps.
+
 iPhone and Android app for WiFiDrop, built with Expo (React Native, TypeScript). It talks to the WiFiDrop
 PC app on the same Wi-Fi through the PC's `/api/v1` (see `app/api/lan.py`), never through the internet.
 

@@ -22,8 +22,14 @@ Closing the admin window keeps WiFiDrop running in the tray. Click the tray icon
 | Storage limits per user and per shared folder | Download, rename, new folder, delete to Trash, restore, delete forever |
 | Shared folders with per-user View / Upload / Manage | Drag and drop on desktop, iPhone photo hint |
 | See signed-in devices and uploads, sign out or cancel them | Live banner when the admin pauses uploads or downloads |
-| Browse, download, rename, delete any user's files | Works at phone width, light and dark mode |
-| Activity log of sign-ins and admin actions | |
+| Browse, download, rename, delete any user's files | Picture previews, full-screen viewer for photos and videos |
+| Activity log of sign-ins and admin actions | Search across your files and every shared folder you're in |
+| Picture previews and viewer in Browse files | Live updates: lists refresh by themselves |
+| Backups and restore; licence page | Works at phone width, light and dark mode |
+
+**Free and Pro:** Free allows 5 accounts. Pro (CA$29.99, one-time, licence checked by `supabase/functions/licence`) unlocks unlimited accounts and scheduled backups.
+
+**Previews:** the PC makes thumbnails for JPEG, PNG, GIF, WebP, BMP and TIFF (`app/services/thumbs.py`, stored in the storage folder's `thumbs\`). iPhone photos (HEIC) and videos show an icon unless the phone app sent a preview. Each person can turn previews off (account menu, or the button in Browse files).
 
 ## How it runs
 
@@ -106,6 +112,7 @@ Before a release, go through `tests/manual/CHECKLIST.md`.
 | `site/` | The website at https://wifidrop.ca (generated; see **Website** below) |
 | `tools/site/` | Website generator, self-checks, demo data and screenshot scripts |
 | `supabase/` | Database migrations and Edge Functions: website forms, Pro licences, Paddle payments. See `supabase/README.md` |
+| `mobile/` | Phone app (Expo), **on hold**. The PC side it needs (app sign-in tokens, network announcement, QR pairing) is in the app and tested. See `mobile/README.md` |
 | `build/` | PyInstaller spec, installer script, build and publish scripts, open-source notices, icon |
 
 ## Website
@@ -128,4 +135,4 @@ The site lives in `site/` and is published to https://wifidrop.ca (GitHub Pages,
 
 ## Not built yet
 
-Code signing (needs a certificate), Windows shutdown handling, ZIP download of folders, thumbnails, guest upload links.
+Code signing (needs a certificate), Windows shutdown handling, ZIP download of folders, guest upload links, the phone app (on hold).

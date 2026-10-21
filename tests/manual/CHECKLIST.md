@@ -37,6 +37,9 @@ Build: `________`  Date: `________`  Host PC / Windows version: `________`
 - [ ] **10 devices or browser tabs** uploading at the same time; the admin window stays responsive.
 - [ ] Download a large file on a phone and open it.
 - [ ] Make folders "Pics" and "School", move files into them, rename, delete to Trash, restore.
+- [ ] Photos show previews in the list (phone page and admin Browse files); tap one to view it full screen; a video plays.
+- [ ] Previews off in the account menu hides them; on again brings them back.
+- [ ] Search finds a file inside a subfolder and in a shared folder; tapping a folder result opens it.
 
 ## Admin controls
 
