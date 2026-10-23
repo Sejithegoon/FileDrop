@@ -243,7 +243,7 @@ page("index.html", "WiFiDrop",
       <div class="card reveal d2">{icon("upload")}<h3>Uploads that don't give up</h3><p>Send many files at once. Uploads resume by themselves if the Wi-Fi drops.</p></div>
       <div class="card reveal">{icon("users")}<h3>You stay in control</h3><p>Pause uploads or downloads, sign out a device, suspend an account, set storage limits.</p></div>
       <div class="card reveal d1">{icon("lock")}<h3>Encrypted on your network</h3><p>Connections use HTTPS, passwords are hashed and the admin window can be locked with a PIN.</p></div>
-      <div class="card reveal d2">{icon("phone")}<h3>Works in any browser</h3><p>iPhone, Android, Windows or Mac. Nothing to install on the devices that connect.</p></div>
+      <div class="card reveal d2">{icon("phone")}<h3>Works in any browser</h3><p>iPhone, Android, Windows or Mac. Photos show as previews and search finds any file. Nothing to install.</p></div>
     </div>
     <p class="center reveal more"><a class="btn" href="features.html">All features{ARROW}</a></p>
   </div>
@@ -276,7 +276,7 @@ page("index.html", "WiFiDrop",
 
 # =================================================================== features
 page("features.html", "Features",
-     "What WiFiDrop does today: a desktop admin window, phone-friendly uploads, private and shared folders, HTTPS and admin controls.",
+     "What WiFiDrop does today: a desktop admin window, phone-friendly uploads, picture previews and search, private and shared folders, backups, HTTPS and admin controls.",
      f"""<div class="wrap page-hero"><h1>Features</h1>
   <p>Everything on this page works in the current beta. Features still in development are marked <span class="soon">Planned</span>. Click any screenshot to see it full size.</p></div>
 
@@ -290,6 +290,8 @@ page("features.html", "Features",
           <li>Pause all uploads or downloads with one switch</li>
           <li>Close the window and WiFiDrop keeps running in the tray</li>
           <li>Optional PIN so nobody else on the PC can manage users or files</li>
+          <li>Browse any person's files, with picture previews</li>
+          <li>Restore everything from a backup, on the same PC or a new one</li>
         </ul></div>
       {browser("admin-dashboard.webp", "WiFiDrop admin dashboard")}
     </div>
@@ -302,6 +304,9 @@ page("features.html", "Features",
           <li>Uploads are sent in pieces and resume by themselves after a dropped connection</li>
           <li>Make folders like "Pics" and "School", then move, rename and delete files</li>
           <li>Deleted items go to the Trash first and can be restored</li>
+          <li>Photos show as small previews; tap one to see it full screen, or play a video</li>
+          <li>Search finds any file or folder by name, across every folder you can open</li>
+          <li>Lists update by themselves when someone adds or changes something</li>
         </ul></div>
       {phone("phone-uploading.webp", "Uploading several files from a phone")}
     </div>
@@ -359,7 +364,7 @@ page("features.html", "Features",
 
 # =================================================================== pricing
 CHECK_FREE = ["<b>Up to 5 user accounts</b>", "Private folders and unlimited shared folders", "View, Upload and Manage permissions",
-              "Resumable uploads of any file type", "Storage limits you set", "Pause controls, sign-out, suspend accounts",
+              "Resumable uploads of any file type", "Picture previews and search", "Storage limits you set", "Pause controls, sign-out, suspend accounts",
               "HTTPS and admin window PIN", "Security updates"]
 CHECK_PRO = ["<b>Everything in Free</b>", "<b>Unlimited user accounts</b>", "Scheduled backups of files and accounts to another drive",
              "Use your licence on up to 3 PCs", "Works offline, no account with us", "Feature updates for 1 year"]
@@ -420,6 +425,8 @@ page("pricing.html", "Pricing",
         <tr><td>Private folders, subfolders, move, rename, Trash</td><td class="yes">Included</td><td class="yes">Included</td></tr>
         <tr><td>Shared folders with permissions</td><td class="yes">Included</td><td class="yes">Included</td></tr>
         <tr><td>Resumable uploads and downloads</td><td class="yes">Included</td><td class="yes">Included</td></tr>
+        <tr><td>Picture previews, full-screen viewer and search</td><td class="yes">Included</td><td class="yes">Included</td></tr>
+        <tr><td>Restore from a backup</td><td class="yes">Included</td><td class="yes">Included</td></tr>
         <tr><td>Admin window, QR code, pause controls</td><td class="yes">Included</td><td class="yes">Included</td></tr>
         <tr><td>Storage limits you set</td><td class="yes">Included</td><td class="yes">Included</td></tr>
         <tr><td>HTTPS and admin PIN</td><td class="yes">Included</td><td class="yes">Included</td></tr>
@@ -434,7 +441,7 @@ page("pricing.html", "Pricing",
         <tr><td>Feature updates</td><td>Free releases</td><td>1 year included, then optional renewal</td></tr>
       </tbody>
     </table></div>
-    <p>If you reach a Free limit, nothing stops working: your files and existing accounts stay available. Prices are in Canadian dollars; sales tax is added at checkout based on where you live.</p>
+    <p>If you reach a Free limit, nothing stops working: your files and existing accounts stay available. Prices are set in Canadian dollars and shown in your own currency where we can; you pay in that currency at checkout. Sales tax or VAT is added based on where you live.</p>
   </div>
 </section>""", csp=PADDLE_CSP)
 
@@ -495,7 +502,7 @@ page("guide.html", "Setup guide",
   <p>From install to the first upload in about five minutes.</p>
   <nav class="toc" aria-label="On this page">
     <a href="#install">1. Install</a><a href="#storage">2. Storage folder</a><a href="#users">3. Add people</a>
-    <a href="#connect">4. Connect a phone</a><a href="#warning">5. The one-time warning</a><a href="#shared">6. Shared folders</a>
+    <a href="#connect">4. Connect a phone</a><a href="#warning">5. The one-time warning</a><a href="#shared">6. Shared folders</a><a href="#previews">7. Previews and search</a>
     <a href="#trouble">Troubleshooting</a></nav></div>
 
 <section>
@@ -541,6 +548,11 @@ page("guide.html", "Setup guide",
     </ul>
     <figure>{browser("admin-shared.webp", "Shared folder access settings")}<figcaption>Access is set per person, per folder.</figcaption></figure>
 
+    <h2 id="previews">7. Previews and search</h2>
+    <p>Photos show as small pictures in the file list. Tap a photo or video to see it full screen, with a <b>Download</b> button. Previews work for JPEG, PNG, GIF, WebP and similar pictures; iPhone photos (HEIC) and videos show their icon instead.</p>
+    <p>To find something, type in <b>Search all your files</b> above the list. It looks through your own files and every shared folder you're in.</p>
+    <p class="callout">Don't want previews (slow Wi-Fi, or a shared screen)? Turn them off in your account menu on the phone page, or with <b>Previews</b> in the admin window's <b>Browse files</b>. The setting is remembered on that device.</p>
+
     <h2 id="trouble">Troubleshooting</h2>
     <h3>The phone can't open the link</h3>
     <ul>
@@ -563,11 +575,12 @@ faqs = [
     ("Can people use it from outside my home?", "Not in this version. WiFiDrop only listens on your local network, which keeps it simple and private. Remote access may come later."),
     ("Why do iPhone uploads take a moment to start?", "When you pick many photos on an iPhone, iOS prepares each one first, downloading the original from iCloud or converting the format. WiFiDrop starts uploading as soon as iOS hands the files over. Smaller batches start sooner."),
     ("Do people need to install an app?", "No. They use the browser they already have on their phone or computer."),
+    ("Can I see photos without downloading them?", "Yes. Photos show as small previews in the list, and tapping one opens it full screen. Videos and audio play in the page too. Previews can be turned off in the account menu."),
     ("Why does my phone say the connection isn't private?", "WiFiDrop encrypts connections with a certificate it creates on your PC. Phones don't recognize who made it, so they warn once. The connection is still encrypted. The setup guide shows how to continue."),
     ("Is there a file size limit?", "There's no built-in limit. You can set storage limits for each person and each shared folder. Uploads are sent in pieces and resume if the connection drops, so large videos work."),
-    ("What file types can people upload?", "Any type. Files are always downloaded as attachments, so nothing uploaded can run inside the page."),
+    ("What file types can people upload?", "Any type. Pictures, videos and audio can be previewed in the page; everything else downloads as a file. Nothing uploaded can run code inside the page."),
     ("Does it work on Mac or Linux?", "The host app is Windows-only for now. People connecting can use any device with a modern browser."),
-    ("How much is Pro?", "$29.99 CAD, once. No subscription. That includes a year of feature updates, and Pro keeps working after that. Sales tax is added at checkout. Your licence arrives by email within a minute of buying. Free stays free."),
+    ("How much is Pro?", "$29.99 CAD, once. Outside Canada you'll see and pay about the same amount in your own currency. No subscription. That includes a year of feature updates, and Pro keeps working after that. Sales tax or VAT is added at checkout. Your licence arrives by email within a minute of buying. Free stays free."),
     ("What data do you collect?", "The app sends us nothing about your files or how you use it. Our website and any forms you fill in receive limited information. The privacy policy explains exactly what."),
     ("Is WiFiDrop available outside Canada?", "Yes. WiFiDrop is made in Canada and anyone can download it. Our privacy policy covers visitors from Canada, the EU, the UK, the US and elsewhere."),
     ("How do I report a bug or suggest a feature?", "Use the feedback page. You can attach a screenshot, and the form asks for the details that help us fix problems quickly."),
@@ -660,7 +673,7 @@ page("contact.html", "Contact", "Questions, partnerships, press and privacy requ
   </form>
   <div class="side-cards">
     <div class="card reveal d1"><h3>Found a bug?</h3><p>The feedback form asks for the details we need and lets you attach a screenshot.</p><p><a href="feedback.html">Send feedback &rarr;</a></p></div>
-    <div class="card reveal d2"><h3>Prefer email?</h3><p>Write to <a data-email href="contact.html">our support address (coming soon)</a>. We usually reply within two business days, in English or French.</p></div>
+    <div class="card reveal d2"><h3>Prefer email?</h3><p>Write to <a data-email href="mailto:support@wifidrop.ca">support@wifidrop.ca</a>. We usually reply within two business days, in English or French.</p></div>
     <div class="card reveal d3"><h3>Privacy requests</h3><p>Choose "Privacy request" to access, correct or delete information you've sent us. We answer within 30 days.</p></div>
   </div>
 </div></section>""")
@@ -680,7 +693,7 @@ page("feedback.html", "Send feedback", "Report a bug, suggest a feature or ask a
     <div class="field" data-for="bug"><label for="fb-steps">Steps to reproduce <small>(optional)</small></label>
       <textarea id="fb-steps" name="steps" maxlength="5000" placeholder="For example: 1. Open the link on my iPhone. 2. Pick 50 photos. 3. ..."></textarea></div>
     <div class="row" data-for="bug question">
-      <div class="field"><label for="fb-version">WiFiDrop version</label><input id="fb-version" name="app_version" placeholder="e.g. 0.1.0" maxlength="40">
+      <div class="field"><label for="fb-version">WiFiDrop version</label><input id="fb-version" name="app_version" placeholder="e.g. 0.2.0" maxlength="40">
         <small>Bottom of the admin window's sidebar.</small></div>
       <div class="field"><label for="fb-windows">Windows version</label><input id="fb-windows" name="windows" placeholder="e.g. Windows 11" maxlength="60"></div>
       <div class="field"><label for="fb-device">Phone or browser</label><input id="fb-device" name="device" placeholder="e.g. iPhone 15, Safari" maxlength="100"></div>
@@ -729,7 +742,7 @@ page("beta.html", "Join the beta", "Help test WiFiDrop: get early builds and sha
     {STATUS}
   </form>
   <div class="side-cards">
-    <div class="card reveal d1"><h3>What you get</h3><ul class="checks"><li>New builds before anyone else</li><li>A direct line to the developer</li><li>A free WiFiDrop Pro licence when it launches</li></ul></div>
+    <div class="card reveal d1"><h3>What you get</h3><ul class="checks"><li>New builds before anyone else</li><li>A direct line to the developer</li><li>A free WiFiDrop Pro licence</li></ul></div>
     <div class="card reveal d2"><h3>What we ask</h3><ul class="checks"><li>Use WiFiDrop for real, at home or work</li><li>Report problems with the feedback form</li><li>Answer a short survey about Pro features</li></ul></div>
   </div>
 </div></section>""")
@@ -755,7 +768,7 @@ page("privacy.html", "Privacy policy", "How WiFiDrop handles personal informatio
     <dt>Privacy contact</dt><dd>Privacy Officer, <a href="mailto:support@wifidrop.ca">support@wifidrop.ca</a></dd></dl>
 
   <h2 id="summary">Summary</h2>
-  <p>WiFiDrop runs on your own Windows computer. Your files, user accounts and settings are stored on that computer, not with us. The app does not send us your files, file names or usage data. We collect only the limited information needed to run this website, answer you and, once Pro launches, sell and support licences.</p>
+  <p>WiFiDrop runs on your own Windows computer. Your files, user accounts and settings are stored on that computer, not with us. The app does not send us your files, file names or usage data. We collect only the limited information needed to run this website, answer you, and sell and support licences.</p>
   <p>We follow Canada's <i>Personal Information Protection and Electronic Documents Act</i> (PIPEDA). Where they apply, we also respect Quebec's <i>Act respecting the protection of personal information in the private sector</i> (Law 25), the EU and UK General Data Protection Regulation (GDPR), and US state privacy laws such as the California Consumer Privacy Act (CCPA).</p>
 
   <h2 id="app">Information in the WiFiDrop app</h2>
@@ -774,7 +787,7 @@ page("privacy.html", "Privacy policy", "How WiFiDrop handles personal informatio
   <ul>
     <li><b>Hosting:</b> this website is hosted by GitHub Pages (GitHub, Inc.). GitHub processes basic request information, such as your IP address and browser, to deliver and protect the site, under the GitHub Privacy Statement. We don't receive these logs.</li>
     <li><b>Cookies:</b> we don't use advertising, analytics or tracking cookies. The site stores your light or dark theme choice in your own browser, which is never sent to us. On the Pricing page, the site asks our payment provider Paddle for the Pro price in your currency, so Paddle receives your IP address to work out your country. If you open the checkout to buy Pro, Paddle loads its own checkout, which may use cookies and similar technology needed for payments and fraud prevention, under <a href="https://www.paddle.com/legal/privacy" rel="noopener">Paddle's privacy policy</a>. The site blocks Paddle's optional analytics script.</li>
-    <li><b>Pro waitlist:</b> if you sign up, we keep your email address and the date you gave consent, and use them only to tell you when Pro launches. Every email includes our contact details and an unsubscribe link, as Canada's Anti-Spam Legislation (CASL) requires. We delete your address when you unsubscribe or 12 months after launch, whichever comes first.</li>
+    <li><b>Pro waitlist (closed):</b> before Pro launched in October 2026, people could ask to be told when it was available. We keep those email addresses and consent dates only for that announcement. Every email includes our contact details and an unsubscribe link, as Canada's Anti-Spam Legislation (CASL) requires. We delete an address when its owner unsubscribes, and all of them by October 2027.</li>
     <li><b>Feedback, contact and beta forms:</b> we receive what you type and any screenshot or log you attach. We use it only to answer you, fix problems and plan WiFiDrop. Your email is optional on the feedback form. We delete form submissions after 24 months, sooner if you ask.</li>
     <li><b>Abuse protection:</b> to stop spam, our form and licence servers keep a one-way scrambled version (a salted hash) of your IP address with each submission, and count requests per hashed address for up to a day to enforce rate limits. We can't turn the hash back into your IP address.</li>
     <li><b>Emails to us:</b> if you email us, we keep your message and address to reply, for up to 24 months.</li>
@@ -954,7 +967,7 @@ page("confidentialite.html", "Politique de confidentialité",
   <ul>
     <li><b>Hébergement :</b> ce site est hébergé par GitHub Pages (GitHub, Inc.). GitHub traite des renseignements de base sur les requêtes, comme votre adresse IP et votre navigateur, pour livrer et protéger le site, conformément à la déclaration de confidentialité de GitHub. Nous ne recevons pas ces journaux.</li>
     <li><b>Témoins (cookies) :</b> nous n'utilisons aucun témoin publicitaire, analytique ou de suivi. Le site enregistre votre choix de thème clair ou sombre dans votre propre navigateur, et ce choix ne nous est jamais envoyé. Sur la page Tarifs, le site demande à notre fournisseur de paiement Paddle le prix de Pro dans votre devise; Paddle reçoit donc votre adresse IP pour déterminer votre pays. Le site bloque le script d'analyse facultatif de Paddle. Si vous ouvrez la caisse pour acheter Pro, Paddle charge sa propre caisse, qui peut utiliser des témoins et des technologies semblables nécessaires aux paiements et à la prévention de la fraude, conformément à la <a href="https://www.paddle.com/legal/privacy" rel="noopener">politique de confidentialité de Paddle</a>.</li>
-    <li><b>Liste d'attente Pro :</b> si vous vous inscrivez, nous conservons votre adresse courriel et la date de votre consentement, et nous les utilisons seulement pour vous annoncer le lancement de Pro. Chaque courriel comprend nos coordonnées et un lien de désabonnement, comme l'exige la Loi canadienne anti-pourriel (LCAP). Nous supprimons votre adresse lorsque vous vous désabonnez ou 12 mois après le lancement, selon la première éventualité.</li>
+    <li><b>Liste d'attente Pro (fermée) :</b> avant le lancement de Pro en octobre 2026, il était possible de demander à être averti de sa disponibilité. Nous conservons ces adresses courriel et dates de consentement uniquement pour cette annonce. Chaque courriel comprend nos coordonnées et un lien de désabonnement, comme l'exige la Loi canadienne anti-pourriel (LCAP). Nous supprimons une adresse lorsque la personne se désabonne, et toutes au plus tard en octobre 2027.</li>
     <li><b>Formulaires de commentaires, de contact et de bêta :</b> nous recevons ce que vous écrivez et toute capture d'écran ou tout journal joint. Nous les utilisons seulement pour vous répondre, corriger des problèmes et planifier WiFiDrop. Votre courriel est facultatif dans le formulaire de commentaires. Nous supprimons les soumissions après 24 mois, ou plus tôt si vous le demandez.</li>
     <li><b>Protection contre les abus :</b> pour bloquer le pourriel, nos serveurs de formulaires et de licences conservent une version brouillée à sens unique (un hachage salé) de votre adresse IP avec chaque soumission, et comptent les requêtes par adresse hachée pendant au plus une journée afin d'appliquer des limites de débit. Nous ne pouvons pas retrouver votre adresse IP à partir du hachage.</li>
     <li><b>Courriels qui nous sont adressés :</b> si vous nous écrivez, nous conservons votre message et votre adresse pour vous répondre, pendant au plus 24 mois.</li>

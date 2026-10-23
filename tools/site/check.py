@@ -152,7 +152,7 @@ with sync_playwright() as p:
 
 # ---- spelling
 spell = SpellChecker()
-allow = set("""wifidrop filedrop changelog chunked dac française get-filehash github gmail progressclosed screenshot screenshots statusesnew subfolders supabase txn usernames waitlist else's https http wi-fi wifi iphone ipad icloud android webview runtime powershell sha argon2id pipeda casl ccpa gdpr
+allow = set("""wifidrop gif jpeg filedrop changelog chunked dac française get-filehash github gmail progressclosed screenshot screenshots statusesnew subfolders supabase txn usernames waitlist else's https http wi-fi wifi iphone ipad icloud android webview runtime powershell sha argon2id pipeda casl ccpa gdpr
 quebec québec qr csv tba cad os ios macos windows microsoft edge safari chrome firefox mac linux exe programdata gethash
 admin admins pc pcs usb faq url urls id ids html sms app apps beta pro pin unsubscribe hotspot hotspots login signin
 reupload checksum checksums ttl dns wan lan nas uploads uploader downloads lifecycle iso utc fileDrop
