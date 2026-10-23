@@ -8,6 +8,7 @@ from pathlib import Path
 
 SITE = Path(sys.argv[1]) if len(sys.argv) > 1 else Path(__file__).resolve().parents[2] / "site"
 UPDATED = "October 17, 2026"
+PRIVACY_UPDATED = "October 23, 2026"  # local prices on the Pricing page
 
 PATHS = {
     "lock": '<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
@@ -387,6 +388,7 @@ page("pricing.html", "Pricing",
       <div class="plan pro reveal d1">
         <h3>WiFiDrop Pro <span class="soon">Available now</span></h3>
         <div class="price">$29.99 <small>CAD, one-time</small></div>
+        <p class="muted small" data-price-note hidden></p>
         <p class="muted">For bigger families, classrooms, clubs and small offices.</p>
         <ul class="checks">{li(CHECK_PRO)}</ul>
         <form class="form" data-api="waitlist" method="post">
@@ -735,7 +737,7 @@ page("beta.html", "Join the beta", "Help test WiFiDrop: get early builds and sha
 
 # =================================================================== privacy
 page("privacy.html", "Privacy policy", "How WiFiDrop handles personal information in the app, on this website, and for purchases and licences.",
-     f"""<div class="wrap page-hero"><h1>Privacy policy</h1><p>Last updated {UPDATED}. <a href="confidentialite.html" lang="fr">Version française</a></p>
+     f"""<div class="wrap page-hero"><h1>Privacy policy</h1><p>Last updated {PRIVACY_UPDATED}. <a href="confidentialite.html" lang="fr">Version française</a></p>
   <nav class="toc" aria-label="On this page"><a href="#summary">Summary</a><a href="#app">The app</a><a href="#website">Website</a>
     <a href="#purchases">Purchases</a><a href="#where">Where data is stored</a><a href="#rights">Your rights</a><a href="#contact">Contact</a></nav></div>
 <section><div class="wrap doc">
@@ -771,7 +773,7 @@ page("privacy.html", "Privacy policy", "How WiFiDrop handles personal informatio
   <h2 id="website">Information on this website</h2>
   <ul>
     <li><b>Hosting:</b> this website is hosted by GitHub Pages (GitHub, Inc.). GitHub processes basic request information, such as your IP address and browser, to deliver and protect the site, under the GitHub Privacy Statement. We don't receive these logs.</li>
-    <li><b>Cookies:</b> we don't use advertising, analytics or tracking cookies. The site stores your light or dark theme choice in your own browser, which is never sent to us. If you open the checkout to buy Pro, our payment provider Paddle loads its own checkout, which may use cookies and similar technology needed for payments and fraud prevention, under <a href="https://www.paddle.com/legal/privacy" rel="noopener">Paddle's privacy policy</a>.</li>
+    <li><b>Cookies:</b> we don't use advertising, analytics or tracking cookies. The site stores your light or dark theme choice in your own browser, which is never sent to us. On the Pricing page, the site asks our payment provider Paddle for the Pro price in your currency, so Paddle receives your IP address to work out your country. If you open the checkout to buy Pro, Paddle loads its own checkout, which may use cookies and similar technology needed for payments and fraud prevention, under <a href="https://www.paddle.com/legal/privacy" rel="noopener">Paddle's privacy policy</a>. The site blocks Paddle's optional analytics script.</li>
     <li><b>Pro waitlist:</b> if you sign up, we keep your email address and the date you gave consent, and use them only to tell you when Pro launches. Every email includes our contact details and an unsubscribe link, as Canada's Anti-Spam Legislation (CASL) requires. We delete your address when you unsubscribe or 12 months after launch, whichever comes first.</li>
     <li><b>Feedback, contact and beta forms:</b> we receive what you type and any screenshot or log you attach. We use it only to answer you, fix problems and plan WiFiDrop. Your email is optional on the feedback form. We delete form submissions after 24 months, sooner if you ask.</li>
     <li><b>Abuse protection:</b> to stop spam, our form and licence servers keep a one-way scrambled version (a salted hash) of your IP address with each submission, and count requests per hashed address for up to a day to enforce rate limits. We can't turn the hash back into your IP address.</li>
@@ -910,11 +912,12 @@ page("refunds.html", "Refund policy", "Refunds for WiFiDrop Pro.",
 
 # =================================================================== French legal pages (drafts for review)
 UPDATED_FR = "17 octobre 2026"
+PRIVACY_UPDATED_FR = "23 octobre 2026"
 EMAIL_LINK = '<a href="mailto:support@wifidrop.ca">support@wifidrop.ca</a>'
 
 page("confidentialite.html", "Politique de confidentialité",
      "Comment WiFiDrop traite les renseignements personnels dans l'application, sur ce site Web et pour les achats et licences.",
-     f"""<div class="wrap page-hero"><h1>Politique de confidentialité</h1><p>Dernière mise à jour : {UPDATED_FR}. <a href="privacy.html" lang="en">English version</a></p>
+     f"""<div class="wrap page-hero"><h1>Politique de confidentialité</h1><p>Dernière mise à jour : {PRIVACY_UPDATED_FR}. <a href="privacy.html" lang="en">English version</a></p>
   <nav class="toc" aria-label="Sur cette page"><a href="#resume">Résumé</a><a href="#application">L'application</a><a href="#site">Site Web</a>
     <a href="#achats">Achats</a><a href="#stockage">Lieu de stockage</a><a href="#droits">Vos droits</a><a href="#contact">Contact</a></nav></div>
 <section><div class="wrap doc">
@@ -950,7 +953,7 @@ page("confidentialite.html", "Politique de confidentialité",
   <h2 id="site">Renseignements sur ce site Web</h2>
   <ul>
     <li><b>Hébergement :</b> ce site est hébergé par GitHub Pages (GitHub, Inc.). GitHub traite des renseignements de base sur les requêtes, comme votre adresse IP et votre navigateur, pour livrer et protéger le site, conformément à la déclaration de confidentialité de GitHub. Nous ne recevons pas ces journaux.</li>
-    <li><b>Témoins (cookies) :</b> nous n'utilisons aucun témoin publicitaire, analytique ou de suivi. Le site enregistre votre choix de thème clair ou sombre dans votre propre navigateur, et ce choix ne nous est jamais envoyé. Si vous ouvrez la caisse pour acheter Pro, notre fournisseur de paiement Paddle charge sa propre caisse, qui peut utiliser des témoins et des technologies semblables nécessaires aux paiements et à la prévention de la fraude, conformément à la <a href="https://www.paddle.com/legal/privacy" rel="noopener">politique de confidentialité de Paddle</a>.</li>
+    <li><b>Témoins (cookies) :</b> nous n'utilisons aucun témoin publicitaire, analytique ou de suivi. Le site enregistre votre choix de thème clair ou sombre dans votre propre navigateur, et ce choix ne nous est jamais envoyé. Sur la page Tarifs, le site demande à notre fournisseur de paiement Paddle le prix de Pro dans votre devise; Paddle reçoit donc votre adresse IP pour déterminer votre pays. Le site bloque le script d'analyse facultatif de Paddle. Si vous ouvrez la caisse pour acheter Pro, Paddle charge sa propre caisse, qui peut utiliser des témoins et des technologies semblables nécessaires aux paiements et à la prévention de la fraude, conformément à la <a href="https://www.paddle.com/legal/privacy" rel="noopener">politique de confidentialité de Paddle</a>.</li>
     <li><b>Liste d'attente Pro :</b> si vous vous inscrivez, nous conservons votre adresse courriel et la date de votre consentement, et nous les utilisons seulement pour vous annoncer le lancement de Pro. Chaque courriel comprend nos coordonnées et un lien de désabonnement, comme l'exige la Loi canadienne anti-pourriel (LCAP). Nous supprimons votre adresse lorsque vous vous désabonnez ou 12 mois après le lancement, selon la première éventualité.</li>
     <li><b>Formulaires de commentaires, de contact et de bêta :</b> nous recevons ce que vous écrivez et toute capture d'écran ou tout journal joint. Nous les utilisons seulement pour vous répondre, corriger des problèmes et planifier WiFiDrop. Votre courriel est facultatif dans le formulaire de commentaires. Nous supprimons les soumissions après 24 mois, ou plus tôt si vous le demandez.</li>
     <li><b>Protection contre les abus :</b> pour bloquer le pourriel, nos serveurs de formulaires et de licences conservent une version brouillée à sens unique (un hachage salé) de votre adresse IP avec chaque soumission, et comptent les requêtes par adresse hachée pendant au plus une journée afin d'appliquer des limites de débit. Nous ne pouvons pas retrouver votre adresse IP à partir du hachage.</li>

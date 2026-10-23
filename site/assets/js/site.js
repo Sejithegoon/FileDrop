@@ -298,6 +298,32 @@
             tag.onerror = () => { ready = null; reject(new Error("checkout unavailable")); };
             document.head.appendChild(tag);
         }));
+        // Show Pro in the visitor's own currency. Paddle converts the CA$29.99 price and knows the local tax;
+        // where prices normally include tax (Europe, UK, Australia...) we show the price with tax. If Paddle
+        // can't be reached, the CAD price stays.
+        if (pay.env === "production" && pay.open !== false) {
+            load()
+                .then(paddle => paddle.PricePreview({ items: [{ priceId: pay.priceId, quantity: 1 }] }))
+                .then(result => {
+                    const data = result.data;
+                    const line = data.details.lineItems[0];
+                    const price = $(".plan.pro .price");
+                    if (!line || !price || data.currencyCode === "CAD") return;
+                    const f = line.formattedTotals;
+                    const withTax = data.address && data.address.countryCode !== "US" && f.total !== f.subtotal;
+                    const small = document.createElement("small");
+                    small.textContent = `${data.currencyCode}, one-time${withTax ? ", tax included" : ""}`;
+                    price.textContent = `${withTax ? f.total : f.subtotal} `;
+                    price.appendChild(small);
+                    const note = $("[data-price-note]");
+                    if (note) {
+                        note.textContent = `That's CA${pay.price} converted to your currency. You'll pay in ${data.currencyCode} at checkout.`;
+                        note.hidden = false;
+                    }
+                })
+                .catch(() => {});
+        }
+
         $("[data-buy-btn]").addEventListener("click", async () => {
             try {
                 const paddle = await load();

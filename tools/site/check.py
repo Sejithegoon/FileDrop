@@ -65,7 +65,9 @@ with sync_playwright() as p:
             for name in PAGES:
                 page = ctx.new_page()
                 errors = []
-                page.on("console", lambda m: errors.append(m.text) if m.type == "error" else None)
+                # Paddle's script tries to load its ProfitWell analytics; the site's CSP blocks it on purpose.
+                page.on("console", lambda m: errors.append(m.text)
+                        if m.type == "error" and "profitwell" not in m.text.lower() else None)
                 page.on("pageerror", lambda e: errors.append(str(e)))
                 page.goto(BASE + name, wait_until="networkidle")
                 page.evaluate("document.querySelectorAll('img[loading=lazy]').forEach(i => i.loading = 'eager')")

@@ -11,3 +11,6 @@ build/work/
 supabase/.temp/
 build/site-check/
 build/screenshots/
+
+# Marketing and outreach emails (contacts, drafts): kept on this PC only
+marketing/
