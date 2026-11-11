@@ -59,3 +59,29 @@ label { font-size: 13px; color: var(--muted); font-weight: 600; }
 .pcs li { display: flex; justify-content: space-between; align-items: center; gap: 8px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 8px 12px; font-size: 14px; }
 .licence-text { font: 12.5px/1.45 ui-monospace, "Cascadia Code", Consolas, monospace; }
 .filters:has(#issue:not([hidden])) { grid-template-columns: 1fr auto auto; }
+
+/* Stats tab */
+.stats { padding: 24px; display: grid; gap: 16px; max-width: 1100px; }
+.stats-head { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.stats-head h2 { font-size: 20px; margin-right: auto; }
+.stats-head select { width: auto; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
+.tile { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 14px 16px; display: grid; gap: 2px; }
+.tile .num { font-size: 30px; font-weight: 800; letter-spacing: -.02em; }
+.tile .lbl { font-size: 13px; color: var(--muted); font-weight: 600; }
+.tile .sub { font-size: 12.5px; color: var(--muted); }
+.panel { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 16px; display: grid; gap: 10px; align-content: start; min-width: 0; }
+.panel h3 { font-size: 15px; }
+.cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.panel table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.panel td, .panel th { padding: 6px 4px; border-bottom: 1px solid var(--border); text-align: left; overflow-wrap: anywhere; }
+.panel th { color: var(--muted); font-size: 12.5px; font-weight: 600; }
+.panel td.n, .panel th.n { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+#chart svg { width: 100%; height: auto; display: block; }
+#chart .v { fill: #2f5fb8; } #chart .d { fill: var(--ok); } #chart .s { fill: var(--warn); }
+#chart .axis { fill: var(--muted); font-size: 11px; } #chart .grid { stroke: var(--border); }
+.legend { display: flex; gap: 6px 14px; align-items: center; flex-wrap: wrap; font-size: 13px; color: var(--muted); }
+.key { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: -8px; }
+.key.v { background: #2f5fb8; } .key.d { background: var(--ok); } .key.s { background: var(--warn); }
+.small { font-size: 13px; }
+@media (max-width: 800px) { .stats { padding: 16px; } .cols { grid-template-columns: 1fr; } }

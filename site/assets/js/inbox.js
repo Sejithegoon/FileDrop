@@ -118,6 +118,9 @@
     }
 
     async function load() {
+        $("#stats").hidden = kind !== "stats";
+        $("#inbox").hidden = kind === "stats";
+        if (kind === "stats") return loadStats();
         const isWaitlist = kind === "waitlist";
         $("#status").hidden = isWaitlist || kind === "licences";
         $("#issue").hidden = kind !== "licences";
@@ -309,6 +312,67 @@
             setTimeout(() => URL.revokeObjectURL(url), 10000);
         } catch (err) { fail(err); }
     };
+
+    // ---- stats: daily counts from public.site_stats, sales from paid licences
+    const fmt = n => Number(n).toLocaleString();
+    const pct = (a, b) => b ? (100 * a / b).toFixed(a / b < 0.1 ? 1 : 0) + "%" : "–";
+    const isoDay = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    $("#range").onchange = () => loadStats().catch(fail);
+    $("#refresh").onclick = () => loadStats().then(() => toast("Updated"), fail);
+
+    async function loadStats() {
+        const days = Number($("#range").value);
+        const from = new Date(); from.setDate(from.getDate() - days + 1);
+        const since = isoDay(from);
+        const [rows, sales, allSales] = await Promise.all([
+            rest(`site_stats?select=day,event,page,source,n&day=gte.${since}&limit=50000`),
+            rest(`licences?select=id,email,issued_at,order_id,revoked_at&order_id=not.is.null&issued_at=gte.${since}T00:00:00&order=issued_at.desc&limit=1000`),
+            count("licences?select=id&order_id=not.is.null&revoked_at=is.null"),
+        ]);
+        const total = ev => rows.filter(r => r.event === ev).reduce((a, r) => a + Number(r.n), 0);
+        const views = total("view"), downloads = total("download"), buyClicks = total("buy_click");
+        const kept = sales.filter(s => !s.revoked_at).length;
+        const tile = (num, lbl, sub = "") => `<div class="tile"><span class="num">${num}</span><span class="lbl">${lbl}</span>${sub ? `<span class="sub">${sub}</span>` : ""}</div>`;
+        $("#tiles").innerHTML = tile(fmt(views), "Visits (page views)")
+            + tile(fmt(downloads), "Download clicks", `${pct(downloads, views)} of visits`)
+            + tile(fmt(buyClicks), "Buy Pro clicks", "opened the checkout")
+            + tile(fmt(kept), "Pro sales", `${sales.length - kept ? (sales.length - kept) + " refunded · " : ""}${pct(kept, downloads)} of downloads`)
+            + tile(fmt(allSales), "Pro sales, all time", `about CA$${(allSales * 29.99).toFixed(2)} before Paddle's fee`);
+
+        // Per-day chart: visits and download clicks as bars, sales as dots.
+        const byDay = {};
+        for (let d = new Date(from); isoDay(d) <= isoDay(new Date()); d.setDate(d.getDate() + 1)) byDay[isoDay(d)] = { v: 0, d: 0, s: 0 };
+        rows.forEach(r => { const b = byDay[r.day]; if (b && r.event === "view") b.v += Number(r.n); if (b && r.event === "download") b.d += Number(r.n); });
+        sales.forEach(s => { const b = byDay[isoDay(new Date(s.issued_at))]; if (b && !s.revoked_at) b.s += 1; });
+        const keys = Object.keys(byDay), W = 1000, H = 180, top = 10, base = 160;
+        const max = Math.max(1, ...keys.map(k => byDay[k].v));
+        const step = W / keys.length, bw = Math.max(1, step * 0.7);
+        const y = n => base - (base - top) * n / max;
+        $("#chart").innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Visits and downloads per day">
+            <line class="grid" x1="0" x2="${W}" y1="${top}" y2="${top}"/><line class="grid" x1="0" x2="${W}" y1="${base}" y2="${base}"/>
+            <text class="axis" x="${W - 4}" y="${top + 12}" text-anchor="end">${fmt(max)}</text>
+            ${keys.map((k, i) => { const b = byDay[k], x = i * step + (step - bw) / 2;
+                return `<g><title>${k}: ${b.v} visits, ${b.d} downloads${b.s ? `, ${b.s} sales` : ""}</title>
+                <rect class="v" x="${x}" y="${y(b.v)}" width="${bw}" height="${base - y(b.v)}"/>
+                <rect class="d" x="${x + bw * 0.25}" y="${y(b.d)}" width="${bw * 0.5}" height="${base - y(b.d)}"/>
+                ${b.s ? `<circle class="s" cx="${x + bw / 2}" cy="${top + 4}" r="5"/>` : ""}</g>`; }).join("")}
+            <text class="axis" x="0" y="${H - 4}">${keys[0]}</text><text class="axis" x="${W}" y="${H - 4}" text-anchor="end">${keys[keys.length - 1]}</text>
+        </svg>`;
+
+        const table = (head, list) => list.length
+            ? `<tr>${head.map((h, i) => `<th${i ? ' class="n"' : ""}>${h}</th>`).join("")}</tr>` + list.map(r => `<tr>${r.map((c, i) => `<td${i ? ' class="n"' : ""}>${esc(c)}</td>`).join("")}</tr>`).join("")
+            : '<tr><td class="muted">Nothing yet.</td></tr>';
+        const group = (field, ev) => { const m = {}; rows.filter(r => r.event === ev).forEach(r => { m[r[field]] = (m[r[field]] || 0) + Number(r.n); }); return m; };
+        const pv = group("page", "view"), pd = group("page", "download");
+        $("#pages").innerHTML = table(["Page", "Visits", "Downloads"],
+            Object.keys({ ...pv, ...pd }).sort((a, b) => (pv[b] || 0) - (pv[a] || 0)).slice(0, 20).map(p => [p, fmt(pv[p] || 0), fmt(pd[p] || 0)]));
+        const src = group("source", "view");
+        $("#sources").innerHTML = table(["Site", "Visits"],
+            Object.entries(src).sort((a, b) => b[1] - a[1]).slice(0, 20).map(([s, n]) => [s || "Direct, bookmarks or apps", fmt(n)]));
+        $("#sales").innerHTML = table(["Customer", "Date"],
+            sales.map(s => [`${s.email}${s.revoked_at ? " (refunded)" : ""}`, when(s.issued_at)]));
+        counts().catch(() => {});
+    }
 
     async function start() {
         const me = await rest("admins?select=user_id");

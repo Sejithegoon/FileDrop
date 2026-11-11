@@ -2,7 +2,7 @@
 fastapi==0.143.2
 uvicorn==0.54.0
 starlette==1.8.0
-pydantic==2.14.1
+pydantic==2.14.3
 pystray==0.19.5
 pillow==12.3.0
 argon2-cffi==25.1.0

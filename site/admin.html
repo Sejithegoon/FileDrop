@@ -8,9 +8,9 @@
 <meta name="robots" content="noindex, nofollow">
 <title>Feedback inbox | WiFiDrop</title>
 <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="assets/css/inbox.css?v=1649cac">
-<script src="assets/js/config.js?v=1649cac" defer></script>
-<script src="assets/js/inbox.js?v=1649cac" defer></script>
+<link rel="stylesheet" href="assets/css/inbox.css?v=20261110">
+<script src="assets/js/config.js?v=20261110" defer></script>
+<script src="assets/js/inbox.js?v=20261110" defer></script>
 </head>
 <body>
 <section id="login" class="login" hidden>
@@ -35,11 +35,34 @@
       <button data-kind="beta">Beta <span class="count" data-count="beta"></span></button>
       <button data-kind="waitlist">Waitlist <span class="count" data-count="waitlist"></span></button>
       <button data-kind="licences">Licences</button>
+      <button data-kind="stats">Stats</button>
     </nav>
     <button class="btn" id="logout" type="button">Sign out</button>
   </header>
 
-  <main class="layout">
+  <main class="stats" id="stats" hidden>
+    <div class="stats-head">
+      <h2>Website stats</h2>
+      <select id="range" aria-label="Period">
+        <option value="7">Last 7 days</option><option value="30" selected>Last 30 days</option>
+        <option value="90">Last 90 days</option><option value="365">Last 12 months</option>
+      </select>
+      <button class="btn" id="refresh" type="button">Refresh</button>
+    </div>
+    <div class="tiles" id="tiles"></div>
+    <div class="panel"><h3>Per day</h3><div id="chart"></div>
+      <p class="legend"><span class="key v"></span>Visits <span class="key d"></span>Download clicks <span class="key s"></span>Sales</p></div>
+    <div class="cols">
+      <div class="panel"><h3>Pages</h3><table id="pages"></table></div>
+      <div class="panel"><h3>Where visitors came from</h3><table id="sources"></table></div>
+    </div>
+    <div class="panel"><h3>Sales</h3><table id="sales"></table></div>
+    <p class="muted small">Visits count each page once per browser tab session. Nothing identifies a visitor: no cookies, IP addresses or IDs
+      are stored, and browsers with Do Not Track or Global Privacy Control aren't counted, so real numbers are a bit higher.
+      Sales are Pro licences issued through Paddle (licences you issued by hand aren't counted).</p>
+  </main>
+
+  <main class="layout" id="inbox">
     <section class="list-pane">
       <div class="filters" id="filters">
         <select id="status">

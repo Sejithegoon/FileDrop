@@ -13,7 +13,8 @@ Admins read everything at https://wifidrop.ca/admin.html (Supabase sign-in; only
 ## Database
 
 Apply the migrations in order in **SQL Editor** (each is safe to run again):
-`migrations/20261016000000_forms.sql`, `migrations/20261017000000_licences.sql`, `migrations/20261018000000_payments.sql`.
+`migrations/20261016000000_forms.sql`, `migrations/20261017000000_licences.sql`, `migrations/20261018000000_payments.sql`,
+`migrations/20261110000000_site_stats.sql` (website visit, download and Buy click counts for the inbox's Stats tab).
 
 Make an inbox admin (after creating the user under **Authentication → Users**, with sign-ups turned off):
 ```sql

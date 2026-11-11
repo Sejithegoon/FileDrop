@@ -8,7 +8,7 @@ from pathlib import Path
 
 SITE = Path(sys.argv[1]) if len(sys.argv) > 1 else Path(__file__).resolve().parents[2] / "site"
 UPDATED = "October 17, 2026"
-PRIVACY_UPDATED = "October 23, 2026"  # local prices on the Pricing page
+PRIVACY_UPDATED = "November 10, 2026"  # anonymous visit and download counts
 
 PATHS = {
     "lock": '<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
@@ -758,7 +758,7 @@ page("privacy.html", "Privacy policy", "How WiFiDrop handles personal informatio
     <h2>The short version</h2>
     <ul class="checks">
       <li><b>WiFiDrop runs entirely on your PC.</b> Your files, accounts and settings stay on your computer. We never receive or see them.</li>
-      <li><b>No tracking.</b> No analytics, no ads, no usage data, in the app or on this website.</li>
+      <li><b>No tracking.</b> No ads, no tracking cookies and no usage data from the app. The website only counts visits and download clicks, without identifying anyone.</li>
       <li><b>Only two small checks go online:</b> a daily check for new versions, and with Pro, a weekly licence check. Both are explained below, in full.</li>
       <li><b>We keep very little:</b> what you send us through our forms, and for Pro buyers, the email and order needed for the licence.</li>
       <li><b>You're in control:</b> email <a href="mailto:support@wifidrop.ca">support@wifidrop.ca</a> and we'll show, fix or delete what we hold about you, within 30 days.</li>
@@ -786,6 +786,7 @@ page("privacy.html", "Privacy policy", "How WiFiDrop handles personal informatio
   <h2 id="website">Information on this website</h2>
   <ul>
     <li><b>Hosting:</b> this website is hosted by GitHub Pages (GitHub, Inc.). GitHub processes basic request information, such as your IP address and browser, to deliver and protect the site, under the GitHub Privacy Statement. We don't receive these logs.</li>
+    <li><b>Visit counts:</b> to see whether people find WiFiDrop, the site adds one to a daily count when a page opens, when someone clicks Download, and when someone opens or completes the Pro checkout. Each count records only the day, the page and, for visits from other websites, that website's name (for example youtube.com). It sets no cookie and stores no IP address, device ID or anything else that could identify you. Your browser remembers which pages it already counted until you close the tab, and doesn't send anything if you turn on Do Not Track or Global Privacy Control. The counts are stored with Supabase.</li>
     <li><b>Cookies:</b> we don't use advertising, analytics or tracking cookies. The site stores your light or dark theme choice in your own browser, which is never sent to us. On the Pricing page, the site asks our payment provider Paddle for the Pro price in your currency, so Paddle receives your IP address to work out your country. If you open the checkout to buy Pro, Paddle loads its own checkout, which may use cookies and similar technology needed for payments and fraud prevention, under <a href="https://www.paddle.com/legal/privacy" rel="noopener">Paddle's privacy policy</a>. The site blocks Paddle's optional analytics script.</li>
     <li><b>Pro waitlist (closed):</b> before Pro launched in October 2026, people could ask to be told when it was available. We keep those email addresses and consent dates only for that announcement. Every email includes our contact details and an unsubscribe link, as Canada's Anti-Spam Legislation (CASL) requires. We delete an address when its owner unsubscribes, and all of them by October 2027.</li>
     <li><b>Feedback, contact and beta forms:</b> we receive what you type and any screenshot or log you attach. We use it only to answer you, fix problems and plan WiFiDrop. Your email is optional on the feedback form. We delete form submissions after 24 months, sooner if you ask.</li>
@@ -805,7 +806,7 @@ page("privacy.html", "Privacy policy", "How WiFiDrop handles personal informatio
   <p>We use information only for the purposes above. For visitors in the EU and UK, our legal bases are: <b>consent</b> (waitlist emails), <b>contract</b> (selling and supporting licences), <b>legal obligation</b> (tax records) and <b>legitimate interests</b> (keeping the website secure and answering messages). We don't sell or rent personal information, and we don't use it for targeted advertising.</p>
 
   <h2 id="where">Where information is stored</h2>
-  <p>This website is hosted by GitHub Pages, on servers outside Canada (mainly in the United States). Form submissions, attachments, the waitlist and licence records are stored by our database provider, Supabase, in its Canada (Central) region. Paddle (United Kingdom, with processing in other countries) and Resend (United States) process information in other countries, where it may be accessible to local authorities under local law. When information leaves Canada or the European Economic Area, we rely on contracts with appropriate safeguards, such as the EU Standard Contractual Clauses.</p>
+  <p>This website is hosted by GitHub Pages, on servers outside Canada (mainly in the United States). Form submissions, attachments, the waitlist, visit counts and licence records are stored by our database provider, Supabase, in its Canada (Central) region. Paddle (United Kingdom, with processing in other countries) and Resend (United States) process information in other countries, where it may be accessible to local authorities under local law. When information leaves Canada or the European Economic Area, we rely on contracts with appropriate safeguards, such as the EU Standard Contractual Clauses.</p>
 
   <h2 id="security">Security</h2>
   <p>We collect as little as possible, use encrypted connections (HTTPS), limit access to the few people who need it and use reputable providers. If a breach creates a real risk of significant harm, we'll notify affected people and the Office of the Privacy Commissioner of Canada as the law requires.</p>
@@ -925,7 +926,7 @@ page("refunds.html", "Refund policy", "Refunds for WiFiDrop Pro.",
 
 # =================================================================== French legal pages (drafts for review)
 UPDATED_FR = "17 octobre 2026"
-PRIVACY_UPDATED_FR = "23 octobre 2026"
+PRIVACY_UPDATED_FR = "10 novembre 2026"
 EMAIL_LINK = '<a href="mailto:support@wifidrop.ca">support@wifidrop.ca</a>'
 
 page("confidentialite.html", "Politique de confidentialité",
@@ -938,7 +939,7 @@ page("confidentialite.html", "Politique de confidentialité",
     <h2>En bref</h2>
     <ul class="checks">
       <li><b>WiFiDrop fonctionne entièrement sur votre ordinateur.</b> Vos fichiers, comptes et paramètres restent chez vous. Nous ne les recevons ni ne les voyons jamais.</li>
-      <li><b>Aucun suivi.</b> Ni statistiques, ni publicité, ni données d'utilisation, dans l'application comme sur ce site.</li>
+      <li><b>Aucun suivi.</b> Ni publicité, ni témoins de suivi, ni données d'utilisation provenant de l'application. Le site compte seulement les visites et les clics de téléchargement, sans identifier personne.</li>
       <li><b>Seulement deux petites vérifications en ligne :</b> une recherche quotidienne de mises à jour et, avec Pro, une vérification hebdomadaire de la licence. Toutes deux sont expliquées en détail ci-dessous.</li>
       <li><b>Nous conservons très peu :</b> ce que vous nous envoyez par nos formulaires et, pour les acheteurs de Pro, le courriel et la commande nécessaires à la licence.</li>
       <li><b>Vous gardez le contrôle :</b> écrivez à {EMAIL_LINK} et nous vous montrerons, corrigerons ou supprimerons ce que nous détenons à votre sujet, dans un délai de 30 jours.</li>
@@ -966,6 +967,7 @@ page("confidentialite.html", "Politique de confidentialité",
   <h2 id="site">Renseignements sur ce site Web</h2>
   <ul>
     <li><b>Hébergement :</b> ce site est hébergé par GitHub Pages (GitHub, Inc.). GitHub traite des renseignements de base sur les requêtes, comme votre adresse IP et votre navigateur, pour livrer et protéger le site, conformément à la déclaration de confidentialité de GitHub. Nous ne recevons pas ces journaux.</li>
+    <li><b>Nombre de visites :</b> pour savoir si les gens trouvent WiFiDrop, le site ajoute un à un compteur quotidien lorsqu'une page s'ouvre, lorsqu'une personne clique sur Télécharger et lorsqu'une personne ouvre ou termine la caisse de Pro. Chaque compte n'enregistre que le jour, la page et, pour les visites venant d'autres sites, le nom de ce site (par exemple youtube.com). Aucun témoin n'est déposé et aucune adresse IP, aucun identifiant d'appareil ni rien d'autre qui pourrait vous identifier n'est conservé. Votre navigateur retient les pages déjà comptées jusqu'à la fermeture de l'onglet, et n'envoie rien si vous activez Do Not Track ou Global Privacy Control. Les comptes sont stockés chez Supabase.</li>
     <li><b>Témoins (cookies) :</b> nous n'utilisons aucun témoin publicitaire, analytique ou de suivi. Le site enregistre votre choix de thème clair ou sombre dans votre propre navigateur, et ce choix ne nous est jamais envoyé. Sur la page Tarifs, le site demande à notre fournisseur de paiement Paddle le prix de Pro dans votre devise; Paddle reçoit donc votre adresse IP pour déterminer votre pays. Le site bloque le script d'analyse facultatif de Paddle. Si vous ouvrez la caisse pour acheter Pro, Paddle charge sa propre caisse, qui peut utiliser des témoins et des technologies semblables nécessaires aux paiements et à la prévention de la fraude, conformément à la <a href="https://www.paddle.com/legal/privacy" rel="noopener">politique de confidentialité de Paddle</a>.</li>
     <li><b>Liste d'attente Pro (fermée) :</b> avant le lancement de Pro en octobre 2026, il était possible de demander à être averti de sa disponibilité. Nous conservons ces adresses courriel et dates de consentement uniquement pour cette annonce. Chaque courriel comprend nos coordonnées et un lien de désabonnement, comme l'exige la Loi canadienne anti-pourriel (LCAP). Nous supprimons une adresse lorsque la personne se désabonne, et toutes au plus tard en octobre 2027.</li>
     <li><b>Formulaires de commentaires, de contact et de bêta :</b> nous recevons ce que vous écrivez et toute capture d'écran ou tout journal joint. Nous les utilisons seulement pour vous répondre, corriger des problèmes et planifier WiFiDrop. Votre courriel est facultatif dans le formulaire de commentaires. Nous supprimons les soumissions après 24 mois, ou plus tôt si vous le demandez.</li>
@@ -985,7 +987,7 @@ page("confidentialite.html", "Politique de confidentialité",
   <p>Nous utilisons les renseignements uniquement aux fins décrites ci-dessus. Pour les visiteurs de l'UE et du Royaume-Uni, nos fondements juridiques sont : le <b>consentement</b> (courriels de la liste d'attente), le <b>contrat</b> (vente et soutien des licences), l'<b>obligation légale</b> (dossiers fiscaux) et l'<b>intérêt légitime</b> (sécurité du site et réponses aux messages). Nous ne vendons ni ne louons de renseignements personnels, et nous ne les utilisons pas pour de la publicité ciblée.</p>
 
   <h2 id="stockage">Où les renseignements sont stockés</h2>
-  <p>Ce site est hébergé par GitHub Pages, sur des serveurs situés à l'extérieur du Canada (principalement aux États-Unis). Les soumissions de formulaires, les pièces jointes, la liste d'attente et les dossiers de licences sont stockés par notre fournisseur de base de données, Supabase, dans sa région Canada (Centre). Paddle (Royaume-Uni, avec traitement dans d'autres pays) et Resend (États-Unis) traitent des renseignements dans d'autres pays, où ils peuvent être accessibles aux autorités locales en vertu des lois locales. Lorsque des renseignements quittent le Canada ou l'Espace économique européen, nous nous appuyons sur des contrats comportant des garanties appropriées, comme les clauses contractuelles types de l'UE.</p>
+  <p>Ce site est hébergé par GitHub Pages, sur des serveurs situés à l'extérieur du Canada (principalement aux États-Unis). Les soumissions de formulaires, les pièces jointes, la liste d'attente, les nombres de visites et les dossiers de licences sont stockés par notre fournisseur de base de données, Supabase, dans sa région Canada (Centre). Paddle (Royaume-Uni, avec traitement dans d'autres pays) et Resend (États-Unis) traitent des renseignements dans d'autres pays, où ils peuvent être accessibles aux autorités locales en vertu des lois locales. Lorsque des renseignements quittent le Canada ou l'Espace économique européen, nous nous appuyons sur des contrats comportant des garanties appropriées, comme les clauses contractuelles types de l'UE.</p>
 
   <h2 id="securite">Sécurité</h2>
   <p>Nous recueillons le moins de renseignements possible, utilisons des connexions chiffrées (HTTPS), limitons l'accès aux quelques personnes qui en ont besoin et faisons appel à des fournisseurs reconnus. Si un incident de confidentialité présente un risque réel de préjudice grave, nous en aviserons les personnes concernées et le Commissariat à la protection de la vie privée du Canada, comme l'exige la loi.</p>

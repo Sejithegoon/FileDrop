@@ -48,6 +48,29 @@
     const here = location.pathname.split("/").pop() || "index.html";
     $$(".nav a[href]").forEach(a => { if (a.getAttribute("href") === here) a.setAttribute("aria-current", "page"); });
 
+    // ---------- stats: daily counts of page views, download clicks and Buy clicks. No cookies, no IDs, no IP
+    // addresses are stored; each page counts once per browser tab session. Skipped with Do Not Track or Global
+    // Privacy Control, and anywhere but the live site (so local tests never count).
+    function track(event) {
+        try {
+            if (!/(^|\.)wifidrop\.ca$/.test(location.hostname) || !S.supabaseUrl || !S.supabaseKey) return;
+            if (navigator.globalPrivacyControl || navigator.doNotTrack === "1") return;
+            const once = `fd-stat-${event}-${here}`;
+            if (sessionStorage.getItem(once)) return;
+            sessionStorage.setItem(once, "1");
+            let source = "";
+            if (event === "view" && document.referrer) {
+                const host = new URL(document.referrer).hostname;
+                if (!/(^|\.)wifidrop\.ca$/.test(host)) source = host;
+            }
+            fetch(S.supabaseUrl.replace(/\/$/, "") + "/rest/v1/rpc/track", {
+                method: "POST", keepalive: true,
+                headers: { apikey: S.supabaseKey, "Content-Type": "application/json" },
+                body: JSON.stringify({ p_event: event, p_page: here, p_source: source }),
+            }).catch(() => {});
+        } catch { /* storage blocked or bad referrer: skip */ }
+    }
+
     // ---------- values from config.js
     $$("[data-site]").forEach(el => { const v = S[el.dataset.site]; if (v) el.textContent = v; });
     $$("[data-download]").forEach(a => {
@@ -60,6 +83,8 @@
             if (label) label.textContent = "Download coming soon";
         }
     });
+    $$("[data-download]").forEach(a => a.addEventListener("click", () => { if (S.downloadUrl) track("download"); }));
+    track("view");
     $$("[data-if-download]").forEach(el => { el.hidden = !S.downloadUrl; });
     $$("[data-if-no-download]").forEach(el => { el.hidden = !!S.downloadUrl; });
     $$("[data-email]").forEach(el => {
@@ -288,6 +313,7 @@
                 window.Paddle.Initialize({
                     token: pay.token,
                     eventCallback: e => {
+                        if (e.name === "checkout.completed" && pay.env === "production") track("buy_done");
                         if (e.name === "checkout.completed" && note) {
                             note.textContent = "Thank you! Your licence is on its way to your email. It usually arrives within a minute.";
                         }
@@ -325,6 +351,7 @@
         }
 
         $("[data-buy-btn]").addEventListener("click", async () => {
+            if (pay.env === "production") track("buy_click");
             try {
                 const paddle = await load();
                 // Match the site's light/dark theme: the visitor's choice, else their device setting.
